@@ -1,18 +1,38 @@
 import PropTypes from "prop-types";
 import { FaGithubAlt } from "react-icons/fa";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+
 const Project = (props) => {
-  const { projectName, demoLink, githubLink, completeTime } = props;
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: false });
+  const {
+    projectName,
+    demoLink,
+    githubLink,
+    completeTime,
+    projectImage,
+    index,
+  } = props;
   return (
-    <div className="w-[90%] p-3 block sm:flex gap-x-6 bg-[#19133D] rounded-[6px] hover:shadow-md transition-all">
-      <div className="basis-1/2 mb-6 sm:mb-0">
+    <motion.div
+      ref={ref}
+      style={{
+        transform: isInView ? "none" : "translateX(-200px)",
+        opacity: isInView ? 1 : 0,
+        transition: "all 0.9s cubic-bezier(0.17, 0.55, 0.55, 1) 0.5s",
+      }}
+      className="w-[100%] p-3 block sm:flex gap-x-6 bg-[#19133D] rounded-[6px] hover:scale-110  transition-all"
+    >
+      <div className="basis-1/2 sm:h-[200px] mb-6 sm:mb-0">
         <img
-          className="w-full h-full object-contain rounded-md drop-shadow-2xl"
-          src="https://www.verywellmind.com/thmb/15xUglFOvLnNWygFwRyRiu6nIts=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/iStock-619961796-edit-59cabaf6845b3400111119b7.jpg"
-          alt="project"
+          className="w-full h-full object-cover rounded-md drop-shadow-2xl"
+          src={projectImage}
+          alt={`${index}`}
         />
       </div>
-      <div className="basis-1/2 flex flex-col justify-between rounded-tr-[6px] rounded-br-[6px]">
+      <div className="basis-1/2 flex flex-col justify-between rounded-tr-[6px] rounded-br-[6px] sm:p-2">
         <div>
           <p className="text-[20px] font-[700] text-white leading-6">
             {projectName}
@@ -21,10 +41,10 @@ const Project = (props) => {
             {completeTime}
           </p>
         </div>
-        <div className="flex gap-x-5">
+        <div className="flex gap-x-5 sm:gap-x-2">
           <a
             href={githubLink}
-            className="py-3 px-4 bg-white flex justify-center items-center gap-x-2 rounded-sm hover:scale-110 transition-transform"
+            className="py-3 sm:py-2 px-4 sm:px-2 bg-white flex justify-center items-center gap-x-2 rounded-sm hover:scale-110 transition-transform"
           >
             <span>View Github</span>
             <span>
@@ -42,7 +62,7 @@ const Project = (props) => {
           </a>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -52,6 +72,8 @@ Project.propTypes = {
   demoLink: PropTypes.string,
   githubLink: PropTypes.string,
   completeTime: PropTypes.string,
+  projectImage: PropTypes.string,
+  index: PropTypes.number,
 };
 
 export default Project;

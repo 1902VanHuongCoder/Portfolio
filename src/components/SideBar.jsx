@@ -19,7 +19,7 @@ const SideBar = () => {
       animate={{ x: 0 }}
       exit={{ x: -400 }}
       transition={{ duration: .5 }}
-      className="fixed top-0 left-0 w-[80%] bg-[#2E236C] h-screen drop-shadow-2xl"
+      className="fixed top-0 left-0 z-10 w-[80%] bg-[#2E236C] h-screen drop-shadow-2xl"
     >
       <div className="flex justify-between items-center px-4 py-4 border-b-[1px] border-b-[#201B4E] border-b-solid">
         <p className="text-2xl text-white">Paul To</p>
