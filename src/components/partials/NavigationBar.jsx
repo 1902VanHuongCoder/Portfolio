@@ -4,6 +4,8 @@ import { FaHome } from "react-icons/fa";
 import { GrProjects } from "react-icons/gr";
 import { FaBookAtlas } from "react-icons/fa6";
 import { PiHandshakeFill } from "react-icons/pi";
+import { PiCertificateFill } from "react-icons/pi";
+
 import { SidebarContext } from "../../contexts/SidebarContext";
 const NavigationBar = () => {
   const { isSidebar, func } = useContext(SidebarContext);
@@ -17,28 +19,35 @@ const NavigationBar = () => {
         <div className="hidden sm:flex gap-x-10 ">
           <a
             className="px-6 sm:px-0 py-4 bg-white sm:bg-transparent sm:text-white font-bold rounded-sm hover:scale-110 transition-transform flex items-center gap-x-4 sm:gap-x-2"
-            href=""
+            href="#home"
           >
             <FaHome />
             Home
           </a>
           <a
             className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
-            href=""
+            href="#projects"
           >
             <GrProjects />
             Projects
           </a>
           <a
             className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
-            href=""
+            href="#skills"
           >
             <FaBookAtlas />
             Skills
           </a>
           <a
             className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
-            href=""
+            href="#certificates"
+          >
+            <PiCertificateFill /> Certificates
+          </a>
+
+          <a
+            className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
+            href="#contact"
           >
             <PiHandshakeFill /> Contacts
           </a>

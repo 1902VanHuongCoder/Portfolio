@@ -3,7 +3,7 @@ import Button from "./partials/Button";
 import { motion } from "framer-motion";
 const ShowCase = () => {
   return (
-    <div className="w-full h-fit sm:h-screen px-2 flex flex-col sm:flex-row sm:justify-center sm:items-center sm:gap-x-10  gap-y-6 pb-10 ">
+    <div id="home" className="w-full h-fit sm:h-screen px-2 flex flex-col sm:flex-row sm:justify-center sm:items-center sm:gap-x-10  gap-y-6 pb-10 ">
       <motion.div
         initial={{
           opacity: 0,
