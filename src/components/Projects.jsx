@@ -37,7 +37,7 @@ const testData = [
 
 const Projects = () => {
   return (
-    <div className="relative h-fit bg-[#221A51] w-full px-4 py-8">
+    <div className="relative h-fit bg-[#221A51] w-full px-4 py-8 pb-20 sm:pb-0">
       <div className="absolute top-[-7px] left-0 w-full flex gap-x-2 justify-center">
         <span className="w-[15px] h-[15px] rounded-full bg-[rgba(255,255,255,.5)]"></span>
         <span className="w-[15px] h-[15px] rounded-full bg-[rgba(255,255,255,.5)]"></span>

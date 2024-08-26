@@ -6,6 +6,7 @@ import { SidebarContext } from "./contexts/SidebarContext";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import ShowCase from "./components/ShowCase";
 import Projects from "./components/Projects";
+import Skills from "./components/Skills";
 
 function App() {
   const { isSidebar } = useContext(SidebarContext);
@@ -22,6 +23,7 @@ function App() {
       <AnimatePresence>{isSidebar && <SideBar />}</AnimatePresence>
       <ShowCase />
       <Projects />
+      <Skills />
     </div>
   );
 }
