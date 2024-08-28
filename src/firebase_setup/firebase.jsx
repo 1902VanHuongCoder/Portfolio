@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore/lite";
+import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 /* 
 // firebaseConfig.js
@@ -32,12 +32,12 @@ export { storage };
 // };
 
 const firebaseConfig = { 
-  apiKey : import.meta.env.REACT_APP_apiKey, 
-  authDomain : import.meta.env.REACT_APP_authDomain, 
-  projectId : import.meta.env.REACT_APP_projectId, 
-  storageBucket : import.meta.env.REACT_APP_storageBucket, 
-  messagingSenderId : import.meta.env.REACT_APP_messagingSenderId, 
-  appId : import.meta.env.REACT_APP_appId,
+  apiKey : import.meta.env.VITE_apiKey, 
+  authDomain : import.meta.env.VITE_authDomain, 
+  projectId : import.meta.env.VITE_projectId, 
+  storageBucket : import.meta.env.VITE_storageBucket, 
+  messagingSenderId : import.meta.env.VITE_messagingSenderId, 
+  appId : import.meta.env.VITE_appId,
 };
 
 

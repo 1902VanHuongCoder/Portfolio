@@ -2,22 +2,39 @@ import { useEffect, useState } from "react";
 import { db, storage } from "../../firebase_setup/firebase";
 import { collection, addDoc, getDocs, setDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-// import { storage } from "./firebaseConfig";
+
+const data = [
+  {
+    id: 1,
+    projectName: "Dự án 1",
+    demoLink: "https://demo1.example.com",
+    githubLink: "https://github.com/user/demo1",
+    projectImage: "https://via.placeholder.com/150",
+    imageName: "image1.jpg",
+  },
+  {
+    id: 2,
+    projectName: "Dự án 2",
+    demoLink: "https://demo2.example.com",
+    githubLink: "https://github.com/user/demo2",
+    projectImage: "https://via.placeholder.com/150",
+    imageName: "image2.jpg",
+  },
+  // Thêm dữ liệu khác nếu cần
+];
 
 const ManipulateOnProjects = () => {
-  //   useEffect(() => {
-  //     const fetchData = async () => {
-  //       const querySnapshot = await getDocs(collection(db, "users"));
-  //       const usersData = querySnapshot.docs.map((doc) => ({
-  //         id: doc.id,
-  //         ...doc.data(),
-  //       }));
-  //       setUsers(usersData);
-  //     };
-  //     fetchData();
-  //   }, []);
+  const [projects, setProjects] = useState();
+  const [formData, setFormData] = useState({
+    projectName: "",
+    demoLink: "",
+    githubLink: "",
+    completeTime: "",
+    projectImage: "",
+  });
 
-  const uploadImageToFirebase = async () => {
+  const uploadImageToFirebase = async (e) => {
+    e.preventDefault();
     if (!formData.projectImage) return;
 
     const storageRef = ref(storage, `projects/${formData.projectImage.name}`);
@@ -47,27 +64,31 @@ const ManipulateOnProjects = () => {
       console.error("Error uploading file: ", error);
     }
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      const querySnapshot = await getDocs(collection(db, "projects"));
+      const usersData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setProjects(usersData);
+    };
+    fetchData();
+  }, []);
+  console.log(projects);
 
-  const handleAddAProject = (e) => {
-    e.preventDefault();
-    console.log("Test");
-    uploadImageToFirebase();
-  };
-
-  const [formData, setFormData] = useState({
-    projectName: "",
-    demoLink: "",
-    githubLink: "",
-    completeTime: "",
-    projectImage: "",
-  });
   return (
-    <div>
-      <form onSubmit={handleAddAProject} className="flex flex-col gap-y-4">
-        <label htmlFor="projectName">
-          Project name{" "}
+    <div className="min-h-screen w-full overflow-x-auto">
+      <h1 className="w-full text-4xl text-center p-4">Projects</h1>
+      <form
+        onSubmit={uploadImageToFirebase}
+        className="flex flex-col gap-y-4 p-6 bg-white rounded-lg shadow-md"
+      >
+        <label htmlFor="projectName" className="flex flex-col">
+          <span className="text-gray-700">Project name</span>
           <input
-            className="border-[1px] border-solid border-black"
+            type="text"
+            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
             value={formData.projectName}
             onChange={(e) =>
               setFormData({ ...formData, projectName: e.target.value })
@@ -76,10 +97,12 @@ const ManipulateOnProjects = () => {
             required
           />
         </label>
-        <label htmlFor="projectName">
-          Demo link{" "}
+
+        <label htmlFor="demoLink" className="flex flex-col">
+          <span className="text-gray-700">Demo link</span>
           <input
-            className="border-[1px] border-solid border-black"
+            type="url"
+            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
             value={formData.demoLink}
             onChange={(e) =>
               setFormData({ ...formData, demoLink: e.target.value })
@@ -88,22 +111,26 @@ const ManipulateOnProjects = () => {
             required
           />
         </label>
-        <label htmlFor="projectName">
-          Github link{" "}
+
+        <label htmlFor="githubLink" className="flex flex-col">
+          <span className="text-gray-700">Github link</span>
           <input
-            className="border-[1px] border-solid border-black"
+            type="url"
+            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
             value={formData.githubLink}
             onChange={(e) =>
               setFormData({ ...formData, githubLink: e.target.value })
             }
-            placeholder="Enter github link"
+            placeholder="Enter GitHub link"
             required
           />
         </label>
-        <label htmlFor="projectName">
-          Complete time{" "}
+
+        <label htmlFor="completeTime" className="flex flex-col">
+          <span className="text-gray-700">Complete time</span>
           <input
-            className="border-[1px] border-solid border-black"
+            type="text"
+            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
             value={formData.completeTime}
             onChange={(e) =>
               setFormData({ ...formData, completeTime: e.target.value })
@@ -112,21 +139,62 @@ const ManipulateOnProjects = () => {
             required
           />
         </label>
-        <label htmlFor="projectName">
-          Chose project image{" "}
+
+        <label htmlFor="projectImage" className="flex flex-col">
+          <span className="text-gray-700">Choose project image</span>
           <input
-            className="border-[1px] border-solid border-black"
             type="file"
+            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
             onChange={(e) =>
               setFormData({ ...formData, projectImage: e.target.files[0] })
             }
             required
           />
         </label>
-        <button className="" type="submit">
+
+        <button
+          className="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+          type="submit"
+        >
           Submit
         </button>
       </form>
+
+      <h1 className="w-full text-4xl text-center p-4">Project List</h1>
+
+      <table className="min-w-full bg-white border border-gray-300">
+
+<thead>
+  <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+    <th className="py-3 px-4 text-left">Số thứ tự</th>
+    <th className="py-3 px-4 text-left">Tên dự án</th>
+    <th className="py-3 px-4 text-left">Demo Link</th>
+    <th className="py-3 px-4 text-left">Github Link</th>
+    <th className="py-3 px-4 text-left">Ảnh dự án</th>
+    <th className="py-3 px-4 text-left">Tên ảnh</th>
+  </tr>
+</thead>
+
+<tbody className="text-gray-600 text-sm">
+  {projects?.map((item, index) => (
+    <tr className="hover:bg-gray-100" key={index}>
+      <td className="py-3 px-4 border-b border-gray-300">{index + 1}</td>
+      <td className="py-3 px-4 border-b border-gray-300">{item.projectName}</td>
+      <td className="py-3 px-4 border-b border-gray-300">
+        <a href={item.demoLink} className="text-blue-600 hover:underline">Xem Demo</a>
+      </td>
+      <td className="py-3 px-4 border-b border-gray-300">
+        <a href={item.githubLink} className="text-blue-600 hover:underline">Xem Github</a>
+      </td>
+      <td className="py-3 px-4 border-b border-gray-300">
+        <img src={item.projectImage} alt={item.imageName} className="w-16 h-16 rounded" />
+      </td>
+      <td className="py-3 px-4 border-b border-gray-300">{item.projectImgName}</td>
+    </tr>
+  ))}
+</tbody>
+
+</table>
     </div>
   );
 };
