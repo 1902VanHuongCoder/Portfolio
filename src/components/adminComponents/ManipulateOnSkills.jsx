@@ -18,24 +18,18 @@ import {
 } from "firebase/storage";
 import { AnimatePresence, motion } from "framer-motion";
 
-const ManipulateOnProjects = () => {
-  const [projects, setProjects] = useState();
-  const [projectId, setProjectId] = useState({ show: false, pId: "" });
+const ManipulateOnSkills = () => {
+  const [skills, setSkills] = useState();
+  const [skill, setSkill] = useState({ show: false, sId: "" });
   const [formData, setFormData] = useState({
-    projectName: "",
-    demoLink: "",
-    githubLink: "",
-    completeTime: "",
-    projectImage: "",
+    tech: "",
+    logoTechLink: "",
   });
 
   const [dataToUpdate, setDataToUpdate] = useState({
-    projectName: "",
-    demoLink: "",
-    githubLink: "",
-    completeTime: "",
-    projectImage: null,
-    projectImgName: "",
+    logoTechLink: null,
+    tech: "",
+    techLogoName: "",
   });
 
   const handleChange = (e) => {
@@ -44,7 +38,7 @@ const ManipulateOnProjects = () => {
   };
 
   const handleFileChange = (e) => {
-    setDataToUpdate((prev) => ({ ...prev, projectImage: e.target.files[0] }));
+    setDataToUpdate((prev) => ({ ...prev, logoTechLink: e.target.files[0] }));
   };
 
   const checkIfFile = (value) => {
@@ -56,23 +50,23 @@ const ManipulateOnProjects = () => {
 
     console.log("Handle submit run....");
 
-    if (checkIfFile(dataToUpdate.projectImage)) {
+    if (checkIfFile(dataToUpdate.logoTechLink)) {
       console.log("If chay");
 
-      const desertRef = ref(storage, `projects/${dataToUpdate.projectImgName}`);
+      const desertRef = ref(storage, `skills/${dataToUpdate.techLogoName}`);
 
       try {
         // Delete the existing file
         await deleteObject(desertRef);
-        console.log(`${dataToUpdate.projectImgName} deleted successfully.`);
+        console.log(`${dataToUpdate.techLogoName} deleted successfully.`);
 
         const storageRef = ref(
           storage,
-          `projects/${dataToUpdate.projectImage.name}`
+          `skills/${dataToUpdate.logoTechLink.name}`
         );
 
         // Upload the new file
-        await uploadBytes(storageRef, dataToUpdate.projectImage);
+        await uploadBytes(storageRef, dataToUpdate.logoTechLink);
         console.log("File uploaded successfully.");
 
         // Get the download URL for the uploaded file
@@ -80,88 +74,80 @@ const ManipulateOnProjects = () => {
 
         // Preparing data to save to Firebase
         const dataToSaveToFirebase = {
-          projectName: dataToUpdate.projectName,
-          demoLink: dataToUpdate.demoLink,
-          githubLink: dataToUpdate.githubLink,
-          completeTime: dataToUpdate.completeTime,
-          projectImage: downloadURL,
-          projectImgName: dataToUpdate.projectImage.name, // Make sure to use the name from the uploaded image
+          tech: dataToUpdate.tech,
+          logoTechLink: downloadURL,
+          techLogoName: dataToUpdate.techLogoName,
         };
 
         // Update Firestore document
-        const docRef = doc(db, "projects", projectId.pId);
+        const docRef = doc(db, "skills", skill.sId);
         await updateDoc(docRef, dataToSaveToFirebase);
 
-        alert("Project updated successfully!");
+        alert("Cập nhật skills thành công nhe!");
       } catch (error) {
         console.log("Error" + error);
-        // console.error("Error during delete/upload/update process", error);
       }
     } else {
       // If no new project image, just update the other fields
 
       console.log("else chay");
       const dataToSaveToFirebase = {
-        projectName: dataToUpdate.projectName,
-        demoLink: dataToUpdate.demoLink,
-        githubLink: dataToUpdate.githubLink,
-        completeTime: dataToUpdate.completeTime,
-        projectImgName: dataToUpdate.projectImgName, // Only name, not image
+        tech: dataToUpdate.tech,
       };
 
       try {
-        const docRef = doc(db, "projects", projectId.pId);
+        const docRef = doc(db, "skills", skill.sId);
         await updateDoc(docRef, dataToSaveToFirebase);
-        alert("Project updated successfully!");
+        alert("Cập nhật skill thành công nhe!!!");
       } catch (error) {
-        console.error("Error updating project without new image: ", error);
+        console.error("Cập nhật không thành công rồi uh-oh", error);
       }
-
-      // console.log("No new image found!");
     }
   };
 
   const uploadImageToFirebase = async (e) => {
     e.preventDefault();
-    if (!formData.projectImage) return;
-    const storageRef = ref(storage, `projects/${formData.projectImage.name}`);
-    try {
-      await uploadBytes(storageRef, formData.projectImage);
-      const downloadURL = await getDownloadURL(storageRef);
-      const dataToSaveToFirebase = {
-        projectName: formData.projectName,
-        demoLink: formData.demoLink,
-        githubLink: formData.githubLink,
-        completeTime: formData.completeTime,
-        projectImage: downloadURL,
-        projectImgName: formData.projectImage.name,
-      };
+    if (formData.logoTechLink) {
+      const storageRef = ref(storage, `skills/${formData.logoTechLink.name}`);
       try {
-        await addDoc(collection(db, "projects"), dataToSaveToFirebase);
-        window.location.reload();
+        await uploadBytes(storageRef, formData.logoTechLink);
+        const downloadURL = await getDownloadURL(storageRef);
+        const dataToSaveToFirebase = {
+          tech: formData.tech,
+          logoTechLink: downloadURL,
+          techLogoName: formData.logoTechLink.name,
+        };
+        try {
+          await addDoc(collection(db, "skills"), dataToSaveToFirebase);
+          window.location.reload();
+        } catch (error) {
+          alert(
+            "Thêm skills hong thành công rồi bây ơi! Lỗi phần form dữ liệu form á!"
+          );
+          console.error("Error adding document: ", error);
+        }
       } catch (error) {
-        alert("Thêm dự án không thành công do lỗi tham số!");
-        console.error("Error adding document: ", error);
+        alert("Thêm dự án không thành công do lỗi upload hình ảnh!");
+        console.error("Error uploading file: ", error);
       }
-    } catch (error) {
-      alert("Thêm dự án không thành công do upload hình ảnh!");
-      console.error("Error uploading file: ", error);
+    } else {
+      alert("Chưa thêm hình mày ơi!");
     }
   };
 
-  const handleDeleteProject = async (id, projectImgName) => {
+  const handleDeleteSkill = async (id, techLogoName) => {
     try {
       // Step 1: Delete the Firestore document
-      await deleteDoc(doc(db, "projects", id));
+      await deleteDoc(doc(db, "skills", id));
       console.log(`Document with ID ${id} deleted successfully.`);
 
       // Step 2: Create a reference to the image in Firebase Storage
-      const desertRef = ref(storage, `projects/${projectImgName}`);
+      const desertRef = ref(storage, `skills/${techLogoName}`);
 
       try {
         // Step 3: Delete the image file from Firebase Storage
         await deleteObject(desertRef);
-        console.log(`${projectImgName} deleted successfully.`);
+        console.log(`${techLogoName} deleted successfully.`);
         window.location.reload();
       } catch (error) {
         console.error("Error deleting image: ", error);
@@ -173,20 +159,20 @@ const ManipulateOnProjects = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "projects"));
+      const querySnapshot = await getDocs(collection(db, "skills"));
       const usersData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setProjects(usersData);
+      setSkills(usersData);
     };
     fetchData();
   }, []);
 
   useEffect(() => {
-    if (projectId.pId !== "") {
+    if (skill.sId !== "") {
       const fetchProject = async () => {
-        const docRef = doc(db, "projects", projectId.pId);
+        const docRef = doc(db, "skills", skill.sId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -199,12 +185,12 @@ const ManipulateOnProjects = () => {
     } else {
       return;
     }
-  }, [projectId]);
+  }, [skill.sId]);
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
       <AnimatePresence>
-        {projectId.show && (
+        {skill.show && (
           <motion.div className="fixed top-0 left-0  w-full h-full bg-[rgba(0,0,0,.2)] flex justify-center items-center">
             <motion.form
               initial={{
@@ -226,7 +212,7 @@ const ManipulateOnProjects = () => {
                 <h2 className="text-xl font-bold mb-4">Update Project</h2>
                 <div
                   onClick={() => {
-                    setProjectId({ pId: "", show: false });
+                    setSkill({ pId: "", show: false });
                   }}
                   className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition duration-200"
                 >
@@ -247,37 +233,10 @@ const ManipulateOnProjects = () => {
 
               <input
                 type="text"
-                name="projectName"
-                value={dataToUpdate.projectName}
+                name="tech"
+                value={dataToUpdate.tech}
                 onChange={handleChange}
-                placeholder="Project name"
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-
-              <input
-                type="text"
-                name="demoLink"
-                value={dataToUpdate.demoLink}
-                onChange={handleChange}
-                placeholder="Demo Link"
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-
-              <input
-                type="text"
-                name="githubLink"
-                value={dataToUpdate.githubLink}
-                onChange={handleChange}
-                placeholder="GitHub Link"
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-
-              <input
-                type="text"
-                name="completeTime"
-                value={dataToUpdate.completeTime}
-                onChange={handleChange}
-                placeholder="Completion Time"
+                placeholder="technology"
                 className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
@@ -298,83 +257,40 @@ const ManipulateOnProjects = () => {
         )}
       </AnimatePresence>
       <h1 className="w-full text-4xl text-center p-4">
-        CÁC THAO TÁC VỚI DỰ ÁN
+        CÁC THAO TÁC VỚI SKILLS
       </h1>
-      <p className="w-full px-6 font-bold text-xl">1. Thêm dự án:</p>
+      <p className="w-full px-6 font-bold text-xl">1. Thêm skill:</p>
       <form
         onSubmit={uploadImageToFirebase}
         className="flex flex-col gap-y-4 p-6 bg-white"
       >
-        <label htmlFor="projectName" className="flex flex-col">
-          <span className="text-gray-700">Project name</span>
+        <label htmlFor="tech" className="flex flex-col">
+          <span className="text-gray-700">Technology</span>
           <input
             type="text"
             className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.projectName}
-            onChange={(e) =>
-              setFormData({ ...formData, projectName: e.target.value })
-            }
-            placeholder="Enter project name"
+            value={formData.tech}
+            onChange={(e) => setFormData({ ...formData, tech: e.target.value })}
+            placeholder="Enter techology"
             required
           />
         </label>
 
-        <label htmlFor="demoLink" className="flex flex-col">
-          <span className="text-gray-700">Demo link</span>
-          <input
-            type="url"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.demoLink}
-            onChange={(e) =>
-              setFormData({ ...formData, demoLink: e.target.value })
-            }
-            placeholder="Enter demo link"
-            required
-          />
-        </label>
-
-        <label htmlFor="githubLink" className="flex flex-col">
-          <span className="text-gray-700">Github link</span>
-          <input
-            type="url"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.githubLink}
-            onChange={(e) =>
-              setFormData({ ...formData, githubLink: e.target.value })
-            }
-            placeholder="Enter GitHub link"
-            required
-          />
-        </label>
-
-        <label htmlFor="completeTime" className="flex flex-col">
-          <span className="text-gray-700">Complete time</span>
-          <input
-            type="text"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.completeTime}
-            onChange={(e) =>
-              setFormData({ ...formData, completeTime: e.target.value })
-            }
-            placeholder="Enter complete time"
-            required
-          />
-        </label>
-
-        <label htmlFor="projectImage" className="flex flex-col">
+        <label htmlFor="logoTechLink" className="flex flex-col">
           <span className="text-gray-700">Choose project image</span>
           <input
             type="file"
             className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
             onChange={(e) =>
-              setFormData({ ...formData, projectImage: e.target.files[0] })
+              setFormData({ ...formData, logoTechLink: e.target.files[0] })
             }
             required
           />
         </label>
-
         <button
-          className="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+          className
+          
+          ="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
           type="submit"
         >
           Submit
@@ -390,43 +306,25 @@ const ManipulateOnProjects = () => {
           <thead>
             <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
               <th className="py-3 px-4 text-left">Số thứ tự</th>
-              <th className="py-3 px-4 text-left">Tên dự án</th>
-              <th className="py-3 px-4 text-left">Demo Link</th>
-              <th className="py-3 px-4 text-left">Github Link</th>
-              <th className="py-3 px-4 text-left">Ảnh dự án</th>
+              <th className="py-3 px-4 text-left">Technology</th>
+              <th className="py-3 px-4 text-left">Logo technology link</th>
               <th className="py-3 px-4 text-left">Thao tác</th>
             </tr>
           </thead>
 
           <tbody className="text-gray-600 text-sm">
-            {projects?.map((item, index) => (
+            {skills?.map((item, index) => (
               <tr className="hover:bg-gray-100" key={index}>
                 <td className="py-3 px-4 border-b border-gray-300">
                   {index + 1}
                 </td>
                 <td className="py-3 px-4 border-b border-gray-300">
-                  {item.projectName}
-                </td>
-                <td className="py-3 px-4 border-b border-gray-300">
-                  <a
-                    href={item.demoLink}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Xem Demo
-                  </a>
-                </td>
-                <td className="py-3 px-4 border-b border-gray-300">
-                  <a
-                    href={item.githubLink}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Xem Github
-                  </a>
+                  {item.tech}
                 </td>
                 <td className="py-3 px-4 border-b border-gray-300">
                   <img
-                    src={item.projectImage}
-                    alt={item.imageName}
+                    src={item.logoTechLink}
+                    alt={item.tech}
                     className="w-16 h-16 rounded"
                   />
                 </td>
@@ -434,7 +332,7 @@ const ManipulateOnProjects = () => {
                 <td className="flex justify-center items-cente flex-col gap-y-2 gap-x-2">
                   <button
                     onClick={() => {
-                      setProjectId({ pId: item.id, show: true });
+                      setSkill({ sId: item.id, show: true });
                     }}
                     className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-4 rounded-lg shadow hover:from-blue-600 hover:to-purple-600 transition duration-200"
                   >
@@ -442,7 +340,7 @@ const ManipulateOnProjects = () => {
                   </button>
                   <button
                     onClick={() =>
-                      handleDeleteProject(item.id, item.projectImgName)
+                      handleDeleteSkill(item.id, item.techLogoName)
                     }
                     className="flex items-center justify-center bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200"
                   >
@@ -466,4 +364,4 @@ const ManipulateOnProjects = () => {
   );
 };
 
-export default ManipulateOnProjects;
+export default ManipulateOnSkills;
