@@ -13,6 +13,7 @@ import { ShowCertificateContext } from "./contexts/ShowCertificateContext";
 import Contact from "./components/Contact";
 import ToTop from "./components/partials/ToTop";
 import ParallaxText from "./components/ParallaxText";
+import { Link } from "react-router-dom";
 const Home = () => {
   const { isSidebar } = useContext(SidebarContext);
   const { zoomCertificate, certificate } = useContext(ShowCertificateContext);
@@ -40,12 +41,13 @@ const Home = () => {
         <ParallaxText baseVelocity={-5}>Paul To</ParallaxText>
         <ParallaxText baseVelocity={5}>LOVE CHALLENGE</ParallaxText>
       </section>
-      <Certificates />s
+      <Certificates />
       <AnimatePresence>
         {zoomCertificate && certificate !== "" && <DetailedCertificate />}
       </AnimatePresence>
       <Contact />
       <ToTop />
+      <Link className="opacity-10" to="/admin">Admin</Link> 
     </div>
   );
 };
