@@ -6,16 +6,20 @@ import { db } from "../firebase_setup/firebase";
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   useEffect(() => {
-    const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "projects"));
-      const usersData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setProjects(usersData);
-    };
-    fetchData();
-  }, []);
+    try {
+      const fetchData = async () => {
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const usersData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProjects(usersData);
+      };
+      fetchData();
+    } catch (error) {
+      console.log(error);
+    }
+  },[]);
   return (
     <div
       id="projects"

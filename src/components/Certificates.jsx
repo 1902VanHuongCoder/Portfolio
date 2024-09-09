@@ -1,23 +1,33 @@
 // import { IoIosStar } from "react-icons/io";
 import { useEffect, useState } from "react";
 import Certificate from "./partials/Certificate";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore"; 
 import { db } from "../firebase_setup/firebase";
 
 const Certificates = () => {
   const [certificates, setCertificates] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "cers"));
-      const usersData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setCertificates(usersData);
+      try {
+        const querySnapshot = await getDocs(collection(db, "cers"));
+        const usersData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setCertificates(usersData);
+      } catch (error) {
+        console.error("Error fetching certificates:", error);
+        // Optionally, you can set an error state here to show to the user
+      }
     };
+
     fetchData();
+
+    // Cleanup function to unsubscribe from any listeners if needed
+    return () => {
+      // Add any cleanup code here if necessary
+    };
   }, []);
-  console.log(certificates);
   return (
     <div
       id="certificates"
