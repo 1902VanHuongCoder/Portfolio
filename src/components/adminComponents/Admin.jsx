@@ -24,7 +24,12 @@ const Admin = () => {
         >
           Go to Certificates
         </Link>
-
+        <Link 
+          to="/add/blogs" 
+          className="bg-indigo-500 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-600 transition duration-200"
+        >
+          Add blog
+        </Link>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import SubmitButton from "./partials/SubmitButton";
 import { useState } from "react";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase_setup/firebase";
+import LikeButton from "./Interaction";
 const Contact = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -85,6 +86,8 @@ const Contact = () => {
             Enter your comment
           </textarea>
           <SubmitButton title="Submit" />
+
+          <LikeButton />
         </form>
       </div>
     </div>
