@@ -1,12 +1,40 @@
 import { motion } from "framer-motion";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { LuArrowLeftCircle } from "react-icons/lu";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
+import { doc, increment, onSnapshot, updateDoc } from "firebase/firestore";
+import { db } from "../../firebase_setup/firebase";
 const SideBarBlogList = () => {
   const { setShow } = useContext(SideBarBlogListContext);
+  const [numberOfAccess, setNumberOfAccess] = useState([]);
   const handleCloseSideBarBlogList = () => {
     setShow(false);
   };
+
+  useEffect(() => {
+    const fetchBlogsAndUpdateAccess = async () => {
+      const likeRef = doc(db, "likes", "numberOfAccessing");
+      await updateDoc(likeRef, {
+        count: increment(1),
+      });
+      const unsubscribeLikes = onSnapshot(
+        likeRef,
+        (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            setNumberOfAccess(docSnapshot.data().count || 0);
+          }
+        },
+        (error) => {
+          console.error("Error fetching like count: ", error);
+        }
+      );
+      return () => {
+        unsubscribeLikes();
+      };
+    };
+    fetchBlogsAndUpdateAccess();
+  }, []);
+
   return (
     <motion.div
       initial={{ x: -400 }}
@@ -28,16 +56,16 @@ const SideBarBlogList = () => {
           <p className="font-semibold text-sm text-white">SOCIAL LINKS</p>
           <ul className="mt-2 space-y-2">
             <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-              Facebook
+              <a href="https://www.facebook.com/vanhuong.to.71">Facebook</a>
             </li>
             <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-              Twitter
+            <a href="https://x.com/VnHngT6">Twitter</a>
             </li>
             <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-              LikeIn
+              <a href="https://www.linkedin.com/in/t%C3%B4-v%C4%83n-h%C6%B0%E1%BB%9Fng-25bb742a4/">LikeIn</a>
             </li>
             <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-              Github
+            <a href="https://github.com/1902VanHuongCoder">Github</a>
             </li>
           </ul>
         </div>
@@ -45,19 +73,16 @@ const SideBarBlogList = () => {
           <p className="font-semibold text-sm text-white">BLOG STATS</p>
           <ul className="mt-2 space-y-2">
             <li className="text-[#C8ACD6] text-sm">
-              13,695,374 lượt xem
+              {numberOfAccess} lượt xem
             </li>
           </ul>
         </div>
         <div>
           <p className="font-semibold text-sm text-white">ANOTHER LINKS</p>
           <ul className="mt-2 space-y-2">
-            <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-              Tiktok.com
-            </li>
-            <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-              Google.com
-            </li>
+          <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
+                    <a href="https://www.tiktok.com/@huongto007">Tik tok</a>
+                  </li>
           </ul>
         </div>
         <div>

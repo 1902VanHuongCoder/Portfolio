@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 
 const Blog = ({ imageUrl, title, date, blogId }) => {
   const navigate = useNavigate();
-
+  console.log("Run...");
   const handleClick = () => {
     navigate(`/blog/detail/${blogId}`);
   };
 
   return (
     <div 
-      className="relative overflow-hidden shadow-lg border-b-[1px] border-b-solid border-b-[rgba(255,255,255,.2)] cursor-pointer"
+      className="relative h-fit overflow-hidden shadow-lg border-b-[1px] border-b-solid border-b-[rgba(255,255,255,.2)] cursor-pointer"
       onClick={handleClick}
     >
       <img src={imageUrl} alt={title} className="w-full h-48 object-cover" />
-      <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-end p-4 hover:opacity-80 transition-opacity">
+      <div className="w-full h-full absolute top-0 left-0 bg-black bg-opacity-50 flex flex-col p-4 hover:opacity-80 transition-opacity">
         <h3 className="text-white text-left text-lg font-semibold mb-2">{title}</h3>
         <div className="flex items-center text-white text-sm">
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

@@ -29,13 +29,14 @@ const LikeButton = () => {
   };
 
   return (
-    <div className="flex items-start space-x-2 mt-10 flex-col w-full gap-y-3 px-3 pb-5">
-      <span className='text-white'>Create motivation by giving me a like</span>
+    <div className="flex items-start flex-col w-full gap-y-3 px-3 sm:px-0 pb-5">
+      <span className='text-white'>Create motivation by giving me a like!</span>
       <button 
         onClick={handleLike}
-        className={`p-2 border-2 border-blue-500 rounded-full transition-colors duration-200 ${isLiked ? 'bg-blue-500 text-white' : 'text-blue-500'} text-4xl`}
+        className={`flex items-center gap-2 px-4 py-2 border-2 rounded-md transition-colors duration-200 ${isLiked ? 'bg-blue-500 text-white' : 'bg-white text-slate-900'}`}
       >
-        <FaThumbsUp />
+        <span>Like</span>
+        <FaThumbsUp className="text-xl" />
       </button>
     </div>
   );

@@ -79,13 +79,13 @@ const BlogDetail = () => {
             </p>
           </div>
           {blog && (
-            <div className="text-white">
+            <div className="text-white w-full mx-auto max-w-[1024px]">
               <img
                 src={blog.imageUrl}
                 alt={blog.title}
-                className="w-full h-64 object-cover mb-4"
+                className="w-full h-auto sm:h-[400px] object-cover mb-4 sm:mt-10"
               />
-              <div className="px-3">
+              <div className="px-3 sm:px-0">
                 <h1 className="text-2xl font-bold mb-4">{blog.title}</h1>
                 <p className="text-slate-300 mb-4 flex items-center">
                   <svg
@@ -109,9 +109,10 @@ const BlogDetail = () => {
                   dangerouslySetInnerHTML={{ __html: blog.content }}
                 />
               </div>
+              <LikeButton />
             </div>
           )}
-          <LikeButton />
+         
         </>
       )}
     </div>

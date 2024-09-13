@@ -4,6 +4,8 @@ import {
   orderBy,
   onSnapshot,
   doc,
+  updateDoc,
+  increment,
 } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
 import { db } from "../firebase_setup/firebase";
@@ -20,10 +22,13 @@ import Loading from "./Loading";
 const BlogsList = () => {
   const [loading, setLoading] = useState(true);
   const [likeCount, setLikeCount] = useState(0);
-  const { isShow, setShow } = useContext(SideBarBlogListContext);
+  const [numberOfAccess, setNumberOfAccess] = useState(0);
+  const { setShow } = useContext(SideBarBlogListContext); 
   const [blogs, setBlogs] = useState([]);
 
-  console.log(isShow);
+  
+
+
 
   const count = useMotionValue(0);
   const rounded = useTransform(count, Math.round);
@@ -71,6 +76,31 @@ const BlogsList = () => {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const fetchBlogsAndUpdateAccess = async () => {
+      const likeRef = doc(db, "likes", "numberOfAccessing");
+      await updateDoc(likeRef, {
+        count: increment(1),
+      });
+      const unsubscribeLikes = onSnapshot(
+        likeRef,
+        (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            setNumberOfAccess(docSnapshot.data().count || 0);
+          }
+        },
+        (error) => {
+          console.error("Error fetching like count: ", error);
+        }
+      );
+      return () => {
+        unsubscribeLikes();
+      };
+    };
+    fetchBlogsAndUpdateAccess();
+  }, []);
+
   return (
     <div className="relative w-full min-h-screen bg-[#2E236C]">
       {loading ? (
@@ -112,16 +142,20 @@ const BlogsList = () => {
                 <p className="font-semibold text-sm text-white">SOCIAL LINKS</p>
                 <ul className="mt-2 space-y-2">
                   <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-                    Facebook
+                    <a href="https://www.facebook.com/vanhuong.to.71">
+                      Facebook
+                    </a>
                   </li>
                   <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-                    Twitter
+                    <a href="https://x.com/VnHngT6">Twitter</a>
                   </li>
                   <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-                    LikeIn
+                    <a href="https://www.linkedin.com/in/t%C3%B4-v%C4%83n-h%C6%B0%E1%BB%9Fng-25bb742a4/">
+                      LikeIn
+                    </a>
                   </li>
                   <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-                    Github
+                    <a href="https://github.com/1902VanHuongCoder">Github</a>
                   </li>
                 </ul>
               </div>
@@ -129,7 +163,7 @@ const BlogsList = () => {
                 <p className="font-semibold text-sm text-white">BLOG STATS</p>
                 <ul className="mt-2 space-y-2">
                   <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-                    13,695,374 lượt xem
+                    {numberOfAccess} lượt xem
                   </li>
                 </ul>
               </div>
@@ -139,10 +173,7 @@ const BlogsList = () => {
                 </p>
                 <ul className="mt-2 space-y-2">
                   <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-                    Tiktok.com
-                  </li>
-                  <li className="text-[#C8ACD6] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-                    Google.com
+                    <a href="https://www.tiktok.com/@huongto007">Tik tok</a>
                   </li>
                 </ul>
               </div>
@@ -171,7 +202,7 @@ const BlogsList = () => {
               <br />
               <span className="not-italic">is an opportunity</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 mt-10 sm:mt-7  border-l border-[rgba(255,255,255,.2)]">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-4 pt-10 sm:pt-7 px-3 sm:px-6 border-l border-[rgba(255,255,255,.2)]">
               {blogs.map((blog) => (
                 <Blog
                   key={blog.id}
