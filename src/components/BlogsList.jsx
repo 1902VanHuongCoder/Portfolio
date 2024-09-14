@@ -23,12 +23,8 @@ const BlogsList = () => {
   const [loading, setLoading] = useState(true);
   const [likeCount, setLikeCount] = useState(0);
   const [numberOfAccess, setNumberOfAccess] = useState(0);
-  const { setShow } = useContext(SideBarBlogListContext); 
+  const { setShow } = useContext(SideBarBlogListContext);
   const [blogs, setBlogs] = useState([]);
-
-  
-
-
 
   const count = useMotionValue(0);
   const rounded = useTransform(count, Math.round);
@@ -202,17 +198,27 @@ const BlogsList = () => {
               <br />
               <span className="not-italic">is an opportunity</span>
             </div>
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-4 pt-10 sm:pt-7 px-3 sm:px-6 border-l border-[rgba(255,255,255,.2)]">
-              {blogs.map((blog) => (
-                <Blog
-                  key={blog.id}
-                  imageUrl={blog.imageUrl}
-                  title={blog.title}
-                  date={blog.date}
-                  blogId={blog.id}
-                />
-              ))}
-            </div>
+            <div className=" border-l border-[rgba(255,255,255,.2)]"></div>
+            {blogs.length > 0 ? (
+              <div className="w-full h-fit grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-4 pt-10 sm:pt-7 px-3 sm:px-6">
+                {blogs.map((blog) => (
+                  <Blog
+                    key={blog.id}
+                    imageUrl={blog.imageUrl}
+                    title={blog.title}
+                    date={blog.date}
+                    blogId={blog.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="w-full h-auto flex justify-center items-center pt-10 sm:pt-7 px-3 sm:px-6 border-l border-[rgba(255,255,255,.2)]">
+                  <p className="text-center text-white">
+                    <img src="https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif" alt="Cute loading gif" className="w-24 h-24 mx-auto mb-2" />
+                    No blogs available at the moment. Check back later!
+                  </p>
+              </div>
+            )}
           </div>
         </>
       )}

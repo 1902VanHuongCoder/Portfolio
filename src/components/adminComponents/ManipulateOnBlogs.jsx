@@ -4,6 +4,7 @@ import { collection, addDoc} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+ // hoặc style khác tùy chọn
 
 const ManipulateOnBlogs = () => {
   const quillRef = useRef();
@@ -60,20 +61,20 @@ const ManipulateOnBlogs = () => {
         [{ 'header': [1, 2, false] }],
         ['bold', 'italic', 'underline', 'strike', 'blockquote'],
         [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
-        ['link', 'image'],
+        ['link', 'image', 'code-block'],
         ['clean']
       ],
       handlers: {
         image: imageHandler
       }
-    }
+    },
   }), []);
 
   const formats = [
     'header',
     'bold', 'italic', 'underline', 'strike', 'blockquote',
     'list', 'bullet', 'indent',
-    'link', 'image'
+    'link', 'image', 'code-block'
   ];
 
   const handleSubmit = async (e) => {

@@ -8,6 +8,7 @@ import { SideBarBlogListContext } from "../contexts/SideBarBlogListContext";
 import { FaBookAtlas } from "react-icons/fa6";
 import LikeButton from "./Interaction";
 import Loading from "./Loading";
+import Error from "./partials/Error";
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -43,7 +44,7 @@ const BlogDetail = () => {
   }, [id]);
 
   if (error) {
-    return <div>{error}</div>;
+    return <Error error={error} />
   }
 
   return (
