@@ -14,6 +14,7 @@ import Contact from "./components/Contact";
 import ToTop from "./components/partials/ToTop";
 import ParallaxText from "./components/ParallaxText";
 import { Link } from "react-router-dom";
+import Marquee from "./components/Marquee";
 const Home = () => {
   const { isSidebar } = useContext(SidebarContext);
   const { zoomCertificate, certificate } = useContext(ShowCertificateContext);
@@ -26,7 +27,7 @@ const Home = () => {
   return (
     <div
       id="top"
-      className="relative bg-[#2E236C] min-h-screen max-w-screen overflow-hidden font-test"
+      className="relative bg-gray-100 min-h-screen max-w-screen overflow-hidden font-test"
     >
       <motion.div
         className="fixed h-[10px] w-full top-0 left-0 origin-left bg-[#C8ACD6] shadow-lg shadow-[#C8ACD6]/50 z-50"
@@ -35,6 +36,7 @@ const Home = () => {
       <NavigationBar />
       <AnimatePresence>{isSidebar && <SideBar />}</AnimatePresence>
       <ShowCase />
+      <Marquee />
       <Projects />
       <Skills />
       <section className="h-[200px]">

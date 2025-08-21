@@ -19,76 +19,80 @@ const NavigationBar = () => {
     func(!isSidebar);
   };
   useEffect(() => {
-    const likeRef = doc(db, 'likes', 'likeDocument');
+    const likeRef = doc(db, "likes", "likeDocument");
 
-    const unsubscribe = onSnapshot(likeRef, (docSnapshot) => {
-      if (docSnapshot.exists()) {
-        setLikeCount(docSnapshot.data().count || 0);
+    const unsubscribe = onSnapshot(
+      likeRef,
+      (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          setLikeCount(docSnapshot.data().count || 0);
+        }
+      },
+      (error) => {
+        console.error("Error fetching like count: ", error);
       }
-    }, (error) => {
-      console.error("Error fetching like count: ", error);
-    });
+    );
 
     return () => unsubscribe();
   }, []);
   return (
-    <div className="flex justify-between items-center px-6 py-4 bg-[#19133D]">
-      <p className="text-2xl text-white">Paul To</p>
+    <div className="flex justify-between items-center px-6 py-2 mx-2 border-[1.5px] border-[#154D71] shadow-lg md:mx-4 rounded-full mt-2 bg-white/20 backdrop-blur-2xl">
+      <p className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#154D71] to-[#33A1E0] drop-shadow tracking-wide select-none">Paul To</p>
       <div>
-        <div className="hidden sm:flex gap-x-10 ">
-          <p className="px-6 sm:px-0 py-4 bg-white sm:bg-transparent sm:text-white font-bold rounded-sm hover:scale-110 transition-transform flex items-center gap-x-4 sm:gap-x-2"
-          
-          >{likeCount < 10 ? '0' + likeCount : likeCount} <AiFillLike /></p>
+        <div className="hidden sm:flex gap-x-8 items-center">
           <a
-            className="px-6 sm:px-0 py-4 bg-white sm:bg-transparent sm:text-white font-bold rounded-sm hover:scale-110 transition-transform flex items-center gap-x-4 sm:gap-x-2"
+            className="px-5 sm:px-2 py-3 font-bold hover:scale-105 rounded-xl text-[#154D71]  transition-all flex items-center gap-x-3 sm:gap-x-2 text-lg duration-200"
             href="#home"
           >
-            <FaHome />
+            <span className="rounded-full bg-[#33A1E0]/10 p-2 text-[#154D71] flex items-center justify-center"><FaHome size={20} /></span>
             Home
           </a>
           <a
-            className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
+            className="font-bold hover:scale-105 text-[#154D71]  transition-all flex items-center gap-x-3 sm:gap-x-2 rounded-xl px-2 py-3 text-lg duration-200"
             href="#projects"
           >
-            <GrProjects />
+            <span className="rounded-full bg-[#33A1E0]/10 p-2 text-[#154D71] flex items-center justify-center"><GrProjects size={20} /></span>
             Projects
           </a>
           <a
-            className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
+            className="font-bold hover:scale-105 text-[#154D71]  transition-all flex items-center gap-x-3 sm:gap-x-2 rounded-xl px-2 py-3 text-lg duration-200"
             href="#skills"
           >
-            <FaBookAtlas />
+            <span className="rounded-full bg-[#33A1E0]/10 p-2 text-[#154D71] flex items-center justify-center"><FaBookAtlas size={20} /></span>
             Skills
           </a>
           <a
-            className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
+            className="font-bold hover:scale-105 text-[#154D71]  transition-all flex items-center gap-x-3 sm:gap-x-2 rounded-xl px-2 py-3 text-lg duration-200"
             href="#certificates"
           >
-            <PiCertificateFill /> Certificates
+            <span className="rounded-full bg-[#33A1E0]/10 p-2 text-[#154D71] flex items-center justify-center"><PiCertificateFill size={20} /></span>
+            Certificates
           </a>
-
           <a
-            className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
+            className="font-bold hover:scale-105 text-[#154D71]  transition-all flex items-center gap-x-3 sm:gap-x-2 rounded-xl px-2 py-3 text-lg duration-200"
             href="#contact"
           >
-            <PiHandshakeFill /> Contacts
+            <span className="rounded-full bg-[#33A1E0]/10 p-2 text-[#154D71] flex items-center justify-center"><PiHandshakeFill size={20} /></span>
+            Contacts
           </a>
+          <p className="px-4 sm:px-2 py-3 font-bold rounded-xl text-[#154D71]  transition-all flex items-center gap-x-3 sm:gap-x-2 text-lg duration-200">
+            <span className="rounded-full bg-[#33A1E0]/10 p-2 text-[#154D71] flex items-center justify-center"><AiFillLike size={20} /></span>
+            <span className="ml-1 font-mono tracking-widest">{likeCount < 10 ? "0" + likeCount : likeCount}</span>
+          </p>
           <Link
-            className="font-bold text-[#C8ACD6] hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2 text-lg"
+            className="font-bold hover:scale-105 text-[#33A1E0] transition-all flex items-center gap-x-3 sm:gap-x-2 rounded-xl px-2 py-3 text-lg duration-200"
             to="/blogs"
           >
-             <FaAddressBook /> My blogs
+            <span className="rounded-full bg-[#154D71]/10 p-2 text-[#33A1E0] flex items-center justify-center"><FaAddressBook size={20} /></span>
+            My blogs
           </Link>
-
-         
         </div>
         <p
           onClick={handleShowSideBar}
-          className="block sm:hidden text-4xl text-white rounded-full hover:bg-[rgba(255,255,255,.2)] p-1 transition-all"
+          className="block sm:hidden text-4xl text-[#154D71] rounded-full/20 p-2 transition-all cursor-pointer"
         >
           <MdMenu />
         </p>
-        
       </div>
     </div>
   );
