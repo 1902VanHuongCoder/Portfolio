@@ -12,9 +12,6 @@ import DetailedCertificate from "./components/partials/DetailedCertificate";
 import { ShowCertificateContext } from "./contexts/ShowCertificateContext";
 import Contact from "./components/Contact";
 import ToTop from "./components/partials/ToTop";
-import ParallaxText from "./components/ParallaxText";
-import { Link } from "react-router-dom";
-import Marquee from "./components/Marquee";
 const Home = () => {
   const { isSidebar } = useContext(SidebarContext);
   const { zoomCertificate, certificate } = useContext(ShowCertificateContext);
@@ -27,29 +24,30 @@ const Home = () => {
   return (
     <div
       id="top"
-      className="relative bg-gray-100 min-h-screen max-w-screen overflow-hidden font-test"
+      className="relative bg-white min-h-screen max-w-screen overflow-hidden font-test"
     >
       <motion.div
-        className="fixed h-[10px] w-full top-0 left-0 origin-left bg-[#C8ACD6] shadow-lg shadow-[#C8ACD6]/50 z-50"
-        style={{ scaleX }}
+        className="fixed h-[12px] w-full top-0 left-0 origin-left z-50 rounded-b-xl shadow-lg"
+        style={{
+          scaleX,
+          background: 'linear-gradient(90deg, #33A1E0 0%, #154D71 100%)',
+          boxShadow: '0 2px 16px 0 rgba(51,161,224,0.15)',
+          backdropFilter: 'blur(2px)',
+        }}
       />
       <NavigationBar />
       <AnimatePresence>{isSidebar && <SideBar />}</AnimatePresence>
       <ShowCase />
-      <Marquee />
+      {/* <Marquee /> */}
       <Projects />
       <Skills />
-      <section className="h-[200px]">
-        <ParallaxText baseVelocity={-5}>Paul To</ParallaxText>
-        <ParallaxText baseVelocity={5}>LOVE CHALLENGE</ParallaxText>
-      </section>
       <Certificates />
       <AnimatePresence>
         {zoomCertificate && certificate !== "" && <DetailedCertificate />}
       </AnimatePresence>
       <Contact />
       <ToTop />
-      <Link className="opacity-10" to="/admin">Admin</Link> 
+      {/* <Link className="opacity-10" to="/admin">Admin</Link>  */}
     </div>
   );
 };

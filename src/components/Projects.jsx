@@ -26,21 +26,21 @@ const Projects = () => {
   return loading ? (
     <Loading />
   ) : (
-    <>
-      <div
-        id="projects"
-        className="relative h-fit bg-[#221A51] w-full px-4 py-8 pb-20 sm:pb-20"
-      >
-        <div className="absolute top-[-7px] left-0 w-full flex gap-x-2 justify-center">
-          <span className="w-[15px] h-[15px] rounded-full bg-[rgba(255,255,255,.5)]"></span>
-          <span className="w-[15px] h-[15px] rounded-full bg-[rgba(255,255,255,.5)]"></span>
-          <span className="w-[15px] h-[15px] rounded-full bg-[rgba(255,255,255,.5)]"></span>
-        </div>
-        <div className="flex items-center gap-x-2 pl-4">
-          <span className="h-[50px] w-[6px] bg-[#C8ACD6]"></span>
-          <p className="text-white text-2xl">Projects</p>
-        </div>
-        <div className="flex flex-col sm:grid sm:grid-cols-2 items-center gap-y-6 mt-6 gap-x-6">
+    <section
+      id="projects"
+      className="relative w-full min-h-screen px-8 pt-12 pb-16 flex flex-col items-center justify-center border-t-[4px] border-dashed border-t-[#e0e7ef]"
+    >
+      {/* Decorative gradient ring */}
+      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-[#33A1E0]/30 via-[#154D71]/10 to-transparent rounded-full blur-3xl z-0"></div>
+      <div className="relative z-10 flex flex-col items-center w-full">
+        <h2 className="text-4xl sm:text-4xl font-extrabold bg-gradient-to-r from-[#154D71] via-[#33A1E0] to-[#154D71] text-transparent bg-clip-text drop-shadow-xl mb-2 !text-left w-full">
+          Projects
+        </h2>
+        <p className="text-[#154D71] text-lg sm:text-2xl font-semibold opacity-80 mb-8 text-left w-full">
+          Includes personal projects and real-world projects that have been
+          completed up to the present.
+        </p>
+        <div className="w-full flex flex-col sm:grid sm:grid-cols-2 gap-8 items-center justify-center">
           {projects.map((item, index) => (
             <Project
               completeTime={item.completeTime}
@@ -54,7 +54,7 @@ const Projects = () => {
           ))}
         </div>
       </div>
-    </>
+    </section>
   );
 };
 

@@ -17,24 +17,28 @@ const Skills = () => {
     fetchData();
   }, []);
   return (
-    <div
+    <section
       id="skills"
-      className="relative min-h-fit bg-[] w-full px-4 pt-8 pb-20"
+      className="relative w-full min-h-fit px-8 pt-12 pb-16 flex flex-col items-center justify-center border-t-[4px] border-dashed border-t-[#e0e7ef]"
     >
-      <div className="flex items-center gap-x-2 pl-4">
-        <span className="h-[50px] w-[6px] bg-[#C8ACD6]"></span>
-        <p className="text-white text-2xl">Skills</p>
+      {/* Decorative gradient ring */}
+      <div className="relative z-10 flex flex-col items-center w-full">
+        <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#154D71] via-[#33A1E0] to-[#154D71] text-transparent bg-clip-text drop-shadow-xl mb-2 text-left w-full">
+          Skills
+        </h2>
+        <p className="text-[#154D71] text-lg sm:text-2xl font-semibold opacity-80 mb-8 w-full text-left">
+          Technologies and tools I use to build beautiful and functional web
+          experiences.
+        </p>
+        <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-6 ">
+          {skills.map((item, index) => (
+            <div key={index} className="flex items-center justify-center">
+              <SkillCard tech={item.tech} logoTechLink={item.logoTechLink} />
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {skills.map((item, index) => (
-          <SkillCard
-            tech={item.tech}
-            logoTechLink={item.logoTechLink}
-            key={index}
-          />
-        ))}
-      </div>
-    </div>
+    </section>
   );
 };
 

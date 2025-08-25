@@ -13,52 +13,54 @@ const Project = (props) => {
     githubLink,
     completeTime,
     projectImage,
-    index,
+    // index,
   } = props;
   return (
     <motion.div
       ref={ref}
       style={{
-        transform: isInView ? "none" : "translateX(-200px)",
+        transform: isInView ? "none" : "translateY(60px)",
         opacity: isInView ? 1 : 0,
-        transition: "all 0.9s cubic-bezier(0.17, 0.55, 0.55, 1) 0.5s",
+        transition: "all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.3s",
       }}
-      className="w-[100%] p-3 block sm:flex gap-x-6 bg-[#19133D] rounded-[6px] hover:scale-110  transition-all"
+      className="relative w-full h-[300px] rounded-md mx-auto bg-white/80 shadow-2xl hover:shadow-blue-200 hover:scale-[1.03] transition-all duration-300 flex flex-col sm:flex-row overflow-hidden border border-[#e0e7ef]"
     >
-      <div className="basis-1/2 sm:h-[200px] mb-6 sm:mb-0">
+      {/* Image section */}
+      <div className="w-full h-56 sm:h-auto flex items-center justify-center rounded-md overflow-hidden p-2">
         <img
-          className="w-full h-full object-cover rounded-md drop-shadow-2xl"
+          className="object-cover w-40 h-40 sm:w-full sm:h-full shadow-lg border-4 border-white/60 rounded-md"
           src={projectImage}
-          alt={`${index}`}
+          alt={projectName}
         />
       </div>
-      <div className="basis-1/2 flex flex-col justify-between rounded-tr-[6px] rounded-br-[6px] sm:p-2">
+      {/* Content section */}
+      <div className="sm:w-1/2 w-full flex flex-col justify-between p-6 gap-4">
         <div>
-          <p className="text-[20px] font-[700] text-white leading-6">
+          <h3 className="text-2xl font-extrabold bg-gradient-to-r from-[#154D71] via-[#33A1E0] to-[#154D71] text-transparent bg-clip-text mb-1">
             {projectName}
-          </p>
-          <p className="text-[16px] font-[700] leading-10 text-[#ffffff] opacity-50">
+          </h3>
+          <p className="text-[#154D71] text-base font-semibold opacity-70 mb-2">
             {completeTime}
           </p>
         </div>
-        <div className="flex gap-x-5 sm:gap-x-2">
+        <div className="flex gap-4 mt-2">
           <a
             href={githubLink}
-            className="py-3 sm:py-2 px-4 sm:px-2 bg-white flex justify-center items-center gap-x-2 rounded-sm hover:scale-110 transition-transform"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold shadow hover:scale-105 transition-transform"
           >
-            <span>View Github</span>
-            <span>
-              <FaGithubAlt />
-            </span>
+            <FaGithubAlt />
+            <span>Github</span>
           </a>
           <a
             href={demoLink}
-            className="py-3 px-4 bg-white flex justify-center items-center gap-x-2 rounded-sm hover:scale-110 transition-transform"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#33A1E0] to-[#154D71] text-white font-bold shadow hover:scale-105 transition-transform"
           >
-            <span>View Demo</span>
-            <span>
-              <FaArrowUpRightFromSquare />
-            </span>
+            <FaArrowUpRightFromSquare />
+            <span>Demo</span>
           </a>
         </div>
       </div>
