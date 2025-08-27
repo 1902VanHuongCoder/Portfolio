@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { db, storage } from "../../firebase_setup/firebase";
+import { FaPencilAlt, FaPlus } from "react-icons/fa";
+import { FaRegTrashAlt } from "react-icons/fa";
 import {
   collection,
   addDoc,
@@ -19,6 +21,8 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 const ManipulateOnProjects = () => {
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null, imgName: null });
+  const [showAddForm, setShowAddForm] = useState(false);
   const [projects, setProjects] = useState();
   const [projectId, setProjectId] = useState({ show: false, pId: "" });
   const [formData, setFormData] = useState({
@@ -202,94 +206,68 @@ const ManipulateOnProjects = () => {
   }, [projectId]);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0] py-8">
       <AnimatePresence>
         {projectId.show && (
-          <motion.div className="fixed top-0 left-0  w-full h-full bg-[rgba(0,0,0,.2)] flex justify-center items-center">
+          <motion.div className="fixed top-0 left-0 w-full h-full bg-black/30 flex justify-center items-center z-50">
             <motion.form
-              initial={{
-                scale: 0.5,
-                opacity: 0,
-              }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-              }}
-              exit={{
-                scale: 0.5,
-                opacity: 0,
-              }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onSubmit={handleSubmit}
-              className="bg-white shadow-md rounded-lg p-6 max-w-md mx-auto space-y-4"
+              className="bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 relative"
             >
-              <div className="flex justify-between p-4 items-center">
-                <h2 className="text-xl font-bold mb-4">Update Project</h2>
-                <div
-                  onClick={() => {
-                    setProjectId({ pId: "", show: false });
-                  }}
-                  className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition duration-200"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 9.293l4.95-4.95a1 1 0 011.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10 3.636 5.05A1 1 0 015.05 3.636L10 8.586z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-
+              <button
+                type="button"
+                onClick={() => setProjectId({ pId: "", show: false })}
+                className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold focus:outline-none"
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <h2 className="text-lg font-bold mb-2 text-[#154D71]">
+                Update Project
+              </h2>
               <input
                 type="text"
                 name="projectName"
                 value={dataToUpdate.projectName}
                 onChange={handleChange}
                 placeholder="Project name"
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="block w-full p-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:ring-2 focus:ring-[#33A1E0]"
               />
-
               <input
                 type="text"
                 name="demoLink"
                 value={dataToUpdate.demoLink}
                 onChange={handleChange}
                 placeholder="Demo Link"
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="block w-full p-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:ring-2 focus:ring-[#33A1E0]"
               />
-
               <input
                 type="text"
                 name="githubLink"
                 value={dataToUpdate.githubLink}
                 onChange={handleChange}
                 placeholder="GitHub Link"
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="block w-full p-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:ring-2 focus:ring-[#33A1E0]"
               />
-
               <input
                 type="text"
                 name="completeTime"
                 value={dataToUpdate.completeTime}
                 onChange={handleChange}
                 placeholder="Completion Time"
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="block w-full p-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:ring-2 focus:ring-[#33A1E0]"
               />
-
               <input
                 type="file"
                 onChange={handleFileChange}
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="block w-full p-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:ring-2 focus:ring-[#33A1E0]"
               />
-
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+                className="w-full bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200 mt-2"
               >
                 Update Project
               </button>
@@ -297,163 +275,212 @@ const ManipulateOnProjects = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      <h1 className="w-full text-4xl text-center p-4">
+      <h1 className="w-full text-4xl text-center p-4 font-extrabold text-white drop-shadow-xl">
         CÁC THAO TÁC VỚI DỰ ÁN
       </h1>
-      <p className="w-full px-6 font-bold text-xl">1. Thêm dự án:</p>
-      <form
-        onSubmit={uploadImageToFirebase}
-        className="flex flex-col gap-y-4 p-6 bg-white"
+      <button
+        className="fixed bottom-5 right-5 bg-white p-4 rounded-full hover:bg-[#33A1E0] hover:text-white transition duration-200] shadow-lg border border-[#33A1E0]/30"
+        onClick={() => setShowAddForm((prev) => !prev)}
       >
-        <label htmlFor="projectName" className="flex flex-col">
-          <span className="text-gray-700">Project name</span>
-          <input
-            type="text"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.projectName}
-            onChange={(e) =>
-              setFormData({ ...formData, projectName: e.target.value })
-            }
-            placeholder="Enter project name"
-            required
-          />
-        </label>
-
-        <label htmlFor="demoLink" className="flex flex-col">
-          <span className="text-gray-700">Demo link</span>
-          <input
-            type="url"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.demoLink}
-            onChange={(e) =>
-              setFormData({ ...formData, demoLink: e.target.value })
-            }
-            placeholder="Enter demo link"
-            required
-          />
-        </label>
-
-        <label htmlFor="githubLink" className="flex flex-col">
-          <span className="text-gray-700">Github link</span>
-          <input
-            type="url"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.githubLink}
-            onChange={(e) =>
-              setFormData({ ...formData, githubLink: e.target.value })
-            }
-            placeholder="Enter GitHub link"
-            required
-          />
-        </label>
-
-        <label htmlFor="completeTime" className="flex flex-col">
-          <span className="text-gray-700">Complete time</span>
-          <input
-            type="text"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.completeTime}
-            onChange={(e) =>
-              setFormData({ ...formData, completeTime: e.target.value })
-            }
-            placeholder="Enter complete time"
-            required
-          />
-        </label>
-
-        <label htmlFor="projectImage" className="flex flex-col">
-          <span className="text-gray-700">Choose project image</span>
-          <input
-            type="file"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            onChange={(e) =>
-              setFormData({ ...formData, projectImage: e.target.files[0] })
-            }
-            required
-          />
-        </label>
-
-        <button
-          className="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
-          type="submit"
+        <FaPlus />
+      </button>
+      {showAddForm && (
+        <form
+          onSubmit={uploadImageToFirebase}
+          className="flex flex-col gap-y-4 p-6 bg-white shadow-xl w-full border border-[#33A1E0]/20 mt-2 mx-auto max-w-4xl  rounded-md"
         >
-          Submit
-        </button>
-      </form>
+          <p className="text-xl font-semibold">Add New Project</p>
+          <label htmlFor="projectName" className="flex flex-col">
+            <span className="text-gray-700">Project name</span>
+            <input
+              type="text"
+              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+              value={formData.projectName}
+              onChange={(e) =>
+                setFormData({ ...formData, projectName: e.target.value })
+              }
+              placeholder="Enter project name"
+              required
+            />
+          </label>
 
-      <p className="w-full p-6 font-bold text-xl mt-10">
-        2. Danh sách các dự án:
+          <label htmlFor="demoLink" className="flex flex-col">
+            <span className="text-gray-700">Demo link</span>
+            <input
+              type="url"
+              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+              value={formData.demoLink}
+              onChange={(e) =>
+                setFormData({ ...formData, demoLink: e.target.value })
+              }
+              placeholder="Enter demo link"
+              required
+            />
+          </label>
+
+          <label htmlFor="githubLink" className="flex flex-col">
+            <span className="text-gray-700">Github link</span>
+            <input
+              type="url"
+              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+              value={formData.githubLink}
+              onChange={(e) =>
+                setFormData({ ...formData, githubLink: e.target.value })
+              }
+              placeholder="Enter GitHub link"
+              required
+            />
+          </label>
+
+          <label htmlFor="completeTime" className="flex flex-col">
+            <span className="text-gray-700">Complete time</span>
+            <input
+              type="text"
+              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+              value={formData.completeTime}
+              onChange={(e) =>
+                setFormData({ ...formData, completeTime: e.target.value })
+              }
+              placeholder="Enter complete time"
+              required
+            />
+          </label>
+
+          <label htmlFor="projectImage" className="flex flex-col">
+            <span className="text-gray-700">Choose project image</span>
+            <input
+              type="file"
+              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+              onChange={(e) =>
+                setFormData({ ...formData, projectImage: e.target.files[0] })
+              }
+              required
+            />
+          </label>
+
+          <button
+            className="mt-4 bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 px-4 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
+            type="submit"
+          >
+            Submit
+          </button>
+        </form>
+      )}
+
+      {/* Confirm Delete Dialog */}
+      <AnimatePresence>
+        {confirmDelete.show && (
+          <motion.div className="fixed top-0 left-0 w-full h-full bg-black/40 flex justify-center items-center z-50">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl flex flex-col gap-4 text-center"
+            >
+              <p className="text-lg font-semibold text-[#154D71]">
+                Xác nhận xóa dự án?
+              </p>
+              <div className="flex gap-4 justify-center mt-2">
+                <button
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 font-bold"
+                  onClick={async () => {
+                    await handleDeleteProject(
+                      confirmDelete.id,
+                      confirmDelete.imgName
+                    );
+                    setConfirmDelete({ show: false, id: null, imgName: null });
+                  }}
+                >
+                  Xóa
+                </button>
+                <button
+                  className="bg-gray-200 text-[#154D71] px-4 py-2 rounded hover:bg-gray-300 font-bold"
+                  onClick={() =>
+                    setConfirmDelete({ show: false, id: null, imgName: null })
+                  }
+                >
+                  Hủy
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <p className="w-full p-6 font-bold text-xl mt-4 text-white">
+        DANH SÁCH CÁC DỰ ÁN
       </p>
 
-      <div className="w-screen px-6 overflow-x-scroll">
-        <table className="w-[600px] sm:w-full  bg-white border border-gray-300 px-6">
-          <thead>
-            <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-              <th className="py-3 px-4 text-left">Số thứ tự</th>
-              <th className="py-3 px-4 text-left">Tên dự án</th>
-              <th className="py-3 px-4 text-left">Demo Link</th>
-              <th className="py-3 px-4 text-left">Github Link</th>
-              <th className="py-3 px-4 text-left">Ảnh dự án</th>
-              <th className="py-3 px-4 text-left">Thao tác</th>
+      <div className="w-full min-w-[1070px] px-2 sm:px-6 overflow-x-auto">
+        <table className="w-full bg-white border border-[#33A1E0]/20 rounded-md shadow-xl">
+          <thead className="border-b-[2px]">
+            <tr className="text-[#1178b3] text-sm leading-normal">
+              <th className="py-6 px-4 text-center">Số Thứ Tự</th>
+              <th className="py-6 px-4 text-left">Tên Dự Án</th>
+              <th className="py-6 px-4 text-left">Demo Link</th>
+              <th className="py-6 px-4 text-left">Github Link</th>
+              <th className="py-6 px-4 text-left">Ảnh Dự Án</th>
+              <th className="py-6 px-4 text-center">Thao Tác</th>
             </tr>
           </thead>
 
-          <tbody className="text-gray-600 text-sm">
+          <tbody className="text-black text-sm">
             {projects?.map((item, index) => (
-              <tr className="hover:bg-gray-100" key={index}>
-                <td className="py-3 px-4 border-b border-gray-300">
+              <tr className="hover:bg-[#33A1E0]/10 transition-all" key={index}>
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10 font-bold text-center">
                   {index + 1}
                 </td>
-                <td className="py-3 px-4 border-b border-gray-300">
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
                   {item.projectName}
                 </td>
-                <td className="py-3 px-4 border-b border-gray-300">
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
                   <a
                     href={item.demoLink}
-                    className="text-blue-600 hover:underline"
+                    className="text-[#33A1E0] hover:underline font-semibold"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Xem Demo
                   </a>
                 </td>
-                <td className="py-3 px-4 border-b border-gray-300">
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
                   <a
                     href={item.githubLink}
-                    className="text-blue-600 hover:underline"
+                    className="text-[#33A1E0] hover:underline font-semibold"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Xem Github
                   </a>
                 </td>
-                <td className="py-3 px-4 border-b border-gray-300">
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
                   <img
                     src={item.projectImage}
                     alt={item.imageName}
-                    className="w-16 h-16 rounded"
+                    className="w-10 h-10 rounded-md border border-[#33A1E0]/20"
                   />
                 </td>
-
-                <td className="flex justify-center items-cente flex-col gap-y-2 gap-x-2">
+                <td className="flex flex-col sm:flex-row justify-center items-center gap-2 py-3 px-4 border-b border-[#33A1E0]/10">
                   <button
                     onClick={() => {
                       setProjectId({ pId: item.id, show: true });
                     }}
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-4 rounded-lg shadow hover:from-blue-600 hover:to-purple-600 transition duration-200"
+                    className=" font-bold py-2 px-4 rounded-lg transition duration-200 text-slate-600 flex items-center gap-x-2 border-slate-600 border"
                   >
+                    <FaPencilAlt />
                     Update
                   </button>
                   <button
                     onClick={() =>
-                      handleDeleteProject(item.id, item.projectImgName)
+                      setConfirmDelete({
+                        show: true,
+                        id: item.id,
+                        imgName: item.projectImgName,
+                      })
                     }
-                    className="flex items-center justify-center bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200"
+                    className="flex items-center justify-center gap-x-2 text-red-500 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-500 border"
                   >
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M6 2a1 1 0 00-1 1v1H4a1 1 0 000 2h12a1 1 0 000-2h-1V3a1 1 0 00-1-1H6zm0 4h8v12a1 1 0 01-1 1H7a1 1 0 01-1-1V6z" />
-                    </svg>
+                    <FaRegTrashAlt />
                     Delete
                   </button>
                 </td>

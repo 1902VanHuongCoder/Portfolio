@@ -28,7 +28,7 @@ const Projects = () => {
   ) : (
     <section
       id="projects"
-      className="relative w-full min-h-screen px-8 pt-12 pb-16 flex flex-col items-center justify-center border-t-[4px] border-dashed border-t-[#e0e7ef]"
+      className="relative w-full min-h-screen px-8 pt-12 pb-16 flex flex-col items-center justify-center border-t-[2px] border-dashed border-t-[#e0e7ef]"
     >
       {/* Decorative gradient ring */}
       <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-[#33A1E0]/30 via-[#154D71]/10 to-transparent rounded-full blur-3xl z-0"></div>
@@ -40,7 +40,7 @@ const Projects = () => {
           Includes personal projects and real-world projects that have been
           completed up to the present.
         </p>
-        <div className="w-full flex flex-col sm:grid sm:grid-cols-2 gap-8 items-center justify-center">
+        <div className="w-full flex flex-col lg:grid lg:grid-cols-2 gap-8 items-center justify-center">
           {projects.map((item, index) => (
             <Project
               completeTime={item.completeTime}

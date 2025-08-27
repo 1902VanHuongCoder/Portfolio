@@ -39,7 +39,7 @@ const NavigationBar = () => {
     <div className="flex justify-between items-center px-6 py-2 mx-2 border-[1.5px] border-[#154D71] shadow-lg md:mx-4 rounded-full mt-2 bg-white/20 backdrop-blur-2xl">
       <p className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#154D71] to-[#33A1E0] drop-shadow tracking-wide select-none">Paul To</p>
       <div>
-        <div className="hidden sm:flex gap-x-8 items-center">
+        <div className="hidden lg:flex gap-x-8 items-center">
           <a
             className="px-5 sm:px-2 py-3 font-bold hover:scale-105 rounded-xl text-[#154D71]  transition-all flex items-center gap-x-3 sm:gap-x-2 text-lg duration-200"
             href="#home"
@@ -89,7 +89,7 @@ const NavigationBar = () => {
         </div>
         <p
           onClick={handleShowSideBar}
-          className="block sm:hidden text-4xl text-[#154D71] rounded-full/20 p-2 transition-all cursor-pointer"
+          className="block lg:hidden text-4xl text-[#154D71] rounded-full/20 p-2 transition-all cursor-pointer"
         >
           <MdMenu />
         </p>

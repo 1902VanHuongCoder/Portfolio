@@ -5,7 +5,7 @@ const ShowCase = () => {
   return (
     <div
       id="home"
-      className="w-full h-fit sm:h-screen px-2 flex flex-col sm:flex-row sm:justify-center sm:items-center sm:gap-x-10 gap-y-6 pb-10 mt-14 md:mt-0"
+      className="w-full h-fit lg:h-screen px-2 flex flex-col lg:flex-row lg:justify-center lg:items-center lg:gap-x-10 gap-y-6 pb-10 mt-14 lg:mt-0"
     >
       <motion.div
         initial={{
@@ -88,7 +88,7 @@ const ShowCase = () => {
             y: 0,
           }}
           transition={{ duration: 0.5, delay: 0.8 }}
-          className="text-[#33A1E0] sm:text-lg opacity-90 max-w-[400px] font-medium"
+          className="text-[#33A1E0] sm:text-lg opacity-90 lg:max-w-[400px] font-medium"
         >
           I have a passion for{" "}
           <span className="text-[#154D71] font-bold">website development</span>{" "}

@@ -38,7 +38,6 @@ const Home = () => {
       <NavigationBar />
       <AnimatePresence>{isSidebar && <SideBar />}</AnimatePresence>
       <ShowCase />
-      {/* <Marquee /> */}
       <Projects />
       <Skills />
       <Certificates />

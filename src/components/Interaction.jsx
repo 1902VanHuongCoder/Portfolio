@@ -29,20 +29,18 @@ const LikeButton = () => {
   };
 
   return (
-    <div className="flex items-start flex-col w-full gap-y-3 px-3 sm:px-0 pb-5">
-      <span className="text-[#154D71]">
-        Create motivation by giving me a like!
-      </span>
+    <div className=" w-fit gap-y-3 px-3 sm:px-0">
       <button
         onClick={handleLike}
         disabled={isLiked}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold shadow hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-[#154D71] border border-[#33A1E0] font-bold shadow hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed`}
       >
-        <span>Like</span>
+        <span>Give me a like</span>
         <FaThumbsUp className="text-xl" />
       </button>
     </div>
   );
 };
+
 
 export default LikeButton;

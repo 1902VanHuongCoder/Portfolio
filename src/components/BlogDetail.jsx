@@ -6,7 +6,6 @@ import { IoHome } from "react-icons/io5";
 import { MdMenu } from "react-icons/md";
 import { SideBarBlogListContext } from "../contexts/SideBarBlogListContext";
 import { FaBookAtlas } from "react-icons/fa6";
-import LikeButton from "./Interaction";
 import Loading from "./Loading";
 import Error from "./partials/Error";
 
@@ -44,51 +43,64 @@ const BlogDetail = () => {
   }, [id]);
 
   if (error) {
-    return <Error error={error} />
+    return <Error error={error} />;
   }
 
   return (
-    <div className="relative w-full min-h-screen bg-[#2E236C]">
+    <div className="relative w-full min-h-screen bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
       {loading ? (
         <Loading />
       ) : (
         <>
-          <div className="flex justify-between items-center px-[25px] py-4 bg-[rgba(0,0,0,.45)]">
-            <div className="flex gap-2">
-              <Link
-                to="/"
-                className="w-[50px] h-[50px] bg-[rgba(255,255,255,.1)] flex justify-center items-center rounded-full"
-              >
-                <span className="text-2xl text-white">
-                  <IoHome />
-                </span>
-              </Link>
-              <Link
-                to="/blogs"
-                className="w-[50px] h-[50px] flex justify-center items-center"
-              >
-                <span className="text-2xl text-white">
-                  <FaBookAtlas />
-                </span>
-              </Link>
+          <div className="flex justify-between items-center px-4 sm:px-10 py-4 bg-white/10 backdrop-blur-md shadow-lg border-b border-[#33A1E0]/30">
+            <div className="flex gap-2 items-center justify-between w-full">
+              <p className="text-2xl text-white font-bold hidden sm:block drop-shadow">
+                Paul To - <span>Challenge is an opportunity</span>
+              </p>
+              <div className="flex gap-x-4">
+                <div className="flex gap-2 items-center">
+                  <Link
+                    to="/"
+                    className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
+                  >
+                    <span className="hidden lg:block">Trang Chủ</span>
+                    <span className="text-2xl lg:text-md">
+                      <IoHome />
+                    </span>
+                  </Link>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <Link
+                    to="/blogs"
+                    className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
+                  >
+                    <span className="hidden lg:block">Danh Sách Bài Viết</span>
+                    <span className="text-2xl lg:text-md">
+                      <FaBookAtlas />
+                    </span>
+                  </Link>
+                </div>
+              </div>
             </div>
             <p
               onClick={handleCloseSideBarBlogList}
-              className="block sm:hidden text-4xl text-white rounded-full hover:bg-[rgba(255,255,255,.2)] p-1 transition-all"
+              className="block sm:hidden text-4xl text-white rounded-full hover:bg-[#33A1E0]/20 p-1 transition-all cursor-pointer"
             >
               <MdMenu />
             </p>
           </div>
           {blog && (
-            <div className="text-white w-full mx-auto max-w-[1024px]">
+            <div className="w-full mx-auto max-w-[1200px] rounded-2xl mt-8 p-4 sm:p-10 flex flex-col gap-4">
               <img
                 src={blog.imageUrl}
                 alt={blog.title}
-                className="w-full h-auto sm:h-[400px] object-cover mb-4 sm:mt-10"
+                className="w-full h-auto sm:h-[400px] object-cover mb-4 rounded-xl border border-[#33A1E0]/20 shadow"
               />
-              <div className="px-3 sm:px-0">
-                <h1 className="text-2xl font-bold mb-4">{blog.title}</h1>
-                <p className="text-slate-300 mb-4 flex items-center">
+              <div className="px-1 sm:px-0">
+                <h1 className="text-2xl sm:text-4xl font-extrabold mb-4 text-white drop-shadow">
+                  {blog.title}
+                </h1>
+                <p className="text-[#33A1E0] mb-4 flex items-center font-semibold">
                   <svg
                     className="w-4 h-4 mr-2"
                     fill="none"
@@ -106,14 +118,12 @@ const BlogDetail = () => {
                   {blog.date}
                 </p>
                 <div
-                  className="mt-10"
+                  className="mt-6 text-white text-base sm:text-lg"
                   dangerouslySetInnerHTML={{ __html: blog.content }}
                 />
               </div>
-              <LikeButton />
             </div>
           )}
-         
         </>
       )}
     </div>

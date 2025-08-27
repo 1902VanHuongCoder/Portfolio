@@ -39,13 +39,13 @@ const SideBar = () => {
 
   return (
     <motion.div
-      initial={{ x: -400 }}
+      initial={{ x: "-100%" }}
       animate={{ x: 0 }}
-      exit={{ x: -400 }}
+      exit={{ x: "-100%" }}
       transition={{ duration: 0.5 }}
-      className="fixed top-0 left-0 z-30 w-[80%] bg-[#2E236C] h-screen drop-shadow-2xl"
+      className="fixed top-0 left-0 z-30 w-[80%] bg-[#154D71] h-screen drop-shadow-2xl"
     >
-      <div className="flex justify-between items-center px-4 py-4 border-b-[1px] border-b-[#201B4E] border-b-solid">
+      <div className="flex justify-between items-center px-4 py-4 border-b-[1px] border-b-white border-dashed">
         <p className="text-2xl text-white">Paul To</p>
         <div onClick={handleCloseSidebar}>
           <p className="text-4xl text-white rounded-full hover:bg-[rgba(255,255,255,.2)] p-1 transition-all">
@@ -55,7 +55,7 @@ const SideBar = () => {
       </div>
       <div className="flex flex-col justify-start items-start h-full gap-y-10 text-xl px-4 pt-10">
         <a
-          className="px-6 py-4 bg-white font-bold rounded-sm hover:scale-110 transition-transform flex items-center gap-x-4"
+          className="text-white font-bold rounded-sm hover:scale-110 transition-transform flex items-center gap-x-4"
           href="#home"
         >
           <FaHome />
@@ -89,10 +89,10 @@ const SideBar = () => {
         </a>
 
         <p className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4">
-         <AiFillLike /> {likeCount < 10 ? "0" + likeCount : likeCount} Likes
+          <AiFillLike /> {likeCount < 10 ? "0" + likeCount : likeCount} Likes
         </p>
         <Link
-          className="font-bold text-[#C8ACD6] hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
+          className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
           to="/blogs"
         >
           <FaAddressBook /> My blogs

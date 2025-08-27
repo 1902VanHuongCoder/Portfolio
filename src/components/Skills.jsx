@@ -19,7 +19,7 @@ const Skills = () => {
   return (
     <section
       id="skills"
-      className="relative w-full min-h-fit px-8 pt-12 pb-16 flex flex-col items-center justify-center border-t-[4px] border-dashed border-t-[#e0e7ef]"
+      className="relative w-full min-h-fit px-8 pt-12 pb-16 flex flex-col items-center justify-center border-t-[2px] border-dashed border-t-[#e0e7ef]"
     >
       {/* Decorative gradient ring */}
       <div className="relative z-10 flex flex-col items-center w-full">

@@ -23,12 +23,12 @@ const Project = (props) => {
         opacity: isInView ? 1 : 0,
         transition: "all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) 0.3s",
       }}
-      className="relative w-full h-[300px] rounded-md mx-auto bg-white/80 shadow-2xl hover:shadow-blue-200 hover:scale-[1.03] transition-all duration-300 flex flex-col sm:flex-row overflow-hidden border border-[#e0e7ef]"
+      className="relative w-full h-fit sm:h-[300px] rounded-md mx-auto bg-white/80 shadow-2xl hover:shadow-blue-200 hover:scale-[1.03] transition-all duration-300 flex flex-col sm:flex-row overflow-hidden border border-[#e0e7ef]"
     >
       {/* Image section */}
-      <div className="w-full h-56 sm:h-auto flex items-center justify-center rounded-md overflow-hidden p-2">
+      <div className="w-full h-fit sm:h-auto flex items-center justify-center rounded-md overflow-hidden p-2">
         <img
-          className="object-cover w-40 h-40 sm:w-full sm:h-full shadow-lg border-4 border-white/60 rounded-md"
+          className="object-cover sm:w-full sm:h-full shadow-lg border-4 border-white/60 rounded-md"
           src={projectImage}
           alt={projectName}
         />

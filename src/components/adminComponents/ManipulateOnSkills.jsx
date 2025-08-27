@@ -25,6 +25,7 @@ const ManipulateOnSkills = () => {
     tech: "",
     logoTechLink: "",
   });
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null, imgName: null });
 
   const [dataToUpdate, setDataToUpdate] = useState({
     logoTechLink: null,
@@ -47,60 +48,37 @@ const ManipulateOnSkills = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("Handle submit run....");
-
     if (checkIfFile(dataToUpdate.logoTechLink)) {
-      console.log("If chay");
-
       const desertRef = ref(storage, `skills/${dataToUpdate.techLogoName}`);
-
       try {
-        // Delete the existing file
         await deleteObject(desertRef);
-        console.log(`${dataToUpdate.techLogoName} deleted successfully.`);
-
         const storageRef = ref(
           storage,
           `skills/${dataToUpdate.logoTechLink.name}`
         );
-
-        // Upload the new file
         await uploadBytes(storageRef, dataToUpdate.logoTechLink);
-        console.log("File uploaded successfully.");
-
-        // Get the download URL for the uploaded file
         const downloadURL = await getDownloadURL(storageRef);
-
-        // Preparing data to save to Firebase
         const dataToSaveToFirebase = {
           tech: dataToUpdate.tech,
           logoTechLink: downloadURL,
-          techLogoName: dataToUpdate.techLogoName,
+          techLogoName: dataToUpdate.logoTechLink.name,
         };
-
-        // Update Firestore document
         const docRef = doc(db, "skills", skill.sId);
         await updateDoc(docRef, dataToSaveToFirebase);
-
-        alert("Cập nhật skills thành công nhe!");
+        alert("Cập nhật skills thành công!");
       } catch (error) {
         console.log("Error" + error);
       }
     } else {
-      // If no new project image, just update the other fields
-
-      console.log("else chay");
       const dataToSaveToFirebase = {
         tech: dataToUpdate.tech,
       };
-
       try {
         const docRef = doc(db, "skills", skill.sId);
         await updateDoc(docRef, dataToSaveToFirebase);
-        alert("Cập nhật skill thành công nhe!!!");
+        alert("Cập nhật skill thành công!");
       } catch (error) {
-        console.error("Cập nhật không thành công rồi uh-oh", error);
+        console.error("Cập nhật không thành công", error);
       }
     }
   };
@@ -121,33 +99,24 @@ const ManipulateOnSkills = () => {
           await addDoc(collection(db, "skills"), dataToSaveToFirebase);
           window.location.reload();
         } catch (error) {
-          alert(
-            "Thêm skills hong thành công rồi bây ơi! Lỗi phần form dữ liệu form á!"
-          );
+          alert("Thêm skills không thành công! Lỗi dữ liệu form.");
           console.error("Error adding document: ", error);
         }
       } catch (error) {
-        alert("Thêm dự án không thành công do lỗi upload hình ảnh!");
+        alert("Thêm skill không thành công do lỗi upload hình ảnh!");
         console.error("Error uploading file: ", error);
       }
     } else {
-      alert("Chưa thêm hình mày ơi!");
+      alert("Chưa thêm hình!");
     }
   };
 
   const handleDeleteSkill = async (id, techLogoName) => {
     try {
-      // Step 1: Delete the Firestore document
       await deleteDoc(doc(db, "skills", id));
-      console.log(`Document with ID ${id} deleted successfully.`);
-
-      // Step 2: Create a reference to the image in Firebase Storage
       const desertRef = ref(storage, `skills/${techLogoName}`);
-
       try {
-        // Step 3: Delete the image file from Firebase Storage
         await deleteObject(desertRef);
-        console.log(`${techLogoName} deleted successfully.`);
         window.location.reload();
       } catch (error) {
         console.error("Error deleting image: ", error);
@@ -174,7 +143,6 @@ const ManipulateOnSkills = () => {
       const fetchProject = async () => {
         const docRef = doc(db, "skills", skill.sId);
         const docSnap = await getDoc(docRef);
-
         if (docSnap.exists()) {
           setDataToUpdate(docSnap.data());
         } else {
@@ -188,170 +156,178 @@ const ManipulateOnSkills = () => {
   }, [skill.sId]);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0] py-8">
+      {/* Update Modal */}
       <AnimatePresence>
         {skill.show && (
-          <motion.div className="fixed top-0 left-0  w-full h-full bg-[rgba(0,0,0,.2)] flex justify-center items-center">
+          <motion.div className="fixed top-0 left-0 w-full h-full bg-black/30 flex justify-center items-center z-50">
             <motion.form
-              initial={{
-                scale: 0.5,
-                opacity: 0,
-              }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-              }}
-              exit={{
-                scale: 0.5,
-                opacity: 0,
-              }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               onSubmit={handleSubmit}
-              className="bg-white shadow-md rounded-lg p-6 max-w-md mx-auto space-y-4"
+              className="bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 relative"
             >
-              <div className="flex justify-between p-4 items-center">
-                <h2 className="text-xl font-bold mb-4">Update Project</h2>
-                <div
-                  onClick={() => {
-                    setSkill({ pId: "", show: false });
-                  }}
-                  className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition duration-200"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 9.293l4.95-4.95a1 1 0 011.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10 3.636 5.05A1 1 0 015.05 3.636L10 8.586z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-
+              <button
+                type="button"
+                onClick={() => setSkill({ sId: "", show: false })}
+                className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold focus:outline-none"
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <h2 className="text-lg font-bold mb-2 text-[#154D71]">
+                Update Skill
+              </h2>
               <input
                 type="text"
                 name="tech"
                 value={dataToUpdate.tech}
                 onChange={handleChange}
-                placeholder="technology"
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Technology"
+                className="block w-full p-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:ring-2 focus:ring-[#33A1E0]"
               />
-
               <input
                 type="file"
                 onChange={handleFileChange}
-                className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="block w-full p-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:ring-2 focus:ring-[#33A1E0]"
               />
-
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+                className="w-full bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200 mt-2"
               >
-                Update Project
+                Update Skill
               </button>
             </motion.form>
           </motion.div>
         )}
       </AnimatePresence>
-      <h1 className="w-full text-4xl text-center p-4">
+
+      {/* Confirm Delete Dialog */}
+      <AnimatePresence>
+        {confirmDelete.show && (
+          <motion.div className="fixed top-0 left-0 w-full h-full bg-black/40 flex justify-center items-center z-50">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl flex flex-col gap-4 text-center"
+            >
+              <p className="text-lg font-semibold text-[#154D71]">
+                Xác nhận xóa skill?
+              </p>
+              <div className="flex gap-4 justify-center mt-2">
+                <button
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 font-bold"
+                  onClick={async () => {
+                    await handleDeleteSkill(
+                      confirmDelete.id,
+                      confirmDelete.imgName
+                    );
+                    setConfirmDelete({ show: false, id: null, imgName: null });
+                  }}
+                >
+                  Xóa
+                </button>
+                <button
+                  className="bg-gray-200 text-[#154D71] px-4 py-2 rounded hover:bg-gray-300 font-bold"
+                  onClick={() =>
+                    setConfirmDelete({ show: false, id: null, imgName: null })
+                  }
+                >
+                  Hủy
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <h1 className="w-full text-4xl text-center p-4 font-extrabold text-white drop-shadow-xl">
         CÁC THAO TÁC VỚI SKILLS
       </h1>
-      <p className="w-full px-6 font-bold text-xl">1. Thêm skill:</p>
-      <form
-        onSubmit={uploadImageToFirebase}
-        className="flex flex-col gap-y-4 p-6 bg-white"
-      >
-        <label htmlFor="tech" className="flex flex-col">
-          <span className="text-gray-700">Technology</span>
-          <input
-            type="text"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            value={formData.tech}
-            onChange={(e) => setFormData({ ...formData, tech: e.target.value })}
-            placeholder="Enter techology"
-            required
-          />
-        </label>
-
-        <label htmlFor="logoTechLink" className="flex flex-col">
-          <span className="text-gray-700">Choose project image</span>
-          <input
-            type="file"
-            className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-            onChange={(e) =>
-              setFormData({ ...formData, logoTechLink: e.target.files[0] })
-            }
-            required
-          />
-        </label>
-        <button
-          className
-          
-          ="mt-4 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
-          type="submit"
+      <div className="flex flex-col items-center w-full">
+        <form
+          onSubmit={uploadImageToFirebase}
+          className="flex flex-col gap-y-4 p-6 bg-white/80 shadow-xl w-full border border-[#33A1E0]/20 mt-2 mx-auto max-w-2xl rounded-md backdrop-blur-md"
         >
-          Submit
-        </button>
-      </form>
+          <p className="text-xl font-semibold text-[#154D71]">Add New Skill</p>
+          <label htmlFor="tech" className="flex flex-col">
+            <span className="text-gray-700">Technology</span>
+            <input
+              type="text"
+              className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0]"
+              value={formData.tech}
+              onChange={(e) => setFormData({ ...formData, tech: e.target.value })}
+              placeholder="Enter technology"
+              required
+            />
+          </label>
+          <label htmlFor="logoTechLink" className="flex flex-col">
+            <span className="text-gray-700">Choose skill logo</span>
+            <input
+              type="file"
+              className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0]"
+              onChange={(e) =>
+                setFormData({ ...formData, logoTechLink: e.target.files[0] })
+              }
+              required
+            />
+          </label>
+          <button
+            className="mt-4 bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 px-4 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
+            type="submit"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
 
-      <p className="w-full p-6 font-bold text-xl mt-10">
-        2. Danh sách các dự án:
+      <p className="w-full p-6 font-bold text-xl mt-10 text-white">
+        DANH SÁCH CÁC SKILLS
       </p>
 
-      <div className="w-screen px-6 overflow-x-scroll">
-        <table className="w-[600px] sm:w-full  bg-white border border-gray-300 px-6">
-          <thead>
-            <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-              <th className="py-3 px-4 text-left">Số thứ tự</th>
-              <th className="py-3 px-4 text-left">Technology</th>
-              <th className="py-3 px-4 text-left">Logo technology link</th>
-              <th className="py-3 px-4 text-left">Thao tác</th>
+      <div className="w-full min-w-[600px] px-2 sm:px-6 overflow-x-auto">
+        <table className="w-full bg-white/90 border border-[#33A1E0]/20 rounded-md shadow-xl">
+          <thead className="border-b-[2px]">
+            <tr className="text-[#1178b3] text-sm leading-normal">
+              <th className="py-6 px-4 text-center">Số Thứ Tự</th>
+              <th className="py-6 px-4 text-left">Technology</th>
+              <th className="py-6 px-4 text-left">Logo</th>
+              <th className="py-6 px-4 text-center">Thao Tác</th>
             </tr>
           </thead>
-
-          <tbody className="text-gray-600 text-sm">
+          <tbody className="text-black text-sm">
             {skills?.map((item, index) => (
-              <tr className="hover:bg-gray-100" key={index}>
-                <td className="py-3 px-4 border-b border-gray-300">
+              <tr className="hover:bg-[#33A1E0]/10 transition-all" key={index}>
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10 font-bold text-center">
                   {index + 1}
                 </td>
-                <td className="py-3 px-4 border-b border-gray-300">
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
                   {item.tech}
                 </td>
-                <td className="py-3 px-4 border-b border-gray-300">
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
                   <img
                     src={item.logoTechLink}
                     alt={item.tech}
-                    className="w-16 h-16 rounded"
+                    className="w-12 h-12 rounded border border-[#33A1E0]/20 mx-auto"
                   />
                 </td>
-
-                <td className="flex justify-center items-cente flex-col gap-y-2 gap-x-2">
+                <td className="flex flex-col sm:flex-row justify-center items-center gap-2 py-3 px-4 border-b border-[#33A1E0]/10">
                   <button
                     onClick={() => {
                       setSkill({ sId: item.id, show: true });
                     }}
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-2 px-4 rounded-lg shadow hover:from-blue-600 hover:to-purple-600 transition duration-200"
+                    className="font-bold py-2 px-4 rounded-lg transition duration-200 text-slate-600 flex items-center gap-x-2 border-slate-600 border"
                   >
                     Update
                   </button>
                   <button
                     onClick={() =>
-                      handleDeleteSkill(item.id, item.techLogoName)
+                      setConfirmDelete({ show: true, id: item.id, imgName: item.techLogoName })
                     }
-                    className="flex items-center justify-center bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200"
+                    className="flex items-center justify-center gap-x-2 text-red-500 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-500 border"
                   >
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M6 2a1 1 0 00-1 1v1H4a1 1 0 000 2h12a1 1 0 000-2h-1V3a1 1 0 00-1-1H6zm0 4h8v12a1 1 0 01-1 1H7a1 1 0 01-1-1V6z" />
-                    </svg>
                     Delete
                   </button>
                 </td>

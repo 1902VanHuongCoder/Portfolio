@@ -77,11 +77,9 @@ const Contact = () => {
               className="bg-white/70 font-normal p-4 rounded-xl text-[#154D71] w-full outline-none border border-[#33A1E0]/30 focus:bg-white/90 focus:border-[#33A1E0] transition placeholder:text-[#154D71]"
               placeholder="Enter your comment"
             />
-            <div className="flex justify-center w-full">
-              <SubmitButton title="Submit" />
-            </div>
-            <div className="w-full flex justify-center mt-4">
+            <div className="flex justify-end w-full gap-x-2">
               <LikeButton />
+              <SubmitButton title="Submit" />
             </div>
           </form>
         </div>
