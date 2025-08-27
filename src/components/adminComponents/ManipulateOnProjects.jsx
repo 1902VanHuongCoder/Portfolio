@@ -21,7 +21,11 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 const ManipulateOnProjects = () => {
-  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null, imgName: null });
+  const [confirmDelete, setConfirmDelete] = useState({
+    show: false,
+    id: null,
+    imgName: null,
+  });
   const [showAddForm, setShowAddForm] = useState(false);
   const [projects, setProjects] = useState();
   const [projectId, setProjectId] = useState({ show: false, pId: "" });
@@ -275,96 +279,93 @@ const ManipulateOnProjects = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      <h1 className="w-full text-4xl text-center p-4 font-extrabold text-white drop-shadow-xl">
-        CÁC THAO TÁC VỚI DỰ ÁN
+      <h1 className="w-full text-4xl px-6 font-extrabold text-white drop-shadow-xl">
+        MY PROJECTS
       </h1>
-      <button
-        className="fixed bottom-5 right-5 bg-white p-4 rounded-full hover:bg-[#33A1E0] hover:text-white transition duration-200] shadow-lg border border-[#33A1E0]/30"
-        onClick={() => setShowAddForm((prev) => !prev)}
-      >
-        <FaPlus />
-      </button>
+
       {showAddForm && (
-        <form
-          onSubmit={uploadImageToFirebase}
-          className="flex flex-col gap-y-4 p-6 bg-white shadow-xl w-full border border-[#33A1E0]/20 mt-2 mx-auto max-w-4xl  rounded-md"
-        >
-          <p className="text-xl font-semibold">Add New Project</p>
-          <label htmlFor="projectName" className="flex flex-col">
-            <span className="text-gray-700">Project name</span>
-            <input
-              type="text"
-              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-              value={formData.projectName}
-              onChange={(e) =>
-                setFormData({ ...formData, projectName: e.target.value })
-              }
-              placeholder="Enter project name"
-              required
-            />
-          </label>
-
-          <label htmlFor="demoLink" className="flex flex-col">
-            <span className="text-gray-700">Demo link</span>
-            <input
-              type="url"
-              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-              value={formData.demoLink}
-              onChange={(e) =>
-                setFormData({ ...formData, demoLink: e.target.value })
-              }
-              placeholder="Enter demo link"
-              required
-            />
-          </label>
-
-          <label htmlFor="githubLink" className="flex flex-col">
-            <span className="text-gray-700">Github link</span>
-            <input
-              type="url"
-              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-              value={formData.githubLink}
-              onChange={(e) =>
-                setFormData({ ...formData, githubLink: e.target.value })
-              }
-              placeholder="Enter GitHub link"
-              required
-            />
-          </label>
-
-          <label htmlFor="completeTime" className="flex flex-col">
-            <span className="text-gray-700">Complete time</span>
-            <input
-              type="text"
-              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-              value={formData.completeTime}
-              onChange={(e) =>
-                setFormData({ ...formData, completeTime: e.target.value })
-              }
-              placeholder="Enter complete time"
-              required
-            />
-          </label>
-
-          <label htmlFor="projectImage" className="flex flex-col">
-            <span className="text-gray-700">Choose project image</span>
-            <input
-              type="file"
-              className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-              onChange={(e) =>
-                setFormData({ ...formData, projectImage: e.target.files[0] })
-              }
-              required
-            />
-          </label>
-
-          <button
-            className="mt-4 bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 px-4 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
-            type="submit"
+        <div className="fixed w-full h-full top-0 left-0 bg-black/30 flex justify-center items-start">
+          <form
+            onSubmit={uploadImageToFirebase}
+            className="flex flex-col gap-y-4 p-6 bg-white shadow-xl w-full border border-[#33A1E0]/20 mt-2 mx-auto max-w-4xl  rounded-md"
           >
-            Submit
-          </button>
-        </form>
+            <p className="text-xl font-semibold">Add New Project</p>
+            <label htmlFor="projectName" className="flex flex-col">
+              <span className="text-gray-700">Project name</span>
+              <input
+                type="text"
+                className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+                value={formData.projectName}
+                onChange={(e) =>
+                  setFormData({ ...formData, projectName: e.target.value })
+                }
+                placeholder="Enter project name"
+                required
+              />
+            </label>
+
+            <label htmlFor="demoLink" className="flex flex-col">
+              <span className="text-gray-700">Demo link</span>
+              <input
+                type="url"
+                className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+                value={formData.demoLink}
+                onChange={(e) =>
+                  setFormData({ ...formData, demoLink: e.target.value })
+                }
+                placeholder="Enter demo link"
+                required
+              />
+            </label>
+
+            <label htmlFor="githubLink" className="flex flex-col">
+              <span className="text-gray-700">Github link</span>
+              <input
+                type="url"
+                className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+                value={formData.githubLink}
+                onChange={(e) =>
+                  setFormData({ ...formData, githubLink: e.target.value })
+                }
+                placeholder="Enter GitHub link"
+                required
+              />
+            </label>
+
+            <label htmlFor="completeTime" className="flex flex-col">
+              <span className="text-gray-700">Complete time</span>
+              <input
+                type="text"
+                className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+                value={formData.completeTime}
+                onChange={(e) =>
+                  setFormData({ ...formData, completeTime: e.target.value })
+                }
+                placeholder="Enter complete time"
+                required
+              />
+            </label>
+
+            <label htmlFor="projectImage" className="flex flex-col">
+              <span className="text-gray-700">Choose project image</span>
+              <input
+                type="file"
+                className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+                onChange={(e) =>
+                  setFormData({ ...formData, projectImage: e.target.files[0] })
+                }
+                required
+              />
+            </label>
+
+            <button
+              className="mt-4 bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 px-4 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
+              type="submit"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
       )}
 
       {/* Confirm Delete Dialog */}
@@ -407,30 +408,36 @@ const ManipulateOnProjects = () => {
         )}
       </AnimatePresence>
 
-      <p className="w-full p-6 font-bold text-xl mt-4 text-white">
-        DANH SÁCH CÁC DỰ ÁN
+      <p className="w-full p-6 font-bold mt-4 text-white flex justify-between items-center">
+        <span className="text-xl"> Projects List</span>
+        <button
+          className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
+          onClick={() => setShowAddForm((prev) => !prev)}
+        >
+          <FaPlus /> Add Project
+        </button>
       </p>
 
       <div className="w-full min-w-[1070px] px-2 sm:px-6 overflow-x-auto">
-        <table className="w-full bg-white border border-[#33A1E0]/20 rounded-md shadow-xl">
+        <table className="w-full bg-[rgb(237,238,239)] border border-[#33A1E0]/20 shadow-xl font-sans rounded-md">
           <thead className="border-b-[2px]">
             <tr className="text-[#1178b3] text-sm leading-normal">
-              <th className="py-6 px-4 text-center">Số Thứ Tự</th>
-              <th className="py-6 px-4 text-left">Tên Dự Án</th>
+              <th className="py-6 px-4 text-center">Order</th>
+              <th className="py-6 px-4 text-center">Project Name</th>
               <th className="py-6 px-4 text-left">Demo Link</th>
               <th className="py-6 px-4 text-left">Github Link</th>
-              <th className="py-6 px-4 text-left">Ảnh Dự Án</th>
-              <th className="py-6 px-4 text-center">Thao Tác</th>
+              <th className="py-6 px-4 text-left">Project Image</th>
+              <th className="py-6 px-4 text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody className="text-black text-sm">
             {projects?.map((item, index) => (
               <tr className="hover:bg-[#33A1E0]/10 transition-all" key={index}>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10 font-bold text-center">
-                  {index + 1}
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10 text-center">
+                  {index + 1 < 10 ? `0${index + 1}` : index + 1}
                 </td>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
+                <td className="py-3 px-4 border-b border-[#33A1E0]/10 max-w-[200px] truncate">
                   {item.projectName}
                 </td>
                 <td className="py-3 px-4 border-b border-[#33A1E0]/10">

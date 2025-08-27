@@ -12,6 +12,8 @@ import { AnimatePresence } from "framer-motion";
 import SideBarBlogList from "./components/partials/SideBarBlogList";
 import { useContext } from "react";
 import { SideBarBlogListContext } from "./contexts/SideBarBlogListContext";
+import AdminLayout from "./components/adminComponents/AdminLayout";
+import ManipulateOnBlogs from "./components/adminComponents/ManipulateOnBlogs";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
@@ -31,6 +33,12 @@ function App() {
           <Route path="/add/blogs" element={<AddBlogPost />}></Route>
           <Route path="/blogs" element={<BlogsList />}></Route>
           <Route path="/blog/detail/:id" element={<BlogDetail />}></Route>
+          <Route path="/admin/dashboard" element={<AdminLayout />}>
+            <Route path="projects" element={<ManipulateOnProjects />} />
+            <Route path="skills" element={<ManipulateOnSkills />} />
+            <Route path="certificates" element={<ManipulateOnCertificates />} />
+            <Route path="add/blogs" element={<ManipulateOnBlogs />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </div>
