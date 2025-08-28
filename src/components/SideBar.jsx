@@ -1,5 +1,5 @@
-import { LuArrowLeftCircle } from "react-icons/lu";
-import { FaAddressBook, FaHome } from "react-icons/fa";
+
+import { FaAddressBook, FaArrowCircleLeft, FaHome } from "react-icons/fa";
 import { GrProjects } from "react-icons/gr";
 import { FaBookAtlas } from "react-icons/fa6";
 import { PiCertificateFill, PiHandshakeFill } from "react-icons/pi";
@@ -49,7 +49,7 @@ const SideBar = () => {
         <p className="text-2xl text-white">Paul To</p>
         <div onClick={handleCloseSidebar}>
           <p className="text-4xl text-white rounded-full hover:bg-[rgba(255,255,255,.2)] p-1 transition-all">
-            <LuArrowLeftCircle />
+            <FaArrowCircleLeft />
           </p>
         </div>
       </div>
