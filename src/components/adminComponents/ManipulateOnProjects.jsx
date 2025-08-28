@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { db, storage } from "../../firebase_setup/firebase";
 import { FaPencilAlt, FaPlus } from "react-icons/fa";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 import {
   collection,
   addDoc,
@@ -187,6 +188,7 @@ const ManipulateOnProjects = () => {
         ...doc.data(),
       }));
       setProjects(usersData);
+      console.log(usersData);
     };
     fetchData();
   }, []);
@@ -209,8 +211,23 @@ const ManipulateOnProjects = () => {
     }
   }, [projectId]);
 
+  // Filtering state and logic
+  const [filterName, setFilterName] = useState("");
+
+  const filteredProjects = projects
+    ? projects.filter((item) => {
+        const nameMatch = item.projectName
+          .toLowerCase()
+          .includes(filterName.toLowerCase());
+        return nameMatch;
+      })
+    : [];
+
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0] py-8">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
+      <h1 className="w-full text-4xl p-6 font-extrabold text-white drop-shadow-xl border-b-[1px] ">
+        MY PROJECTS
+      </h1>
       <AnimatePresence>
         {projectId.show && (
           <motion.div className="fixed top-0 left-0 w-full h-full bg-black/30 flex justify-center items-center z-50">
@@ -219,7 +236,7 @@ const ManipulateOnProjects = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onSubmit={handleSubmit}
-              className="bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 relative"
+              className="bg-white rounded-xl p-5 max-w-xl w-full shadow-2xl flex flex-col gap-3 relative"
             >
               <button
                 type="button"
@@ -227,7 +244,7 @@ const ManipulateOnProjects = () => {
                 className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold focus:outline-none"
                 aria-label="Close"
               >
-                ×
+                <IoClose />{" "}
               </button>
               <h2 className="text-lg font-bold mb-2 text-[#154D71]">
                 Update Project
@@ -279,12 +296,8 @@ const ManipulateOnProjects = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      <h1 className="w-full text-4xl px-6 font-extrabold text-white drop-shadow-xl">
-        MY PROJECTS
-      </h1>
-
       {showAddForm && (
-        <div className="fixed w-full h-full top-0 left-0 bg-black/30 flex justify-center items-start">
+        <div className="fixed w-full h-full top-0 left-0 bg-black/30 flex justify-center items-center z-10">
           <form
             onSubmit={uploadImageToFirebase}
             className="flex flex-col gap-y-4 p-6 bg-white shadow-xl w-full border border-[#33A1E0]/20 mt-2 mx-auto max-w-4xl  rounded-md"
@@ -357,13 +370,22 @@ const ManipulateOnProjects = () => {
                 required
               />
             </label>
-
-            <button
-              className="mt-4 bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 px-4 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
-              type="submit"
-            >
-              Submit
-            </button>
+            {/* Close form button */}
+            <div className="flex justify-end gap-x-2">
+              <button
+                className="mt-4 bg-red-500 text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-red-600 transition duration-200"
+                type="button"
+                onClick={() => setShowAddForm(false)}
+              >
+                Close
+              </button>
+              <button
+                className="mt-4 bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 px-4 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
+                type="submit"
+              >
+                Submit
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -408,7 +430,7 @@ const ManipulateOnProjects = () => {
         )}
       </AnimatePresence>
 
-      <p className="w-full p-6 font-bold mt-4 text-white flex justify-between items-center">
+      <p className="w-full p-6 px-4 font-bold text-white flex justify-between items-center">
         <span className="text-xl"> Projects List</span>
         <button
           className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
@@ -418,61 +440,75 @@ const ManipulateOnProjects = () => {
         </button>
       </p>
 
-      <div className="w-full min-w-[1070px] px-2 sm:px-6 overflow-x-auto">
-        <table className="w-full bg-[rgb(237,238,239)] border border-[#33A1E0]/20 shadow-xl font-sans rounded-md">
-          <thead className="border-b-[2px]">
-            <tr className="text-[#1178b3] text-sm leading-normal">
+      {/* Filtering Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 px-4 mb-4">
+        <input
+          type="text"
+          placeholder="Filter by project name..."
+          value={filterName}
+          onChange={(e) => setFilterName(e.target.value)}
+          className="py-2 px-4 rounded border border-[#33A1E0]/30 focus:outline-none focus:ring-2 focus:ring-[#33A1E0] bg-white"
+        />
+      </div>
+
+      <div className="w-full min-w-[1070px] px-4 overflow-x-auto mb-10">
+        <table className="w-full bg-white/10 backdrop-blur-sm border shadow-xl font-sans border-[#33A1E0]/20 rounded-md overflow-hidden">
+          <thead className="">
+            <tr className="text-white text-sm leading-normal border-b border-[#33A1E0]/20">
               <th className="py-6 px-4 text-center">Order</th>
-              <th className="py-6 px-4 text-center">Project Name</th>
+              <th className="py-6 px-4 text-left">Project Name</th>
               <th className="py-6 px-4 text-left">Demo Link</th>
               <th className="py-6 px-4 text-left">Github Link</th>
               <th className="py-6 px-4 text-left">Project Image</th>
-              <th className="py-6 px-4 text-center">Actions</th>
+              <th className="py-6 px-4 text-left">Actions</th>
             </tr>
           </thead>
 
-          <tbody className="text-black text-sm">
-            {projects?.map((item, index) => (
-              <tr className="hover:bg-[#33A1E0]/10 transition-all" key={index}>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10 text-center">
+          <tbody className="text-white text-sm">
+            {filteredProjects.map((item, index) => (
+              <tr
+                className="hover:bg-[#33A1E0]/10 transition-all border-b border-[#33A1E0]/20"
+                key={index}
+              >
+                <td className="py-3 px-4 text-center">
                   {index + 1 < 10 ? `0${index + 1}` : index + 1}
                 </td>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10 max-w-[200px] truncate">
+                <td className="py-3 px-4 max-w-[200px] truncate">
                   {item.projectName}
                 </td>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
+                <td className="py-3 px-4">
                   <a
                     href={item.demoLink}
-                    className="text-[#33A1E0] hover:underline font-semibold"
+                    className="text-blue-100 hover:underline font-semibold"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     Xem Demo
                   </a>
                 </td>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
+                <td className="py-3 px-4">
                   <a
                     href={item.githubLink}
-                    className="text-[#33A1E0] hover:underline font-semibold"
+                    className="text-blue-100 hover:underline font-semibold"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     Xem Github
                   </a>
                 </td>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
+                <td className="py-3 px-4">
                   <img
                     src={item.projectImage}
                     alt={item.imageName}
                     className="w-10 h-10 rounded-md border border-[#33A1E0]/20"
                   />
                 </td>
-                <td className="flex flex-col sm:flex-row justify-center items-center gap-2 py-3 px-4 border-b border-[#33A1E0]/10">
+                <td className="flex flex-col sm:flex-row items-center gap-2 py-3">
                   <button
                     onClick={() => {
                       setProjectId({ pId: item.id, show: true });
                     }}
-                    className=" font-bold py-2 px-4 rounded-lg transition duration-200 text-slate-600 flex items-center gap-x-2 border-slate-600 border"
+                    className=" font-bold py-2 px-4 rounded-lg transition duration-200 text-white flex items-center gap-x-2 border-gray-200 border"
                   >
                     <FaPencilAlt />
                     Update
@@ -485,7 +521,7 @@ const ManipulateOnProjects = () => {
                         imgName: item.projectImgName,
                       })
                     }
-                    className="flex items-center justify-center gap-x-2 text-red-500 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-500 border"
+                    className="flex items-center justify-center gap-x-2 text-red-100 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-200 border"
                   >
                     <FaRegTrashAlt />
                     Delete

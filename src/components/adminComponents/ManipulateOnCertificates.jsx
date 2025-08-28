@@ -10,8 +10,14 @@ import {
   getDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { AnimatePresence, motion } from "framer-motion";
+import { FaPlus } from "react-icons/fa";
 
 const ManipulateOnCertificates = () => {
   const [cers, setCers] = useState();
@@ -21,6 +27,7 @@ const ManipulateOnCertificates = () => {
     certificateImgName: "",
     certificate: "",
   });
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({
     show: false,
     id: null,
@@ -156,7 +163,7 @@ const ManipulateOnCertificates = () => {
   }, [cerId.cId]);
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0] py-8">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
       {/* Update Modal */}
       <AnimatePresence>
         {cerId.show && (
@@ -243,86 +250,114 @@ const ManipulateOnCertificates = () => {
         )}
       </AnimatePresence>
 
-      <h1 className="w-full text-4xl text-center p-4 font-extrabold text-white drop-shadow-xl">
+      <h1 className="w-full text-4xl p-4 font-extrabold text-white drop-shadow-xl border-b-[1px]">
         CÁC THAO TÁC VỚI CERTIFICATES
       </h1>
-      <div className="flex flex-col items-center w-full">
-        <form
-          onSubmit={uploadImageToFirebase}
-          className="flex flex-col gap-y-4 p-6 bg-white/80 shadow-xl w-full border border-[#33A1E0]/20 mt-2 mx-auto max-w-2xl rounded-md backdrop-blur-md"
-        >
-          <p className="text-xl font-semibold text-[#154D71]">
-            Add New Certificate
-          </p>
-          <label htmlFor="certificateContent" className="flex flex-col">
-            <span className="text-gray-700">Certificate content</span>
-            <input
-              type="text"
-              className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0]"
-              value={formData.certificateContent}
-              onChange={(e) =>
-                setFormData({ ...formData, certificateContent: e.target.value })
-              }
-              placeholder="Enter certificate content"
-              required
-            />
-          </label>
-          <label htmlFor="certificate" className="flex flex-col">
-            <span className="text-gray-700">Choose certificate image</span>
-            <input
-              type="file"
-              className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0]"
-              onChange={(e) =>
-                setFormData({ ...formData, certificate: e.target.files[0] })
-              }
-              required
-            />
-          </label>
-          <button
-            className="mt-4 bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 px-4 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
-            type="submit"
-          >
-            Submit
-          </button>
-        </form>
-      </div>
 
-      <p className="w-full p-6 font-bold text-xl mt-10 text-white">
-        DANH SÁCH CÁC CHỨNG CHỈ
+      <AnimatePresence>
+        {showAddDialog && (
+          <motion.div className="fixed top-0 left-0 w-full h-full bg-black/30 flex justify-center items-center z-50">
+            <motion.form
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onSubmit={uploadImageToFirebase}
+              className="bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 relative"
+            >
+              <button
+                type="button"
+                onClick={() => setShowAddDialog(false)}
+                className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold focus:outline-none"
+                aria-label="Close"
+              >
+                ×
+              </button>
+              <h2 className="text-lg font-bold mb-2 text-[#154D71]">
+                Add New Certificate
+              </h2>
+              <label htmlFor="certificateContent" className="flex flex-col">
+                <span className="text-gray-700">Certificate content</span>
+                <input
+                  type="text"
+                  className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0]"
+                  value={formData.certificateContent}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      certificateContent: e.target.value,
+                    })
+                  }
+                  placeholder="Enter certificate content"
+                  required
+                />
+              </label>
+              <label htmlFor="certificate" className="flex flex-col">
+                <span className="text-gray-700">Choose certificate image</span>
+                <input
+                  type="file"
+                  className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0]"
+                  onChange={(e) =>
+                    setFormData({ ...formData, certificate: e.target.files[0] })
+                  }
+                  required
+                />
+              </label>
+              <button
+                className="mt-4 bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold py-2 px-4 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
+                type="submit"
+              >
+                Submit
+              </button>
+            </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <p className="w-full p-6 font-bold text-white flex justify-between items-center">
+        <span className="text-xl"> Skills List</span>
+        <button
+          className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
+          onClick={() => setShowAddDialog(true)}
+        >
+          <FaPlus /> Add Certificate
+        </button>
       </p>
 
-      <div className="w-full min-w-[600px] px-2 sm:px-6 overflow-x-auto">
-        <table className="w-full bg-white/90 border border-[#33A1E0]/20 rounded-md shadow-xl">
-          <thead className="border-b-[2px]">
-            <tr className="text-[#1178b3] text-sm leading-normal">
-              <th className="py-6 px-4 text-center">Số Thứ Tự</th>
-              <th className="py-6 px-4 text-left">Tên chứng chỉ</th>
-              <th className="py-6 px-4 text-left">Ảnh chứng chỉ</th>
-              <th className="py-6 px-4 text-center">Thao Tác</th>
+      <div className="w-full min-w-[600px] px-4 overflow-x-auto mb-10">
+        <table className="w-full bg-white/10 backdrop-blur-sm border shadow-xl font-sans border-[#33A1E0]/20 rounded-md overflow-hidden">
+          <thead className="">
+            <tr className="text-white text-sm leading-normal border-b border-[#33A1E0]/20">
+              <th className="py-6 px-4 text-center">Order</th>
+              <th className="py-6 px-4 text-left">Certificate Name</th>
+              <th className="py-6 px-4 text-left">Certificate Image</th>
+              <th className="py-6 px-4 text-left">Actions</th>
             </tr>
           </thead>
-          <tbody className="text-black text-sm">
+          <tbody className="text-white text-sm">
             {cers?.map((item, index) => (
-              <tr className="hover:bg-[#33A1E0]/10 transition-all" key={index}>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10 font-bold text-center">
-                  {index + 1}
+              <tr
+                className="hover:bg-[#33A1E0]/10 transition-all border-b border-[#33A1E0]/20"
+                key={index}
+              >
+                <td className="py-3 px-4 text-center">
+                  {index + 1 < 10 ? `0${index + 1}` : index + 1}
                 </td>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
+                <td className="py-3 px-4 max-w-[200px] truncate">
                   {item.certificateContent}
                 </td>
-                <td className="py-3 px-4 border-b border-[#33A1E0]/10">
+                <td className="py-3 px-4">
                   <img
                     src={item.certificate}
                     alt={item.certificateContent}
-                    className="w-12 h-12 rounded border border-[#33A1E0]/20 mx-auto"
+                    className="w-10 h-10 rounded-md border border-[#33A1E0]/20 mx-auto"
                   />
                 </td>
-                <td className="flex flex-col sm:flex-row justify-center items-center gap-2 py-3 px-4 border-b border-[#33A1E0]/10">
+                <td className="flex flex-col sm:flex-row items-center gap-2 py-3">
                   <button
                     onClick={() => {
                       setCerId({ cId: item.id, show: true });
                     }}
-                    className="font-bold py-2 px-4 rounded-lg transition duration-200 text-slate-600 flex items-center gap-x-2 border-slate-600 border"
+                    className="font-bold py-2 px-4 rounded-lg transition duration-200 text-white flex items-center gap-x-2 border-gray-200 border bg-[#154D71]/80 hover:bg-[#33A1E0]/80"
                   >
                     Update
                   </button>
@@ -334,7 +369,7 @@ const ManipulateOnCertificates = () => {
                         imgName: item.certificateImgName,
                       })
                     }
-                    className="flex items-center justify-center gap-x-2 text-red-500 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-500 border"
+                    className="flex items-center justify-center gap-x-2 text-red-100 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-200 border bg-red-500/80 hover:bg-red-600/80"
                   >
                     Delete
                   </button>

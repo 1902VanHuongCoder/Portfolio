@@ -37,3 +37,25 @@
   display: block;
   margin-right: 30px;
 }
+
+
+/* For Chrome, Edge, and Safari */
+::-webkit-scrollbar {
+  width: 8px;
+  background: #154D71;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #33A1E0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1e6fa7;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #33A1E0 #154D71;
+}
