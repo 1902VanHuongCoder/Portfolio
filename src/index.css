@@ -59,3 +59,7 @@
   scrollbar-width: thin;
   scrollbar-color: #33A1E0 #154D71;
 }
+
+.ql-container {
+  border: none !important;
+}
