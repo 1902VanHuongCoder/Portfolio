@@ -162,6 +162,9 @@ const BlogsList = () => {
                   <li className="text-[#33A1E0] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
                     <a href="https://www.tiktok.com/@huongto007">Tik tok</a>
                   </li>
+                  <li className="text-[#33A1E0] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
+                      <Link to="/exchange-source-code">Trao đổi source code</Link>
+                  </li>
                 </ul>
               </div>
             </aside>

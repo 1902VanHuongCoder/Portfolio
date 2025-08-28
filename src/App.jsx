@@ -14,6 +14,8 @@ import { useContext } from "react";
 import { SideBarBlogListContext } from "./contexts/SideBarBlogListContext";
 import AdminLayout from "./components/adminComponents/AdminLayout";
 import ManipulateOnBlogs from "./components/adminComponents/ManipulateOnBlogs";
+import SourceCodeAdmin from "./components/adminComponents/SourceCodeAdmin";
+import EditSourceCodeAdmin from "./components/adminComponents/EditSourceCodeAdmin";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
@@ -38,6 +40,8 @@ function App() {
             <Route path="skills" element={<ManipulateOnSkills />} />
             <Route path="certificates" element={<ManipulateOnCertificates />} />
             <Route path="add/blogs" element={<ManipulateOnBlogs />} />
+            <Route path="source-code" element={<SourceCodeAdmin />} />
+            <Route path="edit/source-code/:id" element={<EditSourceCodeAdmin />} />
           </Route>
         </Routes>
       </BrowserRouter>
