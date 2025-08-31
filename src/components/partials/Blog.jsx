@@ -3,22 +3,24 @@ import { useNavigate } from 'react-router-dom';
 
 const Blog = ({ imageUrl, title, date, blogId }) => {
   const navigate = useNavigate();
-  console.log("Run...");
   const handleClick = () => {
     navigate(`/blog/detail/${blogId}`);
   };
+  
 
   return (
     <div
-      className="relative h-fit overflow-hidden shadow-lg border-b-[1px] border-b-solid border-b-[rgba(255,255,255,.2)] cursor-pointer"
+      className="relative h-fit cursor-pointer space-y-4"
       onClick={handleClick}
     >
-      <img
-        src={imageUrl}
-        alt={title}
-        className="w-full h-48 object-cover rounded-md"
-      />
-      <div className="w-full h-full absolute top-0 left-0 bg-[rgba(0,0,0,.2)] flex flex-col p-4 hover:opacity-80 transition-opacity rounded-md overflow-hidden">
+      <div className='h-fit w-full shadow-lg'>
+        <img
+          src={imageUrl}
+          alt={title}
+          className="w-full h-48 object-cover rounded-md"
+        />
+      </div>
+      <div className="">
         <h3 className="text-white text-left text-lg font-semibold mb-2">
           {title}
         </h3>

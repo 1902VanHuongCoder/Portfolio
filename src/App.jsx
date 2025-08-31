@@ -16,6 +16,10 @@ import AdminLayout from "./components/adminComponents/AdminLayout";
 import ManipulateOnBlogs from "./components/adminComponents/ManipulateOnBlogs";
 import SourceCodeAdmin from "./components/adminComponents/SourceCodeAdmin";
 import EditSourceCodeAdmin from "./components/adminComponents/EditSourceCodeAdmin";
+import ExChangeSource from "./components/ExChangeSource";
+import ViewSourceDetail from "./components/ViewSourceDetail";
+import UpdateBlog from "./components/adminComponents/UpdateBlog";
+import PersonalInfo from "./components/adminComponents/PersonalInfo";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
@@ -35,13 +39,23 @@ function App() {
           <Route path="/add/blogs" element={<AddBlogPost />}></Route>
           <Route path="/blogs" element={<BlogsList />}></Route>
           <Route path="/blog/detail/:id" element={<BlogDetail />}></Route>
+          <Route path="/exchange-source-code" element={<ExChangeSource />} />
+          <Route
+            path="/exchange-source-code/:id"
+            element={<ViewSourceDetail />}
+          />
           <Route path="/admin/dashboard" element={<AdminLayout />}>
             <Route path="projects" element={<ManipulateOnProjects />} />
             <Route path="skills" element={<ManipulateOnSkills />} />
             <Route path="certificates" element={<ManipulateOnCertificates />} />
             <Route path="add/blogs" element={<ManipulateOnBlogs />} />
             <Route path="source-code" element={<SourceCodeAdmin />} />
-            <Route path="edit/source-code/:id" element={<EditSourceCodeAdmin />} />
+            <Route path="blogs/update/:id" element={<UpdateBlog />} />
+            <Route path="personal-info" element={<PersonalInfo />} />
+            <Route
+              path="edit/source-code/:id"
+              element={<EditSourceCodeAdmin />}
+            />
           </Route>
         </Routes>
       </BrowserRouter>

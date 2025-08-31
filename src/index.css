@@ -99,12 +99,12 @@
 .tiptap-content code {
   @apply text-white rounded px-1 py-0.5;
 }
-.tiptap-content h1 { @apply text-4xl font-bold text-blue-700 my-2; }
-.tiptap-content h2 { @apply text-3xl font-semibold text-green-700 my-2; }
-.tiptap-content h3 { @apply text-2xl font-medium text-red-700 my-2; }
-.tiptap-content h4 { @apply text-xl font-medium text-purple-700 my-2; }
-.tiptap-content h5 { @apply text-lg font-medium text-pink-700 my-2; }
-.tiptap-content h6 { @apply text-base font-medium text-gray-700 my-2; }
+.tiptap-content h1 { @apply text-4xl font-bold my-2; }
+.tiptap-content h2 { @apply text-3xl font-semibold my-2; }
+.tiptap-content h3 { @apply text-2xl font-medium my-2; }
+.tiptap-content h4 { @apply text-xl font-medium my-2; }
+.tiptap-content h5 { @apply text-lg font-medium my-2; }
+.tiptap-content h6 { @apply text-base font-medium my-2; }
 
 /* Table styles for Tiptap editor */
 .tiptap-content table {

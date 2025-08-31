@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link as ReactLink, useParams } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase_setup/firebase";
@@ -7,18 +7,70 @@ import { MdMenu } from "react-icons/md";
 import { SideBarBlogListContext } from "../contexts/SideBarBlogListContext";
 import { FaBookAtlas } from "react-icons/fa6";
 import Loading from "./Loading";
-import Error from "./partials/Error";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
+import TextAlign from "@tiptap/extension-text-align";
+import Heading from "@tiptap/extension-heading";
+import BulletList from "@tiptap/extension-bullet-list";
+import ListItem from "@tiptap/extension-list-item";
+import Paragraph from "@tiptap/extension-paragraph";
+import Text from "@tiptap/extension-text";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import HorizontalRule from "@tiptap/extension-horizontal-rule";
+import { Table } from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
+import Gapcursor from "@tiptap/extension-gapcursor";
+import Color from "@tiptap/extension-color";
+import { TextStyle } from "@tiptap/extension-text-style";
+
 
 const BlogDetail = () => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const { setShow } = useContext(SideBarBlogListContext);
+  const [content, setContent] = useState(null);
 
   const handleCloseSideBarBlogList = () => {
     setShow(true);
   };
+
+  const editor = useEditor({
+    editable: false,
+    extensions: [
+      StarterKit,
+      Underline,
+      Link,
+      Image,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Heading.configure({ levels: [1, 2, 3, 4, 5, 6] }),
+      BulletList,
+      ListItem,
+      Paragraph,
+      Text,
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      HorizontalRule,
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      Gapcursor,
+      Color,
+      TextStyle,
+    ],
+    content: content,
+    onUpdate: ({ editor }) => {
+      console.log(editor.getJSON());
+    },
+  });
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -28,6 +80,7 @@ const BlogDetail = () => {
 
         if (docSnap.exists()) {
           setBlog({ id: docSnap.id, ...docSnap.data() });
+          setContent(docSnap.data().content);
         } else {
           setError("Không tìm thấy bài viết");
         }
@@ -42,9 +95,17 @@ const BlogDetail = () => {
     fetchBlog();
   }, [id]);
 
-  if (error) {
-    return <Error error={error} />;
-  }
+  useEffect(() => {
+    if (editor && content !== null) {
+      try {
+        editor.commands.setContent(JSON.parse(content));
+      } catch {
+        editor.commands.setContent(content);
+      }
+    }
+  }, [editor, content]);
+
+  if (!editor) return null;
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
@@ -59,7 +120,7 @@ const BlogDetail = () => {
               </p>
               <div className="flex gap-x-4">
                 <div className="flex gap-2 items-center">
-                  <Link
+                  <ReactLink
                     to="/"
                     className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
                   >
@@ -67,10 +128,10 @@ const BlogDetail = () => {
                     <span className="text-2xl lg:text-md">
                       <IoHome />
                     </span>
-                  </Link>
+                  </ReactLink>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <Link
+                  <ReactLink
                     to="/blogs"
                     className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
                   >
@@ -78,7 +139,7 @@ const BlogDetail = () => {
                     <span className="text-2xl lg:text-md">
                       <FaBookAtlas />
                     </span>
-                  </Link>
+                  </ReactLink>
                 </div>
               </div>
             </div>
@@ -90,7 +151,7 @@ const BlogDetail = () => {
             </p>
           </div>
           {blog && (
-            <div className="w-full mx-auto max-w-[1200px] rounded-2xl mt-8 p-4 sm:p-10 flex flex-col gap-4">
+            <div className="w-full mx-auto max-w-[80%] rounded-2xl p-4 sm:p-10 flex flex-col gap-4">
               <img
                 src={blog.imageUrl}
                 alt={blog.title}
@@ -117,10 +178,12 @@ const BlogDetail = () => {
                   </svg>
                   {blog.date}
                 </p>
-                <div
-                  className="mt-6 text-white text-base sm:text-lg"
-                  dangerouslySetInnerHTML={{ __html: blog.content }}
-                />
+                <div className="prose max-w-none p-4 rounded">
+                  <EditorContent
+                    editor={editor}
+                    className="tiptap-content min-h-[300px] p-3 focus:outline-none rounded-br-md rounded-bl-md focus:border-none"
+                  />
+                </div>
               </div>
             </div>
           )}

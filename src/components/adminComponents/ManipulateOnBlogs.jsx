@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { db, storage } from "../../firebase_setup/firebase";
 import {
   collection,
@@ -6,112 +6,74 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  updateDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FaRegTrashAlt, FaPencilAlt } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
-
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-import { IoClose } from "react-icons/io5";
-
+import { Link as ReactLink } from "react-router-dom";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
+import TextAlign from "@tiptap/extension-text-align";
+import Heading from "@tiptap/extension-heading";
+import BulletList from "@tiptap/extension-bullet-list";
+import ListItem from "@tiptap/extension-list-item";
+import Paragraph from "@tiptap/extension-paragraph";
+import Text from "@tiptap/extension-text";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import HorizontalRule from "@tiptap/extension-horizontal-rule";
+import { Table } from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
+import Gapcursor from "@tiptap/extension-gapcursor";
+import Color from "@tiptap/extension-color";
+import { TextStyle } from "@tiptap/extension-text-style";
+import {deleteObject, ref as storageRef} from "firebase/storage";
 const ManipulateOnBlogs = () => {
-  const quillRef = useRef();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
+
   const [content, setContent] = useState("");
+
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [blogs, setBlogs] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
-  const [showUpdate, setShowUpdate] = useState(false);
-  const [updateBlog, setUpdateBlog] = useState(null);
-  const [updateTitle, setUpdateTitle] = useState("");
-  const [updateDate, setUpdateDate] = useState("");
-  const [updateContent, setUpdateContent] = useState("");
-  const [updateImageFile, setUpdateImageFile] = useState(null);
-  const [updateImagePreview, setUpdateImagePreview] = useState(null);
-  // Handle update image preview
-  const handleUpdateImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setUpdateImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUpdateImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
-  // Open update modal and set state
-  const openUpdateModal = (blog) => {
-    setUpdateBlog(blog);
-    setUpdateTitle(blog.title);
-    setUpdateDate(blog.date);
-    setUpdateContent(blog.content);
-    setUpdateImagePreview(blog.imageUrl || null);
-    setUpdateImageFile(null);
-    setShowUpdate(true);
-  };
+  // Initialize text editor
 
-  // Update blog in Firestore
-  const handleUpdateBlog = async (e) => {
-    alert("Updating blog...");
-    e.preventDefault();
-    try {
-      let imageUrl = updateBlog.imageUrl || null;
-      if (updateImageFile) {
-        const storageRef = ref(
-          storage,
-          `blog-thumbnails/${Date.now()}-${updateImageFile.name}`
-        );
-        await uploadBytes(storageRef, updateImageFile);
-        imageUrl = await getDownloadURL(storageRef);
-      }
-      await addDoc(collection(db, "blogPostsUpdateLog"), {
-        blogId: updateBlog.id,
-        oldTitle: updateBlog.title,
-        oldContent: updateBlog.content,
-        oldDate: updateBlog.date,
-        oldImageUrl: updateBlog.imageUrl,
-        updatedAt: new Date(),
-      }); // Optional: log update
-      const blogDocRef = doc(db, "blogPosts", updateBlog.id);
-      await updateDoc(blogDocRef, {
-        title: updateTitle,
-        date: updateDate,
-        content: updateContent,
-        imageUrl,
-      });
-      setShowUpdate(false);
-      setUpdateBlog(null);
-      fetchBlogs();
-      alert("Blog post updated successfully!");
-    } catch (error) {
-      alert("Error updating blog post.");
-      console.error("Error updating blog post: ", error);
-    }
-  };
-
-  const imageHandler = () => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.click();
-
-    input.onchange = async () => {
-      const file = input.files[0];
-      const quill = quillRef.current.getEditor();
-      const range = quill.getSelection(true);
-      const storageRef = ref(storage, `blog-images/${Date.now()}-${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      quill.insertEmbed(range.index, "image", url);
-      quill.setSelection(range.index + 1);
-    };
-  };
+  const addEditor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Link,
+      Image,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Heading.configure({ levels: [1, 2, 3, 4, 5, 6] }),
+      BulletList,
+      ListItem,
+      Paragraph,
+      Text,
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      HorizontalRule,
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      Gapcursor,
+      Color,
+      TextStyle,
+    ],
+    content: content,
+    onUpdate: ({ editor }) => {
+      setContent(editor.getJSON());
+    },
+  });
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -134,47 +96,6 @@ const ManipulateOnBlogs = () => {
     await uploadBytes(storageRef, imageFile);
     return getDownloadURL(storageRef);
   };
-
-  const modules = useMemo(
-    () => ({
-      toolbar: {
-        container: [
-          [{ header: [1, 2, 3, 4, 5, 6] }],
-          ["bold", "italic", "underline", "strike", "blockquote"],
-          [
-            { list: "ordered" },
-            { list: "bullet" },
-            { indent: "-1" },
-            { indent: "+1" },
-          ],
-          ["link", "image", "code-block"],
-          ["clean"],
-          // Add color palette for text
-          [{ color: [] }],
-        ],
-        handlers: {
-          image: imageHandler,
-        },
-      },
-    }),
-    []
-  );
-
-  const formats = [
-    "header",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "blockquote",
-    "list",
-    "bullet",
-    "indent",
-    "link",
-    "image",
-    "code-block",
-    "color",
-  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -215,6 +136,13 @@ const ManipulateOnBlogs = () => {
 
   const handleDeleteBlog = async (id) => {
     try {
+      // Delete all relative images
+      const blogThumbnailImage = blogs.find(blog => blog.id === id)?.imageUrl;
+      if (blogThumbnailImage) {
+        const imageRef = storageRef(storage, blogThumbnailImage);
+        await deleteObject(imageRef);
+      }
+
       await deleteDoc(doc(db, "blogPosts", id));
       fetchBlogs();
     } catch (error) {
@@ -224,8 +152,8 @@ const ManipulateOnBlogs = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
-      <h1 className="w-full text-4xl p-4 font-extrabold text-white drop-shadow-xl border-b-[1px]">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0] px-4">
+      <h1 className="w-full text-4xl px-4 py-6 font-extrabold text-white drop-shadow-xl border-b-[1px] border-b-white/10">
         BLOG OPERATIONS
       </h1>
       <AnimatePresence>
@@ -315,22 +243,247 @@ const ManipulateOnBlogs = () => {
             <label htmlFor="content" className="block mb-2 font-bold">
               Blog Content
             </label>
-            <div
-              className="bg-white/50 rounded shadow"
-              style={{ minHeight: 256 }}
-            >
-              <ReactQuill
-                value={content}
-                ref={quillRef}
-                onChange={setContent}
-                modules={modules}
-                formats={formats}
-                style={{
-                  height: 400,
-                  background: "rgba(255,255,255,.8)",
-                  color: "black",
-                  border: "none",
-                }}
+            <div className="border rounded p-2">
+              {/* Toolbar */}
+              <div className="flex flex-wrap gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => addEditor.chain().focus().toggleBold().run()}
+                  className={
+                    addEditor.isActive("bold")
+                      ? "font-bold bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  B
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addEditor.chain().focus().toggleItalic().run()}
+                  className={
+                    addEditor.isActive("italic")
+                      ? "italic bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  I
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().toggleUnderline().run()
+                  }
+                  className={
+                    addEditor.isActive("underline")
+                      ? "underline bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  U
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addEditor.chain().focus().toggleStrike().run()}
+                  className={
+                    addEditor.isActive("strike")
+                      ? "line-through bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  S
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().toggleHeading({ level: 1 }).run()
+                  }
+                  className={
+                    addEditor.isActive("heading", { level: 1 })
+                      ? "font-bold bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  H1
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().toggleHeading({ level: 2 }).run()
+                  }
+                  className={
+                    addEditor.isActive("heading", { level: 2 })
+                      ? "font-bold bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  H2
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().toggleHeading({ level: 3 }).run()
+                  }
+                  className={
+                    addEditor.isActive("heading", { level: 3 })
+                      ? "font-bold bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  H3
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().toggleBulletList().run()
+                  }
+                  className={
+                    addEditor.isActive("bulletList")
+                      ? "bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  • List
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().toggleOrderedList().run()
+                  }
+                  className={
+                    addEditor.isActive("orderedList")
+                      ? "bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  1. List
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().toggleBlockquote().run()
+                  }
+                  className={
+                    addEditor.isActive("blockquote")
+                      ? "bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  ❝
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().toggleCodeBlock().run()
+                  }
+                  className={
+                    addEditor.isActive("codeBlock")
+                      ? "bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  {"<>"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().setHorizontalRule().run()
+                  }
+                  className="px-2"
+                >
+                  ―
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = prompt("Enter URL");
+                    if (url)
+                      addEditor.chain().focus().setLink({ href: url }).run();
+                  }}
+                  className={
+                    addEditor.isActive("link") ? "bg-white/30 px-2" : "px-2"
+                  }
+                >
+                  🔗
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = prompt("Image URL");
+                    if (url)
+                      addEditor.chain().focus().setImage({ src: url }).run();
+                  }}
+                  className="px-2"
+                >
+                  🖼️
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().setTextAlign("left").run()
+                  }
+                  className={
+                    addEditor.isActive({ textAlign: "left" })
+                      ? "bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  ⯇
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().setTextAlign("center").run()
+                  }
+                  className={
+                    addEditor.isActive({ textAlign: "center" })
+                      ? "bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  ≡
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor.chain().focus().setTextAlign("right").run()
+                  }
+                  className={
+                    addEditor.isActive({ textAlign: "right" })
+                      ? "bg-white/30 px-2"
+                      : "px-2"
+                  }
+                >
+                  ⯈
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addEditor
+                      .chain()
+                      .focus()
+                      .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                      .run()
+                  }
+                  className="px-2"
+                >
+                  ▦
+                </button>
+                <input
+                  type="color"
+                  onInput={(e) =>
+                    addEditor.chain().focus().setColor(e.target.value).run()
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => addEditor.chain().focus().unsetColor().run()}
+                >
+                  Clear Color
+                </button>
+              </div>
+              <EditorContent
+                editor={addEditor}
+                className="tiptap-content min-h-[300px] p-3 focus:outline-none rounded-br-md rounded-bl-md focus:border-none"
               />
             </div>
           </div>
@@ -368,114 +521,13 @@ const ManipulateOnBlogs = () => {
                 {item.title}
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-2 mt-2 w-full justify-center">
-                <button
-                  onClick={() => openUpdateModal(item)}
+                <ReactLink
+                  to={`/admin/dashboard/blogs/update/${item.id}`}
                   className="font-bold py-2 px-4 rounded-lg transition duration-200 text-slate-600 flex items-center gap-x-2 border-slate-600 border bg-white hover:bg-[#33A1E0]/10"
                 >
                   <FaPencilAlt />
                   Update
-                </button>
-                {/* Update Blog Modal */}
-                <AnimatePresence>
-                  {showUpdate && (
-                    <motion.div className="fixed top-0 left-0 w-full h-full bg-black/40 flex justify-center items-center z-50 px-5">
-                      <motion.form
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.95, opacity: 0 }}
-                        onSubmit={handleUpdateBlog}
-                        className="bg-white rounded-xl p-5 w-full shadow-2xl flex flex-col gap-3 relative"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setShowUpdate(false)}
-                          className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold focus:outline-none"
-                          aria-label="Close"
-                        >
-                          <IoClose />
-                        </button>
-                        <h2 className="text-lg font-bold mb-2 text-[#154D71]">
-                          Update Blog Post
-                        </h2>
-                        <div className="lg:flex gap-x-4">
-                          <label className="flex flex-col w-full">
-                            <span className="text-gray-700">Title</span>
-                            <input
-                              type="text"
-                              className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0] text-black"
-                              value={updateTitle}
-                              onChange={(e) => setUpdateTitle(e.target.value)}
-                              required
-                            />
-                          </label>
-                          <label className="flex flex-col w-full">
-                            <span className="text-gray-700">Date Created</span>
-                            <input
-                              type="date"
-                              className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0] text-black"
-                              value={updateDate}
-                              onChange={(e) => setUpdateDate(e.target.value)}
-                              required
-                            />
-                          </label>
-                        </div>
-                        <label className="flex flex-col">
-                          <span className="text-gray-700">Featured Image</span>
-                          <input
-                            type="file"
-                            className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0]"
-                            onChange={handleUpdateImageChange}
-                          />
-                        </label>
-                        <div className="w-30 relative">
-                          {updateImagePreview && (
-                            <img
-                              src={updateImagePreview}
-                              alt="Preview"
-                              className="h-20 w-auto object-cover"
-                            />
-                          )}
-                        </div>
-                       
-                        <label className="flex flex-col">
-                          <span className="text-gray-700">Blog Content</span>
-                          <div
-                            className="bg-white/50 rounded shadow"
-                            style={{ minHeight: 256 }}
-                          >
-                            <ReactQuill
-                              value={updateContent}
-                              onChange={setUpdateContent}
-                              modules={modules}
-                              formats={formats}
-                              style={{
-                                height: 200,
-                                background: "rgba(255,255,255,.8)",
-                                color: "black",
-                                border: "none",
-                              }}
-                            />
-                          </div>
-                        </label>
-                        <div className="flex justify-end gap-x-2 mt-2">
-                          <button
-                            type="button"
-                            className="bg-gray-200 text-[#154D71] font-bold px-4 py-2 rounded-lg shadow hover:bg-gray-300"
-                            onClick={() => setShowUpdate(false)}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            className="bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold px-4 py-2 rounded-lg shadow hover:from-[#33A1E0] hover:to-[#154D71] transition duration-200"
-                          >
-                            Update
-                          </button>
-                        </div>
-                      </motion.form>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                </ReactLink>
                 <button
                   onClick={() => setConfirmDelete({ show: true, id: item.id })}
                   className="flex items-center justify-center gap-x-2 text-red-500 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-500 border bg-white hover:bg-red-100"

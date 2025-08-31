@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { FaUserTie } from "react-icons/fa6";
+import { FaFileCode, FaUserTie } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { IoIosArrowDropleft } from "react-icons/io";
@@ -44,7 +44,6 @@ const AdminLayout = () => {
                   ? "bg-[#33A1E0]"
                   : ""
               }`}
-              onClick={() => setIsShowSideBar(false)}
             >
               {/* Project Icon */}
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
@@ -90,7 +89,6 @@ const AdminLayout = () => {
                   ? "bg-[#33A1E0]"
                   : ""
               }`}
-              onClick={() => setIsShowSideBar(false)}
             >
               {/* Skills Icon */}
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
@@ -111,7 +109,6 @@ const AdminLayout = () => {
                   ? "bg-[#33A1E0]"
                   : ""
               }`}
-              onClick={() => setIsShowSideBar(false)}
             >
               {/* Certificate Icon */}
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
@@ -141,7 +138,6 @@ const AdminLayout = () => {
                   ? "bg-[#33A1E0]"
                   : ""
               }`}
-              onClick={() => setIsShowSideBar(false)}
             >
               {/* Blog Icon */}
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
@@ -162,6 +158,32 @@ const AdminLayout = () => {
                 />
               </svg>
               Add Blog
+            </Link>
+            <Link
+              to="/admin/dashboard/source-code"
+              className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
+                location.pathname === "/admin/dashboard/source-code"
+                  ? "bg-[#33A1E0]"
+                  : ""
+              }`}
+            >
+              <span>
+                <FaFileCode />
+              </span>
+              <span>Source Sharing</span>
+            </Link>
+            <Link
+              to="/admin/dashboard/personal-info"
+              className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
+                location.pathname === "/admin/dashboard/personal-info"
+                  ? "bg-[#33A1E0]"
+                  : ""
+              }`}
+            >
+              <span>
+                <FaUserTie />
+              </span>
+              <span>Personal Info</span>
             </Link>
           </nav>
         </div>

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { addDoc, collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -19,9 +26,9 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
-import { db } from "../../firebase_setup/firebase";
+import { db, storage } from "../../firebase_setup/firebase";
 import { useNavigate } from "react-router-dom";
-
+import { deleteObject, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 const SourceCodeAdmin = () => {
   const [form, setForm] = useState({
     title: "",
@@ -33,8 +40,9 @@ const SourceCodeAdmin = () => {
     youtube: "",
   });
   const [projects, setProjects] = useState([]);
-  const [imageInput, setImageInput] = useState("");
   const [editId, setEditId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
+  const [imageUploadInput, setImageUploadInput] = useState(null);
   const router = useNavigate();
   const [editForm, setEditForm] = useState({
     title: "",
@@ -48,23 +56,7 @@ const SourceCodeAdmin = () => {
   const editEditor = useEditor({
     extensions: [
       StarterKit,
-      Underline,
-      Link,
-      Image,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Heading.configure({ levels: [1, 2, 3, 4, 5, 6] }),
-      BulletList,
-      ListItem,
-      Paragraph,
-      Text,
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      HorizontalRule,
-      Table.configure({ resizable: true }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      Gapcursor,
+    
     ],
     content: editForm.content,
     onUpdate: ({ editor }) => {
@@ -74,6 +66,7 @@ const SourceCodeAdmin = () => {
   const refreshProjects = async () => {
     const snapshot = await getDocs(collection(db, "sourceProjects"));
     setProjects(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    console.log(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   };
 
   const editor = useEditor({
@@ -103,6 +96,21 @@ const SourceCodeAdmin = () => {
     },
   });
 
+  // Handle local image upload for editor
+  const handleEditorImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const storagePath = `source-project-images/${Date.now()}-${file.name}`;
+    const storageReference = storageRef(storage, storagePath);
+    await uploadBytes(storageReference, file);
+    const url = await getDownloadURL(storageReference);
+    if (editor) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+    // Reset input value so same file can be uploaded again if needed
+    e.target.value = "";
+  };
+
   // Fetch projects on mount
   useState(() => {
     getDocs(collection(db, "sourceProjects")).then((snapshot) => {
@@ -113,13 +121,6 @@ const SourceCodeAdmin = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
-  };
-
-  const handleAddImage = () => {
-    if (imageInput) {
-      setForm((f) => ({ ...f, images: [...f.images, imageInput] }));
-      setImageInput("");
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -146,7 +147,10 @@ const SourceCodeAdmin = () => {
   };
 
   const handleEditImageChange = (i, value) => {
-    setEditForm((f) => ({ ...f, images: f.images.map((img, idx) => (idx === i ? value : img)) }));
+    setEditForm((f) => ({
+      ...f,
+      images: f.images.map((img, idx) => (idx === i ? value : img)),
+    }));
   };
 
   const handleEditSave = async (id) => {
@@ -157,14 +161,30 @@ const SourceCodeAdmin = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this project?")) {
-      await deleteDoc(doc(db, "sourceProjects", id));
+    setConfirmDelete({ show: true, id });
+  };
+
+  const confirmDeleteProject = async () => {
+    if (confirmDelete.id) {
+      // Delete all relative images
+      const project = projects.find((p) => p.id === confirmDelete.id);
+      if (project) {
+        project.images.forEach(async (img) => {
+          const imgRef = storageRef(storage, img);
+          await deleteObject(imgRef);
+        });
+      }
+      await deleteDoc(doc(db, "sourceProjects", confirmDelete.id));
       await refreshProjects();
+      setConfirmDelete({ show: false, id: null });
     }
+  };
+  const cancelDelete = () => {
+    setConfirmDelete({ show: false, id: null });
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="relative p-6 max-w-4xl mx-auto">
       <h2 className="text-3xl font-bold mb-4">Add New Project for Sale</h2>
       <form
         onSubmit={handleSubmit}
@@ -185,20 +205,23 @@ const SourceCodeAdmin = () => {
           placeholder="Subtitle"
           className="w-full p-2 border rounded"
         />
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <input
-            value={imageInput}
-            onChange={(e) => setImageInput(e.target.value)}
-            placeholder="Image URL"
+            type="file"
+            accept="image/*"
+            onChange={async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              const storagePath = `source-project-images/${Date.now()}-${file.name}`;
+              const storageReference = storageRef(storage, storagePath);
+              await uploadBytes(storageReference, file);
+              const url = await getDownloadURL(storageReference);
+              setForm((f) => ({ ...f, images: [...f.images, url] }));
+              e.target.value = "";
+            }}
             className="flex-1 p-2 border rounded"
           />
-          <button
-            type="button"
-            onClick={handleAddImage}
-            className="px-4 py-2 bg-blue-500 text-white rounded"
-          >
-            Add Image
-          </button>
+          <span className="text-gray-500 text-sm">Upload image from your computer</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {form.images.map((img, i) => (
@@ -384,14 +407,19 @@ const SourceCodeAdmin = () => {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const url = prompt("Image URL");
-                  if (url) editor.chain().focus().setImage({ src: url }).run();
-                }}
+                onClick={() => imageUploadInput && imageUploadInput.click()}
                 className="px-2"
+                title="Upload Image"
               >
                 🖼️
               </button>
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                ref={el => setImageUploadInput(el)}
+                onChange={handleEditorImageUpload}
+              />
               <button
                 type="button"
                 onClick={() =>
@@ -472,39 +500,305 @@ const SourceCodeAdmin = () => {
                     <input
                       key={i}
                       value={img}
-                      onChange={e => handleEditImageChange(i, e.target.value)}
+                      onChange={(e) => handleEditImageChange(i, e.target.value)}
                       className="w-32 p-1 border rounded mb-1"
                     />
                   ))}
                 </div>
-                <input name="title" value={editForm.title} onChange={handleEditChange} className="w-full p-2 border rounded" />
-                <input name="subtitle" value={editForm.subtitle} onChange={handleEditChange} className="w-full p-2 border rounded" />
-                <input name="price" value={editForm.price} onChange={handleEditChange} className="w-full p-2 border rounded" />
-                <input name="github" value={editForm.github} onChange={handleEditChange} className="w-full p-2 border rounded" />
-                <input name="youtube" value={editForm.youtube} onChange={handleEditChange} className="w-full p-2 border rounded" placeholder="YouTube iframe embed code" />
+                <input
+                  name="title"
+                  value={editForm.title}
+                  onChange={handleEditChange}
+                  className="w-full p-2 border rounded"
+                />
+                <input
+                  name="subtitle"
+                  value={editForm.subtitle}
+                  onChange={handleEditChange}
+                  className="w-full p-2 border rounded"
+                />
+                <input
+                  name="price"
+                  value={editForm.price}
+                  onChange={handleEditChange}
+                  className="w-full p-2 border rounded"
+                />
+                <input
+                  name="github"
+                  value={editForm.github}
+                  onChange={handleEditChange}
+                  className="w-full p-2 border rounded"
+                />
+                <input
+                  name="youtube"
+                  value={editForm.youtube}
+                  onChange={handleEditChange}
+                  className="w-full p-2 border rounded"
+                  placeholder="YouTube iframe embed code"
+                />
                 <div>
                   <label className="block mb-1 font-semibold">Content</label>
                   <div className="border rounded p-2 bg-gray-50">
                     {/* Toolbar */}
                     <div className="flex flex-wrap gap-2 mb-2">
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleBold().run()} className={editEditor.isActive("bold") ? "font-bold bg-blue-100 px-2 rounded" : "px-2"}>B</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleItalic().run()} className={editEditor.isActive("italic") ? "italic bg-blue-100 px-2 rounded" : "px-2"}>I</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleUnderline().run()} className={editEditor.isActive("underline") ? "underline bg-blue-100 px-2 rounded" : "px-2"}>U</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleStrike().run()} className={editEditor.isActive("strike") ? "line-through bg-blue-100 px-2 rounded" : "px-2"}>S</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleHeading({ level: 1 }).run()} className={editEditor.isActive("heading", { level: 1 }) ? "font-bold bg-blue-100 px-2 rounded" : "px-2"}>H1</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleHeading({ level: 2 }).run()} className={editEditor.isActive("heading", { level: 2 }) ? "font-bold bg-blue-100 px-2 rounded" : "px-2"}>H2</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleHeading({ level: 3 }).run()} className={editEditor.isActive("heading", { level: 3 }) ? "font-bold bg-blue-100 px-2 rounded" : "px-2"}>H3</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleBulletList().run()} className={editEditor.isActive("bulletList") ? "bg-blue-100 px-2 rounded" : "px-2"}>• List</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleOrderedList().run()} className={editEditor.isActive("orderedList") ? "bg-blue-100 px-2 rounded" : "px-2"}>1. List</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleBlockquote().run()} className={editEditor.isActive("blockquote") ? "bg-blue-100 px-2 rounded" : "px-2"}>❝</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().toggleCodeBlock().run()} className={editEditor.isActive("codeBlock") ? "bg-blue-100 px-2 rounded" : "px-2"}>{"<>"}</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().setHorizontalRule().run()} className="px-2">―</button>
-                      <button type="button" onClick={() => { const url = prompt("Enter URL"); if (url) editEditor.chain().focus().setLink({ href: url }).run(); }} className={editEditor.isActive("link") ? "bg-blue-100 px-2 rounded" : "px-2"}>🔗</button>
-                      <button type="button" onClick={() => { const url = prompt("Image URL"); if (url) editEditor.chain().focus().setImage({ src: url }).run(); }} className="px-2">🖼️</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().setTextAlign("left").run()} className={editEditor.isActive({ textAlign: "left" }) ? "bg-blue-100 px-2 rounded" : "px-2"}>⯇</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().setTextAlign("center").run()} className={editEditor.isActive({ textAlign: "center" }) ? "bg-blue-100 px-2 rounded" : "px-2"}>≡</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().setTextAlign("right").run()} className={editEditor.isActive({ textAlign: "right" }) ? "bg-blue-100 px-2 rounded" : "px-2"}>⯈</button>
-                      <button type="button" onClick={() => editEditor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} className="px-2">▦</button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().toggleBold().run()
+                        }
+                        className={
+                          editEditor.isActive("bold")
+                            ? "font-bold bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().toggleItalic().run()
+                        }
+                        className={
+                          editEditor.isActive("italic")
+                            ? "italic bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().toggleUnderline().run()
+                        }
+                        className={
+                          editEditor.isActive("underline")
+                            ? "underline bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        U
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().toggleStrike().run()
+                        }
+                        className={
+                          editEditor.isActive("strike")
+                            ? "line-through bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        S
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor
+                            .chain()
+                            .focus()
+                            .toggleHeading({ level: 1 })
+                            .run()
+                        }
+                        className={
+                          editEditor.isActive("heading", { level: 1 })
+                            ? "font-bold bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        H1
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor
+                            .chain()
+                            .focus()
+                            .toggleHeading({ level: 2 })
+                            .run()
+                        }
+                        className={
+                          editEditor.isActive("heading", { level: 2 })
+                            ? "font-bold bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor
+                            .chain()
+                            .focus()
+                            .toggleHeading({ level: 3 })
+                            .run()
+                        }
+                        className={
+                          editEditor.isActive("heading", { level: 3 })
+                            ? "font-bold bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        H3
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().toggleBulletList().run()
+                        }
+                        className={
+                          editEditor.isActive("bulletList")
+                            ? "bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        • List
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().toggleOrderedList().run()
+                        }
+                        className={
+                          editEditor.isActive("orderedList")
+                            ? "bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        1. List
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().toggleBlockquote().run()
+                        }
+                        className={
+                          editEditor.isActive("blockquote")
+                            ? "bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        ❝
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().toggleCodeBlock().run()
+                        }
+                        className={
+                          editEditor.isActive("codeBlock")
+                            ? "bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        {"<>"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().setHorizontalRule().run()
+                        }
+                        className="px-2"
+                      >
+                        ―
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = prompt("Enter URL");
+                          if (url)
+                            editEditor
+                              .chain()
+                              .focus()
+                              .setLink({ href: url })
+                              .run();
+                        }}
+                        className={
+                          editEditor.isActive("link")
+                            ? "bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        🔗
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = prompt("Image URL");
+                          if (url)
+                            editEditor
+                              .chain()
+                              .focus()
+                              .setImage({ src: url })
+                              .run();
+                        }}
+                        className="px-2"
+                      >
+                        🖼️
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().setTextAlign("left").run()
+                        }
+                        className={
+                          editEditor.isActive({ textAlign: "left" })
+                            ? "bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        ⯇
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor
+                            .chain()
+                            .focus()
+                            .setTextAlign("center")
+                            .run()
+                        }
+                        className={
+                          editEditor.isActive({ textAlign: "center" })
+                            ? "bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        ≡
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor.chain().focus().setTextAlign("right").run()
+                        }
+                        className={
+                          editEditor.isActive({ textAlign: "right" })
+                            ? "bg-blue-100 px-2 rounded"
+                            : "px-2"
+                        }
+                      >
+                        ⯈
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          editEditor
+                            .chain()
+                            .focus()
+                            .insertTable({
+                              rows: 3,
+                              cols: 3,
+                              withHeaderRow: true,
+                            })
+                            .run()
+                        }
+                        className="px-2"
+                      >
+                        ▦
+                      </button>
                     </div>
                     <EditorContent
                       editor={editEditor}
@@ -513,8 +807,18 @@ const SourceCodeAdmin = () => {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-2">
-                  <button onClick={() => handleEditSave(proj.id)} className="px-4 py-1 bg-green-500 text-white rounded">Save</button>
-                  <button onClick={() => setEditId(null)} className="px-4 py-1 bg-gray-400 text-white rounded">Cancel</button>
+                  <button
+                    onClick={() => handleEditSave(proj.id)}
+                    className="px-4 py-1 bg-green-500 text-white rounded"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditId(null)}
+                    className="px-4 py-1 bg-gray-400 text-white rounded"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </>
             ) : (
@@ -532,7 +836,9 @@ const SourceCodeAdmin = () => {
                 </div>
                 <h4 className="text-xl font-bold">{proj.title}</h4>
                 <p className="text-gray-600">{proj.subtitle}</p>
-                <p className="text-blue-700 font-semibold">Price: {proj.price}</p>
+                <p className="text-blue-700 font-semibold">
+                  Price: {proj.price}
+                </p>
                 <a
                   href={proj.github}
                   className="text-blue-500 underline"
@@ -551,14 +857,47 @@ const SourceCodeAdmin = () => {
                   dangerouslySetInnerHTML={{ __html: proj.content }}
                 /> */}
                 <div className="flex gap-2 mt-2">
-                  <button onClick={() => handleEdit(proj)} className="px-4 py-1 bg-yellow-500 text-white rounded">Edit</button>
-                  <button onClick={() => handleDelete(proj.id)} className="px-4 py-1 bg-red-500 text-white rounded">Delete</button>
+                  <button
+                    onClick={() => handleEdit(proj)}
+                    className="px-4 py-1 bg-yellow-500 text-white rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(proj.id)}
+                    className="px-4 py-1 bg-red-500 text-white rounded"
+                  >
+                    Delete
+                  </button>
                 </div>
               </>
             )}
           </div>
         ))}
       </div>
+      {confirmDelete.show && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 shadow-2xl flex flex-col gap-4 text-center max-w-xs w-full">
+            <p className="text-lg font-semibold">
+              Are you sure you want to delete this project?
+            </p>
+            <div className="flex gap-4 justify-center mt-2">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 font-bold"
+                onClick={confirmDeleteProject}
+              >
+                Delete
+              </button>
+              <button
+                className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 font-bold"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

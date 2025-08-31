@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { storage } from "../../firebase_setup/firebase";
+import { ref as storageRef, deleteObject, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from "../../firebase_setup/firebase";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -21,6 +23,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
+import { IoCloseCircleSharp } from "react-icons/io5";
 
 const EditSourceCodeAdmin = () => {
   const { id } = useParams();
@@ -34,7 +37,7 @@ const EditSourceCodeAdmin = () => {
     content: "",
     youtube: "",
   });
-  const [imageInput, setImageInput] = useState("");
+  const [originalImages, setOriginalImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -42,7 +45,9 @@ const EditSourceCodeAdmin = () => {
       const docRef = doc(db, "sourceProjects", id);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setForm({ ...docSnap.data() });
+        const data = docSnap.data();
+        setForm({ ...data });
+        setOriginalImages(data.images || []);
       }
     };
     fetchProject();
@@ -87,23 +92,39 @@ const EditSourceCodeAdmin = () => {
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  const handleAddImage = () => {
-    if (imageInput) {
-      setForm((f) => ({ ...f, images: [...f.images, imageInput] }));
-      setImageInput("");
-    }
-  };
-
-  const handleImageChange = (i, value) => {
-    setForm((f) => ({
-      ...f,
-      images: f.images.map((img, idx) => (idx === i ? value : img)),
-    }));
-  };
+  const handleDeleteImage = async (imgUrl) => {
+      const newForm = {
+        ...form,
+        images: form.images.filter((img) => img !== imgUrl),
+      };
+      setForm(newForm);
+  }
 
   const handleSave = async (e) => {
     e.preventDefault();
+
     setLoading(true);
+    if(form.images.length === 0){
+      alert("No images uploaded");
+      return;
+    }
+    // Find deleted images
+    const deletedImages = originalImages.filter(img => !form.images.includes(img));
+    // Delete removed images from Firebase Storage
+    for (const imgUrl of deletedImages) {
+      try {
+        // Extract the storage path from the download URL
+        const matches = decodeURIComponent(imgUrl).match(/\/o\/(.+)\?/);
+        const path = matches && matches[1] ? matches[1] : null;
+        if (path) {
+          const imgRef = storageRef(storage, path);
+          await deleteObject(imgRef);
+        }
+      } catch (err) {
+        // Ignore errors for missing files
+        console.warn("Failed to delete image:", imgUrl, err);
+      }
+    }
     const docRef = doc(db, "sourceProjects", id);
     await updateDoc(docRef, form);
     setLoading(false);
@@ -132,29 +153,44 @@ const EditSourceCodeAdmin = () => {
           placeholder="Subtitle"
           className="w-full p-2 border rounded"
         />
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <input
-            value={imageInput}
-            onChange={(e) => setImageInput(e.target.value)}
-            placeholder="Image URL"
+            type="file"
+            accept="image/*"
+            onChange={async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              const storagePath = `source-project-images/${Date.now()}-${
+                file.name
+              }`;
+              const storageReference = storageRef(storage, storagePath);
+              await uploadBytes(storageReference, file);
+              const url = await getDownloadURL(storageReference);
+              setForm((f) => ({ ...f, images: [...f.images, url] }));
+              e.target.value = "";
+            }}
             className="flex-1 p-2 border rounded"
           />
-          <button
-            type="button"
-            onClick={handleAddImage}
-            className="px-4 py-2 bg-blue-500 text-white rounded"
-          >
-            Add Image
-          </button>
+          <span className="text-gray-500 text-sm">
+            Upload image from your computer
+          </span>
         </div>
         <div className="flex flex-wrap gap-2">
           {form.images.map((img, i) => (
-            <input
-              key={i}
-              value={img}
-              onChange={(e) => handleImageChange(i, e.target.value)}
-              className="w-32 p-1 border rounded mb-1"
-            />
+            <div key={i} className="w-fit h-full relative">
+              <img
+                src={img}
+                alt={`Project Image ${i + 1}`}
+                className="w-32 h-32 object-cover rounded mb-1"
+              />
+              <button
+                type="button"
+                onClick={() => handleDeleteImage(img)}
+                className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded"
+              >
+                <IoCloseCircleSharp />
+              </button>
+            </div>
           ))}
         </div>
         <input
