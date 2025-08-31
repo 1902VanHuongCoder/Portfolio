@@ -1,25 +1,25 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./Home";
-import ManipulateOnProjects from "./components/adminComponents/ManipulateOnProjects";
-import Admin from "./components/adminComponents/Admin";
-import ManipulateOnSkills from "./components/adminComponents/ManipulateOnSkills";
-import ManipulateOnCertificates from "./components/adminComponents/ManipulateOnCertificates";
-import AddBlogPost from "./components/adminComponents/ManipulateOnBlogs";
+import ManipulateOnProjects from "./components/admin/ManipulateOnProjects";
+import Admin from "./components/admin/Admin";
+import ManipulateOnSkills from "./components/admin/ManipulateOnSkills";
+import ManipulateOnCertificates from "./components/admin/ManipulateOnCertificates";
+import AddBlogPost from "./components/admin/ManipulateOnBlogs";
 import BlogsList from "./components/BlogsList";
 import BlogDetail from "./components/BlogDetail";
 import { AnimatePresence } from "framer-motion";
 import SideBarBlogList from "./components/partials/SideBarBlogList";
 import { useContext } from "react";
 import { SideBarBlogListContext } from "./contexts/SideBarBlogListContext";
-import AdminLayout from "./components/adminComponents/AdminLayout";
-import ManipulateOnBlogs from "./components/adminComponents/ManipulateOnBlogs";
-import SourceCodeAdmin from "./components/adminComponents/SourceCodeAdmin";
-import EditSourceCodeAdmin from "./components/adminComponents/EditSourceCodeAdmin";
+import AdminLayout from "./components/admin/AdminLayout";
+import ManipulateOnBlogs from "./components/admin/ManipulateOnBlogs";
+import SourceCodeAdmin from "./components/admin/SourceCodeAdmin";
+import EditSourceCodeAdmin from "./components/admin/EditSourceCodeAdmin";
 import ExChangeSource from "./components/ExChangeSource";
 import ViewSourceDetail from "./components/ViewSourceDetail";
-import UpdateBlog from "./components/adminComponents/UpdateBlog";
-import PersonalInfo from "./components/adminComponents/PersonalInfo";
+import UpdateBlog from "./components/admin/UpdateBlog";
+import PersonalInfo from "./components/admin/PersonalInfo";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
@@ -44,8 +44,8 @@ function App() {
             path="/exchange-source-code/:id"
             element={<ViewSourceDetail />}
           />
-          <Route path="/admin/dashboard" element={<AdminLayout />}>
-            <Route path="projects" element={<ManipulateOnProjects />} />
+          <Route path="/admin/dashboard/*" element={<AdminLayout />}>
+            <Route index element={<ManipulateOnProjects />} />
             <Route path="skills" element={<ManipulateOnSkills />} />
             <Route path="certificates" element={<ManipulateOnCertificates />} />
             <Route path="add/blogs" element={<ManipulateOnBlogs />} />

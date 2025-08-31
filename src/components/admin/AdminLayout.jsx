@@ -7,20 +7,23 @@ const AdminLayout = () => {
   const location = useLocation();
   const [isShowSideBar, setIsShowSideBar] = useState(true);
   return (
-    <div className="relative min-h-screen flex">
+    <div className="relative min-h-screen flex w-full">
       {/* Sidebar */}
       <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: isShowSideBar ? "25%" : 0 }}
-        exit={{ width: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={{ width: 0, originX: 1 }}
+        animate={{ width: isShowSideBar ? "20%" : 0, originX: 1 }}
+        exit={{ width: 0, originX: 1 }}
+        transition={{ duration: 0.4 }}
+        className="h-full bg-black opacity-50 z-0"
+        style={{ originX: 1 }}
       ></motion.div>
       <motion.aside
-        initial={{ width: 0 }}
-        animate={{ width: isShowSideBar ? "" : 0 }}
-        exit={{ width: 0 }}
-        transition={{ duration: isShowSideBar ? 0.4 : 0.6 }}
+        initial={{ width: 0, originX: 1 }}
+        animate={{ width: isShowSideBar ? "" : 0, originX: 1 }}
+        exit={{ width: 0, originX: 1 }}
+        transition={{ duration: 0.4 }}
         className="w-[80%] lg:w-[20%] fixed top-0 left-0 min-h-screen bg-[#1075b4] text-white flex flex-col border-r border-gray-200 z-10"
+        style={{ originX: 1 }}
       >
         <div className="absolute bottom-0 -translate-y-[50%] -right-5 cursor-pointer text-4xl p-1 bg-[#1075b4] rounded-full border-[1px] border-gray-200 text-white">
           <IoIosArrowDropleft
@@ -192,9 +195,10 @@ const AdminLayout = () => {
 
       <AnimatePresence>
         <motion.main
-          animate={{ width: isShowSideBar ? "w-[80%]" : "" }}
-          transition={{ duration: isShowSideBar ? 0.1 : 0 }}
-          className={`w-full bg-gray-50`}
+          animate={{ width: isShowSideBar ? "80%" : "100%" }}
+          transition={{ duration: isShowSideBar ? 0.4 : 0 }}
+          className={` bg-transparent`}
+          style={{ originX: 0 }}
         >
           <Outlet />
         </motion.main>

@@ -451,7 +451,7 @@ const ManipulateOnProjects = () => {
         />
       </div>
 
-      <div className="w-full min-w-[1070px] px-4 overflow-x-auto mb-10">
+      <div className="w-full max-w-full px-4 mb-10 overflow-x-auto ">
         <table className="w-full bg-white/10 backdrop-blur-sm border shadow-xl font-sans border-[#33A1E0]/20 rounded-md overflow-hidden">
           <thead className="">
             <tr className="text-white text-sm leading-normal border-b border-[#33A1E0]/20">
