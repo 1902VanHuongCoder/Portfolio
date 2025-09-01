@@ -1,8 +1,7 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./Home";
-import ManipulateOnProjects from "./components/admin/ManipulateOnProjects";
-import Admin from "./components/admin/Admin";
+import ManipulateOnProjects from "./components/admin/Project";
 import ManipulateOnSkills from "./components/admin/ManipulateOnSkills";
 import ManipulateOnCertificates from "./components/admin/ManipulateOnCertificates";
 import AddBlogPost from "./components/admin/ManipulateOnBlogs";
@@ -35,7 +34,6 @@ function App() {
             path="/certificates"
             element={<ManipulateOnCertificates />}
           ></Route>
-          <Route path="/admin" element={<Admin />}></Route>
           <Route path="/add/blogs" element={<AddBlogPost />}></Route>
           <Route path="/blogs" element={<BlogsList />}></Route>
           <Route path="/blog/detail/:id" element={<BlogDetail />}></Route>
@@ -44,7 +42,7 @@ function App() {
             path="/exchange-source-code/:id"
             element={<ViewSourceDetail />}
           />
-          <Route path="/admin/dashboard/*" element={<AdminLayout />}>
+          <Route path="/admin/*" element={<AdminLayout />}>
             <Route index element={<ManipulateOnProjects />} />
             <Route path="skills" element={<ManipulateOnSkills />} />
             <Route path="certificates" element={<ManipulateOnCertificates />} />

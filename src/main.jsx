@@ -5,13 +5,16 @@ import "./index.css";
 import SidebarProvider from "./contexts/SidebarContext.jsx";
 import ShowCertificateProvider from "./contexts/ShowCertificateContext.jsx";
 import SideBarBlogListProvider from "./contexts/SideBarBlogListContext.jsx";
+import { ToastProvider } from "./lib/toast-context.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <SidebarProvider>
       <ShowCertificateProvider>
         <SideBarBlogListProvider>
-          <App />
+          <ToastProvider>
+            <App />
+          </ToastProvider>
         </SideBarBlogListProvider>
       </ShowCertificateProvider>
     </SidebarProvider>

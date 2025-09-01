@@ -3,6 +3,10 @@ import { FaFileCode, FaUserTie } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { IoIosArrowDropleft } from "react-icons/io";
+import { FaListAlt } from "react-icons/fa";
+import { FcSearch } from "react-icons/fc";
+import { PiCertificateBold } from "react-icons/pi";
+import { RiNewsFill } from "react-icons/ri";
 const AdminLayout = () => {
   const location = useLocation();
   const [isShowSideBar, setIsShowSideBar] = useState(true);
@@ -22,10 +26,14 @@ const AdminLayout = () => {
         animate={{ width: isShowSideBar ? "" : 0, originX: 1 }}
         exit={{ width: 0, originX: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-[80%] lg:w-[20%] fixed top-0 left-0 min-h-screen bg-[#1075b4] text-white flex flex-col border-r border-gray-200 z-10"
+        className="w-[80%] lg:w-[20%] fixed top-0 left-0 min-h-screen bg-[#002b5b] text-white flex flex-col border-r border-gray-100/20 z-10"
         style={{ originX: 1 }}
       >
-        <div className="absolute bottom-0 -translate-y-[50%] -right-5 cursor-pointer text-4xl p-1 bg-[#1075b4] rounded-full border-[1px] border-gray-200 text-white">
+        <div
+          className={`absolute bottom-0 -translate-y-[50%] -right-5 cursor-pointer text-4xl p-1 bg-[#1075b4] rounded-full border-[1px] border-gray-200 text-white ${
+            isShowSideBar ? "" : "rotate-180"
+          }`}
+        >
           <IoIosArrowDropleft
             onClick={() => setIsShowSideBar(!isShowSideBar)}
           />
@@ -41,144 +49,62 @@ const AdminLayout = () => {
           </h2>
           <nav className="flex flex-col gap-4">
             <Link
-              to="/admin/dashboard/projects"
+              to="/admin"
               className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
-                location.pathname === "/admin/dashboard/projects"
-                  ? "bg-[#33A1E0]"
-                  : ""
+                location.pathname === "/admin" ? "bg-[#33A1E0]" : ""
               }`}
             >
               {/* Project Icon */}
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                <rect
-                  x="3"
-                  y="3"
-                  width="7"
-                  height="7"
-                  rx="1.5"
-                  fill="currentColor"
-                />
-                <rect
-                  x="14"
-                  y="3"
-                  width="7"
-                  height="7"
-                  rx="1.5"
-                  fill="currentColor"
-                />
-                <rect
-                  x="14"
-                  y="14"
-                  width="7"
-                  height="7"
-                  rx="1.5"
-                  fill="currentColor"
-                />
-                <rect
-                  x="3"
-                  y="14"
-                  width="7"
-                  height="7"
-                  rx="1.5"
-                  fill="currentColor"
-                />
-              </svg>
+              <FaListAlt />
               Projects
             </Link>
             <Link
-              to="/admin/dashboard/skills"
+              to="/admin/skills"
               className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
-                location.pathname === "/admin/dashboard/skills"
-                  ? "bg-[#33A1E0]"
-                  : ""
+                location.pathname === "/admin/skills" ? "bg-[#33A1E0]" : ""
               }`}
             >
               {/* Skills Icon */}
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M12 2v20M2 12h20"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <circle cx="12" cy="12" r="3" fill="currentColor" />
-              </svg>
+              <FcSearch />
               Skills
             </Link>
             <Link
-              to="/admin/dashboard/certificates"
+              to="/admin/certificates"
               className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
-                location.pathname === "/admin/dashboard/certificates"
+                location.pathname === "/admin/certificates"
                   ? "bg-[#33A1E0]"
                   : ""
               }`}
             >
               {/* Certificate Icon */}
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                <rect
-                  x="4"
-                  y="4"
-                  width="16"
-                  height="12"
-                  rx="2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-                <circle cx="12" cy="10" r="2" fill="currentColor" />
-                <path
-                  d="M8 20l4-4 4 4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <PiCertificateBold />
               Certificates
             </Link>
             <Link
-              to="/admin/dashboard/add/blogs"
+              to="/admin/add/blogs"
               className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
-                location.pathname === "/admin/dashboard/add/blogs"
-                  ? "bg-[#33A1E0]"
-                  : ""
+                location.pathname === "/admin/add/blogs" ? "bg-[#33A1E0]" : ""
               }`}
             >
               {/* Blog Icon */}
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                <rect
-                  x="4"
-                  y="4"
-                  width="16"
-                  height="16"
-                  rx="2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M8 8h8M8 12h8M8 16h4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <RiNewsFill />
               Add Blog
             </Link>
             <Link
-              to="/admin/dashboard/source-code"
+              to="/admin/source-code"
               className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
-                location.pathname === "/admin/dashboard/source-code"
-                  ? "bg-[#33A1E0]"
-                  : ""
+                location.pathname === "/admin/source-code" ? "bg-[#33A1E0]" : ""
               }`}
             >
               <span>
                 <FaFileCode />
               </span>
-              <span>Source Sharing</span>
+              <span>Source Code</span>
             </Link>
             <Link
-              to="/admin/dashboard/personal-info"
+              to="/admin/personal-info"
               className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
-                location.pathname === "/admin/dashboard/personal-info"
+                location.pathname === "/admin/personal-info"
                   ? "bg-[#33A1E0]"
                   : ""
               }`}
