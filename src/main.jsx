@@ -6,6 +6,7 @@ import SidebarProvider from "./contexts/SidebarContext.jsx";
 import ShowCertificateProvider from "./contexts/ShowCertificateContext.jsx";
 import SideBarBlogListProvider from "./contexts/SideBarBlogListContext.jsx";
 import { ToastProvider } from "./lib/toast-context.jsx";
+import { LoadingProvider } from "./lib/loading-context.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")).render(
       <ShowCertificateProvider>
         <SideBarBlogListProvider>
           <ToastProvider>
-            <App />
+            <LoadingProvider>
+              <App />
+            </LoadingProvider>
           </ToastProvider>
         </SideBarBlogListProvider>
       </ShowCertificateProvider>

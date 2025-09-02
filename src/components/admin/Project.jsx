@@ -1,45 +1,60 @@
-import { useEffect, useState } from "react";
-import { db, storage } from "../../firebase_setup/firebase";
-import { FaPencilAlt, FaPlus } from "react-icons/fa";
-import { FaRegTrashAlt } from "react-icons/fa";
-import { FaRegImage } from "react-icons/fa6";
+import {useEffect, useMemo, useState } from "react";
 import {
-  collection,
-  addDoc,
-  getDocs,
-  // setDoc,
-  doc,
-  updateDoc,
-  getDoc,
-  deleteDoc,
-} from "firebase/firestore";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
+  FaPencilAlt,
+  FaPlus,
+  FaRegTrashAlt,
+  FaRegImage,
+} from "../../lib/icons";
+import { uploadImage, deleteImage } from "../../lib/cloundinary";
 import { AnimatePresence, motion } from "framer-motion";
+import useToast from "../../hooks/toast-hook";
+import { useLoading } from "../../lib/loading-context";
+import {
+  createNewProject,
+  deleteProject,
+  getAllProjects,
+  getProjectById,
+  updateProject,
+} from "../../lib/project-apis";
 
 const ManipulateOnProjects = () => {
+  // State to manage filtering projects by project name
+  const [filterName, setFilterName] = useState("");
+
+  // State to manage confirmation before deletion
   const [confirmDelete, setConfirmDelete] = useState({
     show: false,
     id: null,
     imgName: null,
   });
+
+  // Toast notifications
+  const { showToast } = useToast();
+
+  // Loading spinner
+  const { showLoading, hideLoading } = useLoading();
+
+  // State to manage adding project form visibility
   const [showAddForm, setShowAddForm] = useState(false);
-  const [projects, setProjects] = useState();
+
+  // State to manage project list
+  const [projects, setProjects] = useState([]);
+
+  // State to manage project ID for updates
   const [projectId, setProjectId] = useState({ show: false, pId: "" });
-  const [formData, setFormData] = useState({
-    projectName: "",
+
+  // State to manage form data for creating a new project
+  const [form, setForm] = useState({
+    name: "",
     demoLink: "",
     githubLink: "",
     completeTime: "",
     projectImage: "",
   });
 
+  // State to manage updating form data
   const [dataToUpdate, setDataToUpdate] = useState({
-    projectName: "",
+    name: "",
     demoLink: "",
     githubLink: "",
     completeTime: "",
@@ -52,153 +67,163 @@ const ManipulateOnProjects = () => {
     setDataToUpdate((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Check if the value is a file
   const checkIfFile = (value) => {
     return value && typeof value === "object";
   };
 
-  const handleSubmit = async (e) => {
+  const handleUpdateProject = async (e) => {
     e.preventDefault();
+    showLoading();
 
-    console.log("Handle submit run....");
-
+    // Check if a new project image is being uploaded
     if (checkIfFile(dataToUpdate.projectImage)) {
-      console.log("If chay");
-
-      const desertRef = ref(storage, `projects/${dataToUpdate.projectImgName}`);
-
       try {
-        // Delete the existing file
-        await deleteObject(desertRef);
-        console.log(`${dataToUpdate.projectImgName} deleted successfully.`);
+        // Delete the existing image from Cloudinary if it exists using image's public ID
+        if (dataToUpdate.projectPublicId) {
+          await deleteImage(dataToUpdate.projectPublicId);
+        }
 
-        const storageRef = ref(
-          storage,
-          `projects/${dataToUpdate.projectImage.name}`
+        // Upload new image to Cloudinary
+        const { secure_url, public_id } = await uploadImage(
+          dataToUpdate.projectImage
         );
 
-        // Upload the new file
-        await uploadBytes(storageRef, dataToUpdate.projectImage);
-        console.log("File uploaded successfully.");
-
-        // Get the download URL for the uploaded file
-        const downloadURL = await getDownloadURL(storageRef);
-
-        // Preparing data to save to Firebase
+        // Prepare data to save to Firebase
         const dataToSaveToFirebase = {
-          projectName: dataToUpdate.projectName,
+          name: dataToUpdate.name,
           demoLink: dataToUpdate.demoLink,
           githubLink: dataToUpdate.githubLink,
           completeTime: dataToUpdate.completeTime,
-          projectImage: downloadURL,
-          projectImgName: dataToUpdate.projectImage.name, // Make sure to use the name from the uploaded image
+          projectImage: secure_url,
+          projectPublicId: public_id,
         };
 
-        // Update Firestore document
-        const docRef = doc(db, "projects", projectId.pId);
-        await updateDoc(docRef, dataToSaveToFirebase);
+        // Update Firestore document after uploading new image to Cloudinary
+        await updateProject(projectId.pId, dataToSaveToFirebase);
+        showToast("success", "Project updated successfully!");
 
-        alert("Project updated successfully!");
+        // Refetch projects
+        const updatedProjects = await getAllProjects();
+        setProjects(updatedProjects);
       } catch (error) {
         console.log("Error" + error);
-        // console.error("Error during delete/upload/update process", error);
+        showToast("error", "Error updating project with new image");
       }
     } else {
       // If no new project image, just update the other fields
-
-      console.log("else chay");
       const dataToSaveToFirebase = {
-        projectName: dataToUpdate.projectName,
+        name: dataToUpdate.name,
         demoLink: dataToUpdate.demoLink,
         githubLink: dataToUpdate.githubLink,
         completeTime: dataToUpdate.completeTime,
-        projectImgName: dataToUpdate.projectImgName, // Only name, not image
+        projectPublicId: dataToUpdate.projectPublicId,
+        projectImage: dataToUpdate.projectImage,
       };
 
       try {
-        const docRef = doc(db, "projects", projectId.pId);
-        await updateDoc(docRef, dataToSaveToFirebase);
-        alert("Project updated successfully!");
+        // Update Firestore document without new image
+        await updateProject(projectId.pId, dataToSaveToFirebase);
+        showToast("success", "Project updated successfully!");
+
+        // Refetch projects
+        const updatedProjects = await getAllProjects();
+        setProjects(updatedProjects);
       } catch (error) {
         console.error("Error updating project without new image: ", error);
+        showToast("error", "Error updating project without new image");
       }
-
-      // console.log("No new image found!");
     }
+    hideLoading();
   };
 
-  const uploadImageToFirebase = async (e) => {
+  const handleCreateNewProject = async (e) => {
     e.preventDefault();
-    if (!formData.projectImage) return;
-    const storageRef = ref(storage, `projects/${formData.projectImage.name}`);
+    showLoading();
+
+    // Check if project image is selected
+    if (!form.projectImage) {
+      showToast("error", "Please select a project image");
+      hideLoading();
+      return;
+    }
+
     try {
-      await uploadBytes(storageRef, formData.projectImage);
-      const downloadURL = await getDownloadURL(storageRef);
+      // Upload an image to Cloudinary
+      const { secure_url, public_id } = await uploadImage(form.projectImage);
+
+      // Prepare data for Firestore
       const dataToSaveToFirebase = {
-        projectName: formData.projectName,
-        demoLink: formData.demoLink,
-        githubLink: formData.githubLink,
-        completeTime: formData.completeTime,
-        projectImage: downloadURL,
-        projectImgName: formData.projectImage.name,
+        name: form.name,
+        demoLink: form.demoLink,
+        githubLink: form.githubLink,
+        completeTime: form.completeTime,
+        projectImage: secure_url,
+        projectPublicId: public_id,
       };
-      try {
-        await addDoc(collection(db, "projects"), dataToSaveToFirebase);
-        window.location.reload();
-      } catch (error) {
-        alert("Thêm dự án không thành công do lỗi tham số!");
-        console.error("Error adding document: ", error);
-      }
+
+      // Call api to create a new project
+      await createNewProject(dataToSaveToFirebase);
+
+      // Refetch projects after creation
+      const updatedProjects = await getAllProjects();
+      setProjects(updatedProjects);
+
+      // Show success toast and hide add project form
+      showToast("success", "Project added successfully");
+      setShowAddForm(false);
     } catch (error) {
-      alert("Thêm dự án không thành công do upload hình ảnh!");
+      showToast("error", "Error uploading file");
       console.error("Error uploading file: ", error);
     }
+    hideLoading();
   };
 
-  const handleDeleteProject = async (id, projectImgName) => {
+  const handleDeleteProject = async (projectID, projectPublicId) => {
+    showLoading();
+
+    // Delete the image from Cloudinary before deleting the Firestore document
     try {
-      // Step 1: Delete the Firestore document
-      await deleteDoc(doc(db, "projects", id));
-      console.log(`Document with ID ${id} deleted successfully.`);
-
-      // Step 2: Create a reference to the image in Firebase Storage
-      const desertRef = ref(storage, `projects/${projectImgName}`);
-
-      try {
-        // Step 3: Delete the image file from Firebase Storage
-        await deleteObject(desertRef);
-        console.log(`${projectImgName} deleted successfully.`);
-        window.location.reload();
-      } catch (error) {
-        console.error("Error deleting image: ", error);
+      if (projectPublicId) {
+        await deleteImage(projectPublicId);
       }
     } catch (error) {
+      console.error("Error deleting image: ", error);
+    }
+
+    // Delete the Firestore document
+    try {
+      await deleteProject(projectID);
+
+      // Refetch projects after deletion
+      const updatedProjects = await getAllProjects();
+      setProjects(updatedProjects);
+
+      // Show success toast
+      showToast("success", "Project deleted successfully");
+    } catch (error) {
+      showToast("error", "Error deleting document");
       console.error("Error deleting document: ", error);
     }
+    hideLoading();
   };
 
+  // Fetch all projects on component mount
   useEffect(() => {
     const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "projects"));
-      const usersData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setProjects(usersData);
-      console.log(usersData);
+      const allProjects = await getAllProjects();
+      setProjects(allProjects);
     };
     fetchData();
   }, []);
 
+  // Fetch project details when a project is selected to update
   useEffect(() => {
     if (projectId.pId !== "") {
       const fetchProject = async () => {
-        const docRef = doc(db, "projects", projectId.pId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          setDataToUpdate(docSnap.data());
-        } else {
-          console.log("No such document!");
+        const projectData = await getProjectById(projectId.pId);
+        if (projectData) {
+          setDataToUpdate(projectData);
         }
       };
       fetchProject();
@@ -207,17 +232,12 @@ const ManipulateOnProjects = () => {
     }
   }, [projectId]);
 
-  // Filtering state and logic
-  const [filterName, setFilterName] = useState("");
-
-  const filteredProjects = projects
-    ? projects.filter((item) => {
-        const nameMatch = item.projectName
-          .toLowerCase()
-          .includes(filterName.toLowerCase());
-        return nameMatch;
-      })
-    : [];
+  // Filter projects by name
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) =>
+      project.name.toLowerCase().includes(filterName.toLowerCase())
+    );
+  }, [projects, filterName]);
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
@@ -235,7 +255,7 @@ const ManipulateOnProjects = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onSubmit={handleSubmit}
+              onSubmit={handleUpdateProject}
               className="flex flex-col gap-y-4 bg-white shadow-xl w-full border border-[#33A1E0]/20 mt-2 mx-auto max-w-4xl rounded-md relative"
             >
               <div className="border-b border-gray-300 pb-4 p-6">
@@ -246,17 +266,14 @@ const ManipulateOnProjects = () => {
               </div>
               <div className="px-6 pb-6 space-y-4">
                 <div className="flex flex-col lg:flex-row gap-4">
-                  <label
-                    htmlFor="updateProjectName"
-                    className="flex flex-col w-full"
-                  >
+                  <label htmlFor="updatename" className="flex flex-col w-full">
                     <span className="text-gray-700">Project name</span>
                     <input
-                      id="updateProjectName"
+                      id="updatename"
                       type="text"
-                      name="projectName"
+                      name="name"
                       className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-                      value={dataToUpdate.projectName}
+                      value={dataToUpdate.name}
                       onChange={handleChange}
                       placeholder="Enter project name"
                       required
@@ -275,7 +292,7 @@ const ManipulateOnProjects = () => {
                       value={dataToUpdate.demoLink}
                       onChange={handleChange}
                       placeholder="Enter demo link"
-                      required
+                 
                     />
                   </label>
                 </div>
@@ -293,7 +310,7 @@ const ManipulateOnProjects = () => {
                       value={dataToUpdate.githubLink}
                       onChange={handleChange}
                       placeholder="Enter GitHub link"
-                      required
+                   
                     />
                   </label>
                   <label
@@ -397,7 +414,7 @@ const ManipulateOnProjects = () => {
       {showAddForm && (
         <div className="fixed w-full h-full top-0 left-0 bg-black/30 flex justify-center items-center z-10">
           <form
-            onSubmit={uploadImageToFirebase}
+            onSubmit={handleCreateNewProject}
             className="flex flex-col gap-y-4 bg-white shadow-xl w-full border border-[#33A1E0]/20 mt-2 mx-auto max-w-4xl  rounded-md"
           >
             <div className="border-b border-gray-300 pb-4 p-6">
@@ -408,15 +425,13 @@ const ManipulateOnProjects = () => {
             </div>
             <div className="px-6 pb-6 space-y-4">
               <div className="flex flex-col lg:flex-row gap-4">
-                <label htmlFor="projectName" className="flex flex-col w-full">
+                <label htmlFor="name" className="flex flex-col w-full">
                   <span className="text-gray-700">Project name</span>
                   <input
                     type="text"
                     className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-                    value={formData.projectName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, projectName: e.target.value })
-                    }
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="Enter project name"
                     required
                   />
@@ -427,12 +442,12 @@ const ManipulateOnProjects = () => {
                   <input
                     type="url"
                     className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-                    value={formData.demoLink}
+                    value={form.demoLink}
                     onChange={(e) =>
-                      setFormData({ ...formData, demoLink: e.target.value })
+                      setForm({ ...form, demoLink: e.target.value })
                     }
                     placeholder="Enter demo link"
-                    required
+                
                   />
                 </label>
               </div>
@@ -442,12 +457,12 @@ const ManipulateOnProjects = () => {
                   <input
                     type="url"
                     className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-                    value={formData.githubLink}
+                    value={form.githubLink}
                     onChange={(e) =>
-                      setFormData({ ...formData, githubLink: e.target.value })
+                      setForm({ ...form, githubLink: e.target.value })
                     }
                     placeholder="Enter GitHub link"
-                    required
+                
                   />
                 </label>
 
@@ -456,9 +471,9 @@ const ManipulateOnProjects = () => {
                   <input
                     type="date"
                     className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-                    value={formData.completeTime}
+                    value={form.completeTime}
                     onChange={(e) =>
-                      setFormData({ ...formData, completeTime: e.target.value })
+                      setForm({ ...form, completeTime: e.target.value })
                     }
                     placeholder="Enter complete time"
                     required
@@ -479,16 +494,16 @@ const ManipulateOnProjects = () => {
                     e.stopPropagation();
                     const file = e.dataTransfer.files[0];
                     if (file) {
-                      setFormData({ ...formData, projectImage: file });
+                      setForm({ ...form, projectImage: file });
                     }
                   }}
                   onClick={() =>
                     document.getElementById("projectImageInput").click()
                   }
                 >
-                  {formData.projectImage ? (
+                  {form.projectImage ? (
                     <span className="text-green-600 font-semibold">
-                      {formData.projectImage.name}
+                      {form.projectImage.name}
                     </span>
                   ) : (
                     <span className="flex gap-x-2 items-center text-gray-400">
@@ -503,15 +518,15 @@ const ManipulateOnProjects = () => {
                   <input
                     id="projectImageInput"
                     type="file"
+                    name="projectImage"
                     accept="image/*"
                     style={{ display: "none" }}
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
-                        setFormData({ ...formData, projectImage: file });
+                        setForm({ ...form, projectImage: file });
                       }
                     }}
-                    required
                   />
                 </div>
               </div>
@@ -554,9 +569,13 @@ const ManipulateOnProjects = () => {
                   onClick={async () => {
                     await handleDeleteProject(
                       confirmDelete.id,
-                      confirmDelete.imgName
+                      confirmDelete.projectPublicId
                     );
-                    setConfirmDelete({ show: false, id: null, imgName: null });
+                    setConfirmDelete({
+                      show: false,
+                      id: null,
+                      projectPublicId: null,
+                    });
                   }}
                 >
                   Xóa
@@ -609,70 +628,78 @@ const ManipulateOnProjects = () => {
             </tr>
           </thead>
           <tbody className="text-white text-sm">
-            {filteredProjects.map((item, index) => (
-              <tr
-                className="hover:bg-[#33A1E0]/10 transition-all border-b border-[#33A1E0]/20"
-                key={index}
-              >
-                <td className="py-3 px-4 text-center">
-                  {index + 1 < 10 ? `0${index + 1}` : index + 1}
-                </td>
-                <td className="py-3 px-4 max-w-[200px] truncate">
-                  {item.projectName}
-                </td>
-                <td className="py-3 px-4">
-                  <a
-                    href={item.demoLink}
-                    className="text-blue-100 hover:underline font-semibold"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Xem Demo
-                  </a>
-                </td>
-                <td className="py-3 px-4">
-                  <a
-                    href={item.githubLink}
-                    className="text-blue-100 hover:underline font-semibold"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Xem Github
-                  </a>
-                </td>
-                <td className="py-3 px-4">
-                  <img
-                    src={item.projectImage}
-                    alt={item.imageName}
-                    className="w-10 h-10 rounded-md border border-[#33A1E0]/20 mx-auto"
-                  />
-                </td>
-                <td className="flex flex-col justify-center sm:flex-row items-center gap-2 py-3">
-                  <button
-                    onClick={() => {
-                      setProjectId({ pId: item.id, show: true });
-                    }}
-                    className=" font-bold p-2 rounded-lg transition duration-200 text-white flex items-center gap-x-2 hover:bg-white hover:text-yellow-500"
-                  >
-                    <FaPencilAlt />
-                    {/* Update */}
-                  </button>
-                  <button
-                    onClick={() =>
-                      setConfirmDelete({
-                        show: true,
-                        id: item.id,
-                        imgName: item.projectImgName,
-                      })
-                    }
-                    className="flex items-center justify-center gap-x-2 text-red-50 font-bold p-2 rounded-lg transition duration-200 hover:bg-white hover:text-red-500"
-                  >
-                    <FaRegTrashAlt />
-                    {/* Delete */}
-                  </button>
+            {filteredProjects && filteredProjects.length > 0 ? (
+              filteredProjects.map((item, index) => (
+                <tr
+                  className="hover:bg-[#33A1E0]/10 transition-all border-b border-[#33A1E0]/20"
+                  key={index}
+                >
+                  <td className="py-3 px-4 text-center">
+                    {index + 1 < 10 ? `0${index + 1}` : index + 1}
+                  </td>
+                  <td className="py-3 px-4 max-w-[200px] truncate">
+                    {item.name}
+                  </td>
+                  <td className="py-3 px-4">
+                    <a
+                      href={item.demoLink}
+                      className="text-blue-100 hover:underline font-semibold"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {item.demoLink ? "Xem Demo" : "No Demo Available"}
+                    </a>
+                  </td>
+                  <td className="py-3 px-4">
+                    <a
+                      href={item.githubLink}
+                      className="text-blue-100 hover:underline font-semibold"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {item.githubLink ? "Xem Github" : "No Github Available"}
+                    </a>
+                  </td>
+                  <td className="py-3 px-4">
+                    <img
+                      src={item.projectImage}
+                      alt={item.imageName}
+                      className="w-10 h-10 rounded-md border border-[#33A1E0]/20 mx-auto"
+                    />
+                  </td>
+                  <td className="flex flex-col justify-center sm:flex-row items-center gap-2 py-3">
+                    <button
+                      onClick={() => {
+                        setProjectId({ pId: item.id, show: true });
+                      }}
+                      className=" font-bold p-2 rounded-lg transition duration-200 text-white flex items-center gap-x-2 hover:bg-white hover:text-yellow-500"
+                    >
+                      <FaPencilAlt />
+                      {/* Update */}
+                    </button>
+                    <button
+                      onClick={() =>
+                        setConfirmDelete({
+                          show: true,
+                          id: item.id,
+                          imgName: item.projectImgName,
+                        })
+                      }
+                      className="flex items-center justify-center gap-x-2 text-red-50 font-bold p-2 rounded-lg transition duration-200 hover:bg-white hover:text-red-500"
+                    >
+                      <FaRegTrashAlt />
+                      {/* Delete */}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="py-3 px-4 text-center">
+                  No projects found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

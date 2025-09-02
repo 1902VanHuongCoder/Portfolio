@@ -25,7 +25,7 @@ function App() {
   return (
     <div className="w-full h-full">
       <AnimatePresence>{isShow && <SideBarBlogList />}</AnimatePresence>
-      <BrowserRouter>
+      <BrowserRouter future={{v7_startStransition: true}}>
         <Routes>
           <Route path="/" element={<Home />}></Route>
           <Route path="/projects" element={<ManipulateOnProjects />}></Route>

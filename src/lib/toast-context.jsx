@@ -2,10 +2,10 @@ import { createContext,  useState, useCallback } from "react";
 import PropTypes from "prop-types";
 
 // Toast context shape: { show: boolean, type: 'success' | 'error' | 'info' | 'warning', content: string }
-const ToastContext = createContext();
+export const ToastContext = createContext();
 
 export const ToastProvider = ({ children }) => {
-  const [toast, setToast] = useState({ show: false, type: "info", content: "" });
+  const [toast, setToast] = useState({ show: false, type: "info", content: "Your message here" });
 
   // Show toast with type and content
   const showToast = useCallback((type, content) => {

@@ -7,11 +7,25 @@ import { FaListAlt } from "react-icons/fa";
 import { FcSearch } from "react-icons/fc";
 import { PiCertificateBold } from "react-icons/pi";
 import { RiNewsFill } from "react-icons/ri";
+import Toast from "../partials/Toast";
+import useToast from "../../hooks/toast-hook";
+import AdminLoading from "../partials/AdminLoading";
+import { useLoading } from "../../lib/loading-context";
 const AdminLayout = () => {
   const location = useLocation();
   const [isShowSideBar, setIsShowSideBar] = useState(true);
+  const { toast } = useToast();
+  const { loading } = useLoading();
   return (
-    <div className="relative min-h-screen flex w-full">
+    <div className="relative min-h-screen flex w-full overflow-hidden">
+      {/* Toast */}
+      <AnimatePresence>
+         {toast.show && <Toast />}
+      </AnimatePresence>
+
+      {/* Loading Spinner */}
+      {loading.show && <AdminLoading text={loading.text} />}
+
       {/* Sidebar */}
       <motion.div
         initial={{ width: 0, originX: 1 }}
