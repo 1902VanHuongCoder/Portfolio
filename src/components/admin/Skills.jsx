@@ -89,9 +89,10 @@ const ManipulateOnSkills = () => {
         // Show success toast and refetch skills
         const updatedSkills = await getAllSkills();
         setSkills(updatedSkills);
-        showToast("success", "Cập nhật skills thành công!");
+        setSkill({ show: false, sId: "" });
+        showToast("success", "Updated skill successfully!");
       } catch (error) {
-        showToast("error", "Cập nhật skills thất bại!");
+        showToast("error", "Error updating skill!");
         console.log("Error" + error);
       }
     } else {
@@ -101,12 +102,13 @@ const ManipulateOnSkills = () => {
       };
       try {
         await updateSkill(skill.sId, dataToSaveToFirebase);
-        showToast("success", "Cập nhật skill thành công!");
+        setSkill({show:false, sId:""});
+        showToast("success", "Updated skill successfully!");
         const updatedSkills = await getAllSkills();
         setSkills(updatedSkills);
       } catch (error) {
-        showToast("error", "Cập nhật skill thất bại!");
-        console.error("Cập nhật không thành công", error);
+        showToast("error", "Error updating skill!");
+        console.error("Error updating skill", error);
       }
     }
     hideLoading();
@@ -141,6 +143,7 @@ const ManipulateOnSkills = () => {
         await createSkill(dataToSaveToFirebase);
         const updatedSkills = await getAllSkills();
         setSkills(updatedSkills);
+        setShowAddDialog(false);
         showToast("success", "Added new skill successfully!");
       } catch (error) {
         showToast("error", "Error adding skill! Form data issue.");
@@ -170,6 +173,7 @@ const ManipulateOnSkills = () => {
     const fetchData = async () => {
       const usersData = await getAllSkills();
       setSkills(usersData);
+      console.log(usersData);
     };
     fetchData();
   }, []);
@@ -178,8 +182,8 @@ const ManipulateOnSkills = () => {
   // Set data to update when a skill is selected
   useEffect(() => {
     if (skill.sId !== "") {
-      const skill = skills.find((item) => item.id === skill.sId);
-      setDataToUpdate(skill);
+      const skillData = skills.find((item) => item.id === skill.sId);
+      setDataToUpdate(skillData);
     } else {
       return;
     }
