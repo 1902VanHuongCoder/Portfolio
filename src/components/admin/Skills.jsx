@@ -1,35 +1,36 @@
 import { useEffect, useState } from "react";
 import useToast from "../../hooks/toast-hook";
-import { db } from "../../firebase_setup/firebase";
 import { uploadImage } from "../../lib/cloundinary";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  // setDoc,
-  doc,
-  updateDoc,
-  getDoc,
-  deleteDoc,
-} from "firebase/firestore";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaPencilAlt, FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
+import { createSkill, deleteSkill, getAllSkills, updateSkill } from "../../lib/skill-apis";
+import { useLoading } from "../../lib/loading-context";
 
 const ManipulateOnSkills = () => {
+  // State for managing skills
   const [skills, setSkills] = useState();
+
+  // State for managing individual skill being edited
   const [skill, setSkill] = useState({ show: false, sId: "" });
+
+  // State for managing add skill dialog
   const [showAddDialog, setShowAddDialog] = useState(false);
+
+  // State for managing form data for adding/editing skills
   const [formData, setFormData] = useState({
     tech: "",
     logoTechLink: "",
   });
+
+  // State for managing delete confirmation dialog
   const [confirmDelete, setConfirmDelete] = useState({
     show: false,
     id: null,
     imgName: null,
   });
 
+  // State for managing data to update
   const [dataToUpdate, setDataToUpdate] = useState({
     logoTechLink: null,
     tech: "",
@@ -52,20 +53,42 @@ const ManipulateOnSkills = () => {
   // Toast for notifications
   const { showToast } = useToast();
 
-  // Handle updating a skill (with or without new logo)
-  const handleSubmit = async (e) => {
+  // Loading spinner
+  const { showLoading, hideLoading } = useLoading();
+
+  // Handle updating a skill
+  const handleUpdateSkill = async (e) => {
     e.preventDefault();
+    showLoading();
+    let dataToSaveToFirebase;
+
+    // Check if a new logo file is being uploaded
     if (checkIfFile(dataToUpdate.logoTechLink)) {
       try {
-        // Upload new logo to Cloudinary
-        const { secure_url, public_id } = await uploadImage(dataToUpdate.logoTechLink);
-        const dataToSaveToFirebase = {
+        // Upload new logo to Cloudinary and get secure_url and public_id
+        const { secure_url, public_id } = await uploadImage(
+          dataToUpdate.logoTechLink
+        );
+        // Set the data to save to Firebase
+        dataToSaveToFirebase = {
           tech: dataToUpdate.tech,
           logoTechLink: secure_url,
           techLogoName: public_id,
         };
-        const docRef = doc(db, "skills", skill.sId);
-        await updateDoc(docRef, dataToSaveToFirebase);
+      } catch (error) {
+        showToast("error", "Error uploading image!");
+        console.error("Error uploading file: ", error);
+        hideLoading();
+        return;
+      }
+
+      try {
+        // Update the skill document in Firestore
+        await updateSkill(skill.sId, dataToSaveToFirebase);
+
+        // Show success toast and refetch skills
+        const updatedSkills = await getAllSkills();
+        setSkills(updatedSkills);
         showToast("success", "Cập nhật skills thành công!");
       } catch (error) {
         showToast("error", "Cập nhật skills thất bại!");
@@ -77,85 +100,90 @@ const ManipulateOnSkills = () => {
         tech: dataToUpdate.tech,
       };
       try {
-        const docRef = doc(db, "skills", skill.sId);
-        await updateDoc(docRef, dataToSaveToFirebase);
+        await updateSkill(skill.sId, dataToSaveToFirebase);
         showToast("success", "Cập nhật skill thành công!");
+        const updatedSkills = await getAllSkills();
+        setSkills(updatedSkills);
       } catch (error) {
         showToast("error", "Cập nhật skill thất bại!");
         console.error("Cập nhật không thành công", error);
       }
     }
+    hideLoading();
   };
 
   // Handle adding a new skill
-  const uploadImageToFirebase = async (e) => {
+  const handleAddSkill = async (e) => {
     e.preventDefault();
+    showLoading();
+
+    // Check if a logo file is being uploaded
     if (formData.logoTechLink) {
+      let dataToSaveToFirebase;
       try {
         // Upload logo to Cloudinary
-        const { secure_url, public_id } = await uploadImage(formData.logoTechLink);
-        const dataToSaveToFirebase = {
+        const { secure_url, public_id } = await uploadImage(
+          formData.logoTechLink
+        );
+        dataToSaveToFirebase = {
           tech: formData.tech,
           logoTechLink: secure_url,
           techLogoName: public_id,
         };
-        try {
-          await addDoc(collection(db, "skills"), dataToSaveToFirebase);
-          showToast("success", "Thêm skill thành công!");
-          window.location.reload();
-        } catch (error) {
-          showToast("error", "Thêm skills không thành công! Lỗi dữ liệu form.");
-          console.error("Error adding document: ", error);
-        }
       } catch (error) {
-        showToast("error", "Thêm skill không thành công do lỗi upload hình ảnh!");
+        showToast("error", "Error uploading image!");
         console.error("Error uploading file: ", error);
+        hideLoading();
+        return;
+      }
+
+      try {
+        await createSkill(dataToSaveToFirebase);
+        const updatedSkills = await getAllSkills();
+        setSkills(updatedSkills);
+        showToast("success", "Added new skill successfully!");
+      } catch (error) {
+        showToast("error", "Error adding skill! Form data issue.");
+        console.error("Error adding document: ", error);
       }
     } else {
-      showToast("error", "Chưa thêm hình!");
+      showToast("error", "No image uploaded!");
     }
+    hideLoading();
   };
 
   // Handle deleting a skill
   const handleDeleteSkill = async (id) => {
     try {
-      await deleteDoc(doc(db, "skills", id));
-      showToast("success", "Xóa skill thành công!");
-      window.location.reload();
+      await deleteSkill(id);
+      const updatedSkills = await getAllSkills();
+      setSkills(updatedSkills);
+      showToast("success", "Deleted skill successfully!");
     } catch (error) {
-      showToast("error", "Xóa skill thất bại!");
+      showToast("error", "Error deleting skill!");
       console.error("Error deleting document: ", error);
     }
   };
 
+  // Fetch all skills on mount
   useEffect(() => {
     const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "skills"));
-      const usersData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const usersData = await getAllSkills();
       setSkills(usersData);
     };
     fetchData();
   }, []);
 
+
+  // Set data to update when a skill is selected
   useEffect(() => {
     if (skill.sId !== "") {
-      const fetchProject = async () => {
-        const docRef = doc(db, "skills", skill.sId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setDataToUpdate(docSnap.data());
-        } else {
-          console.log("No such document!");
-        }
-      };
-      fetchProject();
+      const skill = skills.find((item) => item.id === skill.sId);
+      setDataToUpdate(skill);
     } else {
       return;
     }
-  }, [skill.sId]);
+  }, [skill.sId, skills]);
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
@@ -167,7 +195,7 @@ const ManipulateOnSkills = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onSubmit={handleSubmit}
+              onSubmit={handleUpdateSkill}
               className="bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 relative"
             >
               <button
@@ -267,7 +295,7 @@ const ManipulateOnSkills = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onSubmit={uploadImageToFirebase}
+              onSubmit={handleAddSkill}
               className="bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 relative"
             >
               <button
