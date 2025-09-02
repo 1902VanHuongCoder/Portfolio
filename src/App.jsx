@@ -1,8 +1,8 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./Home";
-import ManipulateOnProjects from "./components/admin/Project";
-import ManipulateOnSkills from "./components/admin/ManipulateOnSkills";
+import ManipulateOnProjects from "./components/admin/Projects";
+import ManipulateOnSkills from "./components/admin/Skills";
 import ManipulateOnCertificates from "./components/admin/ManipulateOnCertificates";
 import AddBlogPost from "./components/admin/ManipulateOnBlogs";
 import BlogsList from "./components/BlogsList";

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { db, storage } from "../../firebase_setup/firebase";
+import useToast from "../../hooks/toast-hook";
+import { db } from "../../firebase_setup/firebase";
+import { uploadImage } from "../../lib/cloundinary";
 import {
   collection,
   addDoc,
@@ -10,14 +12,8 @@ import {
   getDoc,
   deleteDoc,
 } from "firebase/firestore";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
 import { AnimatePresence, motion } from "framer-motion";
-import { FaPlus } from "react-icons/fa";
+import { FaPencilAlt, FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 
 const ManipulateOnSkills = () => {
@@ -53,82 +49,81 @@ const ManipulateOnSkills = () => {
     return value && typeof value === "object";
   };
 
+  // Toast for notifications
+  const { showToast } = useToast();
+
+  // Handle updating a skill (with or without new logo)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (checkIfFile(dataToUpdate.logoTechLink)) {
-      const desertRef = ref(storage, `skills/${dataToUpdate.techLogoName}`);
       try {
-        await deleteObject(desertRef);
-        const storageRef = ref(
-          storage,
-          `skills/${dataToUpdate.logoTechLink.name}`
-        );
-        await uploadBytes(storageRef, dataToUpdate.logoTechLink);
-        const downloadURL = await getDownloadURL(storageRef);
+        // Upload new logo to Cloudinary
+        const { secure_url, public_id } = await uploadImage(dataToUpdate.logoTechLink);
         const dataToSaveToFirebase = {
           tech: dataToUpdate.tech,
-          logoTechLink: downloadURL,
-          techLogoName: dataToUpdate.logoTechLink.name,
+          logoTechLink: secure_url,
+          techLogoName: public_id,
         };
         const docRef = doc(db, "skills", skill.sId);
         await updateDoc(docRef, dataToSaveToFirebase);
-        alert("Cập nhật skills thành công!");
+        showToast("success", "Cập nhật skills thành công!");
       } catch (error) {
+        showToast("error", "Cập nhật skills thất bại!");
         console.log("Error" + error);
       }
     } else {
+      // Update only text info
       const dataToSaveToFirebase = {
         tech: dataToUpdate.tech,
       };
       try {
         const docRef = doc(db, "skills", skill.sId);
         await updateDoc(docRef, dataToSaveToFirebase);
-        alert("Cập nhật skill thành công!");
+        showToast("success", "Cập nhật skill thành công!");
       } catch (error) {
+        showToast("error", "Cập nhật skill thất bại!");
         console.error("Cập nhật không thành công", error);
       }
     }
   };
 
+  // Handle adding a new skill
   const uploadImageToFirebase = async (e) => {
     e.preventDefault();
     if (formData.logoTechLink) {
-      const storageRef = ref(storage, `skills/${formData.logoTechLink.name}`);
       try {
-        await uploadBytes(storageRef, formData.logoTechLink);
-        const downloadURL = await getDownloadURL(storageRef);
+        // Upload logo to Cloudinary
+        const { secure_url, public_id } = await uploadImage(formData.logoTechLink);
         const dataToSaveToFirebase = {
           tech: formData.tech,
-          logoTechLink: downloadURL,
-          techLogoName: formData.logoTechLink.name,
+          logoTechLink: secure_url,
+          techLogoName: public_id,
         };
         try {
           await addDoc(collection(db, "skills"), dataToSaveToFirebase);
+          showToast("success", "Thêm skill thành công!");
           window.location.reload();
         } catch (error) {
-          alert("Thêm skills không thành công! Lỗi dữ liệu form.");
+          showToast("error", "Thêm skills không thành công! Lỗi dữ liệu form.");
           console.error("Error adding document: ", error);
         }
       } catch (error) {
-        alert("Thêm skill không thành công do lỗi upload hình ảnh!");
+        showToast("error", "Thêm skill không thành công do lỗi upload hình ảnh!");
         console.error("Error uploading file: ", error);
       }
     } else {
-      alert("Chưa thêm hình!");
+      showToast("error", "Chưa thêm hình!");
     }
   };
 
-  const handleDeleteSkill = async (id, techLogoName) => {
+  // Handle deleting a skill
+  const handleDeleteSkill = async (id) => {
     try {
       await deleteDoc(doc(db, "skills", id));
-      const desertRef = ref(storage, `skills/${techLogoName}`);
-      try {
-        await deleteObject(desertRef);
-        window.location.reload();
-      } catch (error) {
-        console.error("Error deleting image: ", error);
-      }
+      showToast("success", "Xóa skill thành công!");
+      window.location.reload();
     } catch (error) {
+      showToast("error", "Xóa skill thất bại!");
       console.error("Error deleting document: ", error);
     }
   };
@@ -250,16 +245,19 @@ const ManipulateOnSkills = () => {
         )}
       </AnimatePresence>
 
-      <h1 className="w-full text-4xl p-6 font-extrabold text-white drop-shadow-xl border-b-[1px] ">
+      <h1 className="w-full text-2xl p-6 pt-6 pb-2 font-extrabold text-white drop-shadow-xl">
         MY SKILLS
       </h1>
-      <p className="w-full p-6 font-bold text-white flex justify-between items-center">
-        <span className="text-xl"> Skills List</span>
+      <p className="w-full text-sm px-6 pb-6 font-medium text-white/80 drop-shadow-xl border-b-[1px] border-b-white/20">
+        Here you can manage your skills, add new ones, and update existing ones.
+      </p>
+      <p className="w-full p-6 px-6 font-semibold text-white flex justify-between items-center">
+        <span className="text-xl"> Skills</span>
         <button
-          className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
-          onClick={() => setShowAddDialog(true)}
+          className="bg-white text-[#33A1E0] px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 hover:text-white transition"
+          onClick={() => setShowAddDialog((prev) => !prev)}
         >
-          <FaPlus /> Add Skills
+          <FaPlus /> Add Skill
         </button>
       </p>
       <AnimatePresence>
@@ -279,7 +277,7 @@ const ManipulateOnSkills = () => {
                 aria-label="Close"
               >
                 {/* Icon */}
-                 <IoClose />
+                <IoClose />
               </button>
               <h2 className="text-lg font-bold mb-2 text-[#154D71]">
                 Add New Skill
@@ -322,44 +320,52 @@ const ManipulateOnSkills = () => {
         )}
       </AnimatePresence>
 
-      <div className="w-full px-2 sm:px-6 py-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6">
-        {skills?.map((item, index) => (
-          <div
-            key={index}
-            className="bg-white/10 backdrop-blur-sm border border-[#33A1E0]/20 rounded-xl shadow-xl flex flex-col items-center p-6 transition hover:scale-[1.03] hover:shadow-2xl"
-          >
-            <img
-              src={item.logoTechLink}
-              alt={item.tech}
-              className="w-16 h-16 rounded-md border border-[#33A1E0]/20 mb-4 bg-white/40 object-contain"
-            />
-            <div className="font-bold text-lg text-white mb-2 truncate w-full text-center">
-              {item.tech}
+      <div className="w-full px-2 sm:px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
+        {skills && skills.length > 0 ? (
+          skills.map((item, index) => (
+            <div
+              key={index}
+              className="bg-white/10 backdrop-blur-sm border border-[#33A1E0]/20 rounded-xl flex flex-row items-center justify-between gap-x-4 px-4 transition hover:scale-[1.03] hover:shadow-2xl"
+            >
+              <div className="w-[100px] h-16 flex items-center justify-center">
+                <img
+                  src={item.logoTechLink}
+                  alt={item.tech}
+                  className="w-10 h-10 object-contain"
+                />
+              </div>
+              <div className="font-bold text-md text-white truncate w-full text-left">
+                {item.tech}
+              </div>
+              <div className="flex flex-row items-center gap-2 w-full justify-end">
+                <button
+                  onClick={() => {
+                    setSkill({ sId: item.id, show: true });
+                  }}
+                  className="font-bold p-2 rounded-lg transition duration-200 text-white flex items-center gap-x-2 border-gray-200 border bg-[#154D71]/80 hover:bg-[#33A1E0]/80"
+                >
+                  <FaPencilAlt />
+                </button>
+                <button
+                  onClick={() =>
+                    setConfirmDelete({
+                      show: true,
+                      id: item.id,
+                      imgName: item.techLogoName,
+                    })
+                  }
+                  className="flex items-center justify-center gap-x-2 text-red-100 font-bold p-2 rounded-lg transition duration-200 border-red-200 border bg-red-500/80 hover:bg-red-600/80"
+                >
+                  <FaRegTrashAlt />
+                </button>
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2 mt-2 w-full justify-center">
-              <button
-                onClick={() => {
-                  setSkill({ sId: item.id, show: true });
-                }}
-                className="font-bold py-2 px-4 rounded-lg transition duration-200 text-white flex items-center gap-x-2 border-gray-200 border bg-[#154D71]/80 hover:bg-[#33A1E0]/80"
-              >
-                Update
-              </button>
-              <button
-                onClick={() =>
-                  setConfirmDelete({
-                    show: true,
-                    id: item.id,
-                    imgName: item.techLogoName,
-                  })
-                }
-                className="flex items-center justify-center gap-x-2 text-red-100 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-200 border bg-red-500/80 hover:bg-red-600/80"
-              >
-                Delete
-              </button>
-            </div>
+          ))
+        ) : (
+          <div className="col-span-2 md:col-span-3 lg:col-span-4 text-center text-white">
+            No skills found.
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

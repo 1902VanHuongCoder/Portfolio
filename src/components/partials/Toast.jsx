@@ -18,7 +18,7 @@ export default function Toast() {
         animate={{ opacity: 1, x: 0 }}
         exit={{ x: 400, opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className={`top-6 right-6 fixed z-[9999] shadow-lg w-[85%] md:w-fit h-fit lg:flex items-center lg:gap-3 bg-white rounded-md overflow-hidden`}
+        className={`top-6 right-6 fixed z-[9999] shadow-lg w-fit max-w-[85%] h-fit lg:flex items-center lg:gap-3 bg-white rounded-md overflow-hidden`}
         role="alert"
       >
         <div
