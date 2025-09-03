@@ -1,9 +1,18 @@
 import { useState, useEffect } from "react";
-import { db, storage } from "../../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import useToast from "../../hooks/toast-hook";
+import { useLoading } from "../../lib/loading-context";
+import { uploadImage } from "../../lib/cloundinary";
 
 const PersonalInfo = () => {
+  // Toast context
+  const { showToast } = useToast();
+
+  // Loading context
+  const { showLoading, hideLoading } = useLoading();
+
+  // Form state to manage personal information
   const [form, setForm] = useState({
     avatar: "",
     name: "",
@@ -13,10 +22,51 @@ const PersonalInfo = () => {
     youtube: "",
     role: "",
   });
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
+  // Store avatar file is uploaded from local
+  const [avatarFile, setAvatarFile] = useState(null);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
+
+  // Change current avatar file and create local avatar url to allow preview image
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setForm((f) => ({ ...f, avatar: URL.createObjectURL(file) }));
+    }
+  };
+
+
+  const handleChangePersonalInfo = async (e) => {
+    e.preventDefault();
+    showLoading();
+
+    let avatarUrl = form.avatar;
+    let publicId = "";
+    if (avatarFile) {
+      // delete old avatar
+      // const oldAvatarPath = form.avatar.split("/o/")[1].split("?")[0];
+      // const oldAvatarRef = storageRef(storage, oldAvatarPath);
+      // await deleteObject(oldAvatarRef);
+
+      const { secure_url, public_id } = await uploadImage(avatarFile);
+      avatarUrl = secure_url;
+      publicId = public_id;
+    }
+    await setDoc(doc(db, "personalInfo", "main"), {
+      ...form,
+      avatar: avatarUrl,
+      publicId: publicId,
+    });
+    hideLoading();
+    showToast("Personal information updated successfully!");
+  };
+
+  // Fetch personal information to show in the form
   useEffect(() => {
     const fetchPersonalInfo = async () => {
       const docRef = doc(db, "personalInfo", "main");
@@ -28,111 +78,89 @@ const PersonalInfo = () => {
     fetchPersonalInfo();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
-
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setAvatarFile(file);
-      setForm((f) => ({ ...f, avatar: URL.createObjectURL(file) }));
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    let avatarUrl = form.avatar;
-    if (avatarFile) {
-      // delete old avatar
-      const oldAvatarPath = form.avatar.split("/o/")[1].split("?")[0];
-      const oldAvatarRef = storageRef(storage, oldAvatarPath);
-      await deleteObject(oldAvatarRef);
-      
-      const storagePath = `personal-info/avatar-${Date.now()}-${avatarFile.name}`;
-      const storageReference = storageRef(storage, storagePath);
-      await uploadBytes(storageReference, avatarFile);
-      avatarUrl = await getDownloadURL(storageReference);
-    }
-    await setDoc(doc(db, "personalInfo", "main"), {
-      ...form,
-      avatar: avatarUrl,
-    });
-    setLoading(false);
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 2000);
-  };
-
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow mt-8">
-      <h2 className="text-2xl font-bold mb-4">Personal Info</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex flex-col items-center gap-2">
-          <label className="font-semibold">Avatar</label>
-          {form.avatar && (
-            <img
-              src={form.avatar}
-              alt="avatar preview"
-              className="w-24 h-24 rounded-full object-cover border"
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0] flex items-center justify-center py-12">
+      <div className="w-full max-w-xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-[#33A1E0]/20">
+        <h2 className="text-3xl font-extrabold mb-2 text-[#2E236C] drop-shadow">Personal Info</h2>
+        <p className="mb-6 text-[#154D71] text-sm font-medium">Update your personal information for your portfolio profile.</p>
+        <form onSubmit={handleChangePersonalInfo} className="space-y-5">
+          <div className="flex flex-col items-center gap-3 mb-4">
+            <label className="font-semibold text-[#154D71]">Avatar</label>
+            <div className="relative">
+              {form.avatar ? (
+                <img
+                  src={form.avatar}
+                  alt="avatar preview"
+                  className="w-28 h-28 rounded-full object-cover border-4 border-[#33A1E0] shadow-lg bg-white"
+                />
+              ) : (
+                <div className="w-28 h-28 rounded-full bg-[#33A1E0]/10 border-4 border-[#33A1E0] flex items-center justify-center text-4xl text-[#33A1E0] font-bold shadow-lg">
+                  ?
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="absolute left-0 top-0 w-full h-full opacity-0 cursor-pointer"
+                title="Change avatar"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Name"
+              className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-[#2E236C] bg-white"
+              required
             />
-          )}
-          <input type="file" accept="image/*" onChange={handleAvatarChange} />
-        </div>
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Name"
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="Email"
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          placeholder="Phone"
-          className="w-full p-2 border rounded"
-        />
-        <input
-          name="facebook"
-          value={form.facebook}
-          onChange={handleChange}
-          placeholder="Facebook Link"
-          className="w-full p-2 border rounded"
-        />
-        <input
-          name="youtube"
-          value={form.youtube}
-          onChange={handleChange}
-          placeholder="YouTube Link"
-          className="w-full p-2 border rounded"
-        />
-        <input
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          placeholder="Role"
-          className="w-full p-2 border rounded"
-        />
-        <button
-          type="submit"
-          className="w-full py-2 bg-blue-600 text-white rounded font-bold"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Save Info"}
-        </button>
-        {success && <div className="text-green-600 text-center">Saved!</div>}
-      </form>
+            <input
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Email"
+              className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-[#2E236C] bg-white"
+              required
+            />
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="Phone"
+              className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-[#2E236C] bg-white"
+            />
+            <input
+              name="facebook"
+              value={form.facebook}
+              onChange={handleChange}
+              placeholder="Facebook Link"
+              className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-[#2E236C] bg-white"
+            />
+            <input
+              name="youtube"
+              value={form.youtube}
+              onChange={handleChange}
+              placeholder="YouTube Link"
+              className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-[#2E236C] bg-white"
+            />
+            <input
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              placeholder="Role"
+              className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-[#2E236C] bg-white"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-gradient-to-r from-[#33A1E0] to-[#2E236C] text-white rounded-xl font-bold text-lg shadow hover:from-[#154D71] hover:to-[#33A1E0] transition"
+          >
+            Save Info
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
