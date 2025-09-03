@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link as ReactLink } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase_setup/firebase";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -27,11 +27,18 @@ import useToast from "../../hooks/toast-hook";
 import { useLoading } from "../../lib/loading-context";
 
 const EditSourceCodeAdmin = () => {
+  // Get project ID from URL parameters
   const { id } = useParams();
+
   const navigate = useNavigate();
+
+  // Toast notifications
   const { showToast } = useToast();
+
+  // Loading state
   const { showLoading, hideLoading } = useLoading();
 
+  // Form state
   const [form, setForm] = useState({
     title: "",
     subtitle: "",
@@ -42,10 +49,12 @@ const EditSourceCodeAdmin = () => {
     youtube: "",
   });
 
-  const [localImages, setLocalImages] = useState([]); // local previews
-  const [editorLocalImages, setEditorLocalImages] = useState([]); // for editor upload
-  const [imageUploadInput, setImageUploadInput] = useState(null);
 
+  const [localImages, setLocalImages] = useState([]); // local previews
+  const [editorLocalImages, setEditorLocalImages] = useState([]); // for editor upload 
+  const [imageUploadInput, setImageUploadInput] = useState(null);  
+
+  // Fetch project data
   useEffect(() => {
     const fetchProject = async () => {
       const docRef = doc(db, "sourceProjects", id);
@@ -58,6 +67,7 @@ const EditSourceCodeAdmin = () => {
     fetchProject();
   }, [id]);
 
+  // Initialize editor
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -85,17 +95,20 @@ const EditSourceCodeAdmin = () => {
     },
   });
 
+  // Update editor content when form.content changes
   useEffect(() => {
     if (editor && form.content) {
       editor.commands.setContent(form.content);
     }
   }, [form.content, editor]);
 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  // Handle image upload for editor, 
   const handleEditorImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -155,13 +168,14 @@ const EditSourceCodeAdmin = () => {
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
-      <h1 className="w-full text-2xl p-6 font-extrabold text-white">
-        EDIT PROJECT
+      <h1 className="w-full text-2xl p-6 pt-6 pb-2 font-extrabold text-white drop-shadow-xl">
+        SOURCE CODE PROJECTS - EDIT PROJECT
       </h1>
-      <form
-        onSubmit={handleSave}
-        className="mx-auto mt-6 px-6 text-white max-w-5xl"
-      >
+      <p className="w-full text-sm px-6 pb-6 font-medium text-white/80 drop-shadow-xl border-b-[1px] border-b-white/20">
+        Here you can manage your source code projects for sale, add new ones,
+        and update existing ones.
+      </p>
+      <form onSubmit={handleSave} className="mt-6 text-white px-6 mb-8">
         {/* Title + Subtitle */}
         <div className="flex items-center gap-x-4">
           <div className="mb-4 w-full">
@@ -281,20 +295,190 @@ const EditSourceCodeAdmin = () => {
               <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleBold().run()}
+                className={
+                  editor.isActive("bold")
+                    ? "font-bold bg-white/30 px-2"
+                    : "px-2"
+                }
               >
                 B
               </button>
               <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={
+                  editor.isActive("italic") ? "italic bg-white/30 px-2" : "px-2"
+                }
               >
                 I
               </button>
               <button
                 type="button"
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={
+                  editor.isActive("underline")
+                    ? "underline bg-white/30 px-2"
+                    : "px-2"
+                }
               >
                 U
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+                className={
+                  editor.isActive("strike")
+                    ? "line-through bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                S
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 1 }).run()
+                }
+                className={
+                  editor.isActive("heading", { level: 1 })
+                    ? "font-bold bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                H1
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 2 }).run()
+                }
+                className={
+                  editor.isActive("heading", { level: 2 })
+                    ? "font-bold bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                H2
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 3 }).run()
+                }
+                className={
+                  editor.isActive("heading", { level: 3 })
+                    ? "font-bold bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                H3
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                className={
+                  editor.isActive("bulletList") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                • List
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                className={
+                  editor.isActive("orderedList") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                1. List
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                className={
+                  editor.isActive("blockquote") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                ❝
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                className={
+                  editor.isActive("codeBlock") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                {"<>"}
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                className="px-2"
+              >
+                ―
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = prompt("Enter URL");
+                  if (url) editor.chain().focus().setLink({ href: url }).run();
+                }}
+                className={
+                  editor.isActive("link") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                🔗
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("left").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "left" })
+                    ? "bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                ⯇
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("center").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "center" })
+                    ? "bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                ≡
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("right").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "right" })
+                    ? "bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                ⯈
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor
+                    .chain()
+                    .focus()
+                    .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                    .run()
+                }
+                className="px-2"
+              >
+                ▦
               </button>
               {/* Add rest of toolbar like in add page... */}
               <button
@@ -314,12 +498,19 @@ const EditSourceCodeAdmin = () => {
             </div>
             <EditorContent
               editor={editor}
-              className="min-h-[300px] px-1 focus:outline-none"
+              className="tiptap-content min-h-[300px] px-1 focus:outline-none rounded-br-md rounded-bl-md focus:border-none"
             />
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-x-2">
+          <ReactLink
+            to="/admin/source-code"
+            type="button"
+            className=" text-white font-semibold px-4 py-2 rounded-md border border-white shadow hover:opacity-80 transition"
+          >
+            Discard Changes
+          </ReactLink>
           <button
             type="submit"
             className="bg-white text-[#33A1E0] font-semibold px-4 py-2 rounded-md border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 hover:text-white transition"

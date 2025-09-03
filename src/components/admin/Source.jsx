@@ -612,7 +612,6 @@ const SourceCodeAdmin = () => {
               <ReactLink
                 to={`/admin/edit/source-code/${proj.id}`}
                 className="font-bold py-1 px-2 rounded-lg transition duration-200 text-white flex items-center gap-x-2 border-white border "
-                target="_blank"
                 rel="noopener noreferrer"
               >
                 <FaPencilAlt />
