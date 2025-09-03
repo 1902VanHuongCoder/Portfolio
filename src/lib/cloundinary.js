@@ -29,6 +29,12 @@ async function uploadImage(file) {
   return { secure_url: data.secure_url, public_id: data.public_id };
 }
 
+// Upload multiple images
+async function uploadImages(files) {
+  const promises = Array.from(files).map((file) => uploadImage(file));
+  return Promise.all(promises);
+}
+
 // Function to delete image use URL out of Cloundinary
 async function deleteImage(publicId) {
   const response = await fetch(
@@ -49,4 +55,4 @@ async function deleteImage(publicId) {
   return data.result;
 }
 
-export { uploadImage, deleteImage };
+export { uploadImage, deleteImage, uploadImages };

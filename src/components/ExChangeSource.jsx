@@ -192,7 +192,7 @@ const ExChangeSource = () => {
                   >
                     {proj.images && proj.images.length > 0 && (
                       <img
-                        src={proj.images[0]}
+                        src={proj.images[0].secure_url}
                         alt={proj.title}
                         className="w-full h-40 object-cover rounded mb-2"
                       />

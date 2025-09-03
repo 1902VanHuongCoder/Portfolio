@@ -13,12 +13,12 @@ import { useContext } from "react";
 import { SideBarBlogListContext } from "./contexts/SideBarBlogListContext";
 import AdminLayout from "./components/admin/AdminLayout";
 import ManipulateOnBlogs from "./components/admin/Blogs";
-import SourceCodeAdmin from "./components/admin/SourceCodeAdmin";
-import EditSourceCodeAdmin from "./components/admin/EditSourceCodeAdmin";
+import SourceCodeAdmin from "./components/admin/Source";
 import ExChangeSource from "./components/ExChangeSource";
 import ViewSourceDetail from "./components/ViewSourceDetail";
 import UpdateBlog from "./components/admin/UpdateBlog";
 import PersonalInfo from "./components/admin/PersonalInfo";
+import EditSourceCodeAdmin from "./components/admin/EditSource";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
