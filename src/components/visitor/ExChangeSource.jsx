@@ -7,16 +7,16 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
-import { db } from "../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import { AiFillLike } from "react-icons/ai";
 
 import { Link } from "react-router-dom";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { IoHome } from "react-icons/io5";
 import { MdMenu } from "react-icons/md";
-import { SideBarBlogListContext } from "../contexts/SideBarBlogListContext";
+import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
 import Loading from "./Loading";
-import { formatVND } from "../lib/formatVND";
+import { formatVND } from "../../lib/formatVND";
 
 const ExChangeSource = () => {
   const [loading, setLoading] = useState(true);

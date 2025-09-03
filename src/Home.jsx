@@ -1,16 +1,16 @@
 import { useContext } from "react";
 import "./App.css";
 import NavigationBar from "./components/partials/NavigationBar";
-import SideBar from "./components/SideBar";
+import SideBar from "./components/visitor/SideBar";
 import { SidebarContext } from "./contexts/SidebarContext";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
-import ShowCase from "./components/ShowCase";
-import Projects from "./components/Projects";
-import Skills from "./components/Skills";
-import Certificates from "./components/Certificates";
+import ShowCase from "./components/visitor/ShowCase";
+import Projects from "./components/visitor/Projects";
+import Skills from "./components/visitor/Skills";
+import Certificates from "./components/visitor/Certificates";
 import DetailedCertificate from "./components/partials/DetailedCertificate";
 import { ShowCertificateContext } from "./contexts/ShowCertificateContext";
-import Contact from "./components/Contact";
+import Contact from "./components/visitor/Contact";
 import ToTop from "./components/partials/ToTop";
 const Home = () => {
   const { isSidebar } = useContext(SidebarContext);

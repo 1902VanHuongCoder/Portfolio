@@ -1,10 +1,10 @@
 import { Link as ReactLink, useParams } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import { IoHome } from "react-icons/io5";
 import { MdMenu } from "react-icons/md";
-import { SideBarBlogListContext } from "../contexts/SideBarBlogListContext";
+import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
 import { FaBookAtlas } from "react-icons/fa6";
 import Loading from "./Loading";
 import { EditorContent, useEditor } from "@tiptap/react";

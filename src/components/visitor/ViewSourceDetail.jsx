@@ -19,12 +19,12 @@ import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
 import { useParams, Link } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase_setup/firebase";
-import { formatVND } from "../lib/formatVND";
+import { db } from "../../firebase_setup/firebase";
+import { formatVND } from "../../lib/formatVND";
 import { FaBookAtlas } from "react-icons/fa6";
 import { MdMenu, MdOutlineMailOutline } from "react-icons/md";
 import { IoHome } from "react-icons/io5";
-import { SideBarBlogListContext } from "../contexts/SideBarBlogListContext";
+import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
 import {  FaFacebook, FaPhoneAlt } from "react-icons/fa";
 const ViewSourceDetail = () => {
   const { id } = useParams();

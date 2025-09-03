@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import Project from "./partials/Project";
+import Project from "../partials/Project";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import Loading from "./Loading";
 
 const Projects = () => {

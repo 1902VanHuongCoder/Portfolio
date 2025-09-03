@@ -1,5 +1,5 @@
 import  { useState, } from 'react';
-import { db } from '../firebase_setup/firebase';
+import { db } from '../../firebase_setup/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { FaThumbsUp } from 'react-icons/fa';
 

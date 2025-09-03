@@ -8,15 +8,15 @@ import {
   increment,
 } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
-import { db } from "../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import { AiFillLike } from "react-icons/ai";
 
 import { Link } from "react-router-dom";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { IoHome } from "react-icons/io5";
 import { MdMenu } from "react-icons/md";
-import { SideBarBlogListContext } from "../contexts/SideBarBlogListContext";
-import Blog from "./partials/Blog";
+import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
+import Blog from "../partials/Blog";
 import Loading from "./Loading";
 
 const BlogsList = () => {

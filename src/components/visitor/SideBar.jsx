@@ -7,10 +7,10 @@ import { PiCertificateFill, PiHandshakeFill } from "react-icons/pi";
 // import framer motion library
 import { motion } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
-import { SidebarContext } from "../contexts/SidebarContext";
+import { SidebarContext } from "../../contexts/SidebarContext";
 import { Link } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import { AiFillLike } from "react-icons/ai";
 const SideBar = () => {
   const { isSidebar, func } = useContext(SidebarContext);

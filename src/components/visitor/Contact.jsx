@@ -1,7 +1,7 @@
-import SubmitButton from "./partials/SubmitButton";
+import SubmitButton from "../partials/SubmitButton";
 import { useState } from "react";
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import LikeButton from "./Interaction";
 const Contact = () => {
   const [formData, setFormData] = useState({

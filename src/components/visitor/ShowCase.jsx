@@ -1,5 +1,5 @@
-import paultoavatar from "../assets/paultoavatar1.jpg";
-import Button from "./partials/Button";
+import paultoavatar from "../../assets/paultoavatar1.jpg";
+import Button from "../partials/Button";
 import { motion } from "framer-motion";
 const ShowCase = () => {
   return (

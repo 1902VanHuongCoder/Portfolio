@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import SkillCard from "./partials/SkillCard";
+import SkillCard from "../partials/SkillCard";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 
 const Skills = () => {
   const [skills, setSkills] = useState([]);

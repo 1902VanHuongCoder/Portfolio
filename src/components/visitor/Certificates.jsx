@@ -1,8 +1,8 @@
 // import { IoIosStar } from "react-icons/io";
 import { useEffect, useState } from "react";
-import Certificate from "./partials/Certificate";
+import Certificate from "../partials/Certificate";
 import { collection, getDocs } from "firebase/firestore"; 
-import { db } from "../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 
 const Certificates = () => {
   const [certificates, setCertificates] = useState([]);
