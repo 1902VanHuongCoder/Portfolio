@@ -200,10 +200,10 @@ const ExChangeSource = () => {
                     <div className="font-bold text-lg text-white mb-1 truncate w-full text-center">
                       {proj.title}
                     </div>
-                    <div className="text-white/50 text-sm mb-1 text-center">
+                    <div className="text-white/50 text-sm mb-1 text-center truncate max-w-full">
                       {proj.subtitle}
                     </div>
-                    <div className="text-[#05f7c0] font-semibold text-center mb-1">
+                    <div className="text-[#33A1E0] font-semibold text-center mb-1">
                       {proj.price ? `Price: ${formatVND(proj.price)}` : ""}
                     </div>
                     <Link

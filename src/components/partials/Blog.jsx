@@ -24,7 +24,7 @@ const Blog = ({ imageUrl, title, date, blogId }) => {
         <h3 className="text-white text-left text-lg font-semibold mb-2">
           {title}
         </h3>
-        <div className="flex items-center text-white text-sm">
+        <div className="flex items-center text-white/70 text-sm">
           <svg
             className="w-4 h-4 mr-2"
             fill="none"

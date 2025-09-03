@@ -6,7 +6,6 @@ import { IoHome } from "react-icons/io5";
 import { MdMenu } from "react-icons/md";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
 import { FaBookAtlas } from "react-icons/fa6";
-import Loading from "./Loading";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -28,20 +27,33 @@ import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
 import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
+import { useLoading } from "../../lib/loading-context";
+import useToast from "../../hooks/toast-hook";
 
 
 const BlogDetail = () => {
+  // Toast context
+  const { showToast } = useToast();
+  // Loading context
+  const { showLoading, hideLoading } = useLoading();
+
+  // Get the blog post ID from the URL parameters
   const { id } = useParams();
+
+  // Blog post state
   const [blog, setBlog] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [, setError] = useState(null);
+
+  // Sidebar context 
   const { setShow } = useContext(SideBarBlogListContext);
+
+  // Blog content state 
   const [content, setContent] = useState(null);
 
   const handleCloseSideBarBlogList = () => {
     setShow(true);
   };
 
+  // Initialize editor with extensions 
   const editor = useEditor({
     editable: false,
     extensions: [
@@ -72,8 +84,10 @@ const BlogDetail = () => {
     },
   });
 
+
   useEffect(() => {
     const fetchBlog = async () => {
+      showLoading();
       try {
         const docRef = doc(db, "blogPosts", id);
         const docSnap = await getDoc(docRef);
@@ -81,19 +95,20 @@ const BlogDetail = () => {
         if (docSnap.exists()) {
           setBlog({ id: docSnap.id, ...docSnap.data() });
           setContent(docSnap.data().content);
+          console.log("Fetched blog:", { id: docSnap.id, ...docSnap.data() });
         } else {
-          setError("Không tìm thấy bài viết");
+          showToast("info", "Không tìm thấy bài viết"); 
         }
       } catch (err) {
-        setError("Có lỗi xảy ra khi tải bài viết");
+        showToast("error", "Có lỗi xảy ra khi tải bài viết");
         console.error("Error fetching blog:", err);
       } finally {
-        setLoading(false);
+        hideLoading();
       }
     };
 
     fetchBlog();
-  }, [id]);
+  }, [hideLoading, id, showLoading, showToast]);
 
   useEffect(() => {
     if (editor && content !== null) {
@@ -109,10 +124,6 @@ const BlogDetail = () => {
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
-      {loading ? (
-        <Loading />
-      ) : (
-        <>
           <div className="flex justify-between items-center px-4 sm:px-10 py-4 bg-white/10 backdrop-blur-md shadow-lg border-b border-[#33A1E0]/30">
             <div className="flex gap-2 items-center justify-between w-full">
               <p className="text-2xl text-white font-bold hidden sm:block drop-shadow">
@@ -153,7 +164,7 @@ const BlogDetail = () => {
           {blog && (
             <div className="w-full mx-auto max-w-[80%] rounded-2xl p-4 sm:p-10 flex flex-col gap-4">
               <img
-                src={blog.imageUrl}
+                src={blog.image}
                 alt={blog.title}
                 className="w-full h-auto sm:h-[400px] object-cover mb-4 rounded-xl border border-[#33A1E0]/20 shadow"
               />
@@ -181,14 +192,12 @@ const BlogDetail = () => {
                 <div className="prose max-w-none p-4 rounded">
                   <EditorContent
                     editor={editor}
-                    className="tiptap-content min-h-[300px] p-3 focus:outline-none rounded-br-md rounded-bl-md focus:border-none"
+                    className="tiptap-content min-h-[300px] p-3 focus:outline-none rounded-br-md rounded-bl-md focus:border-none text-white"
                   />
                 </div>
               </div>
             </div>
           )}
-        </>
-      )}
     </div>
   );
 };

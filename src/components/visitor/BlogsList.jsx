@@ -25,7 +25,6 @@ const BlogsList = () => {
   const [numberOfAccess, setNumberOfAccess] = useState(0);
   const { setShow } = useContext(SideBarBlogListContext);
   const [blogs, setBlogs] = useState([]);
-
   const count = useMotionValue(0);
   const rounded = useTransform(count, Math.round);
   const displayValue = useTransform(rounded, (latest) => latest.toString());
@@ -182,7 +181,7 @@ const BlogsList = () => {
                 {blogs.map((blog) => (
                   <div key={blog.id} className="bg-white/10 rounded-2xl shadow-lg border border-[#33A1E0]/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 p-4 flex flex-col gap-2">
                     <Blog
-                      imageUrl={blog.imageUrl}
+                      imageUrl={blog.image}
                       title={blog.title}
                       date={blog.date}
                       blogId={blog.id}

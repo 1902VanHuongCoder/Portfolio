@@ -22,14 +22,16 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase_setup/firebase";
 import { formatVND } from "../../lib/formatVND";
 import { FaBookAtlas } from "react-icons/fa6";
-import { MdMenu, MdOutlineMailOutline } from "react-icons/md";
+import { MdMenu } from "react-icons/md";
 import { IoHome } from "react-icons/io5";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
-import {  FaFacebook, FaPhoneAlt } from "react-icons/fa";
 const ViewSourceDetail = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // State to manage host's personal info
+  const [personalInfo, setPersonalInfo] = useState({});
 
   const { setShow } = useContext(SideBarBlogListContext);
 
@@ -80,6 +82,18 @@ const ViewSourceDetail = () => {
       editor.commands.setContent(project.content || "");
     }
   }, [editor, project]);
+
+  // Fetch personal information to show in the form
+  useEffect(() => {
+    const fetchPersonalInfo = async () => {
+      const docRef = doc(db, "personalInfo", "main");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setPersonalInfo(docSnap.data());
+      }
+    };
+    fetchPersonalInfo();
+  }, []);
 
   if (loading) {
     return (
@@ -147,14 +161,17 @@ const ViewSourceDetail = () => {
       <div className="p-6">
         <div className="flex flex-col gap-6">
           {project.images && project.images.length > 0 && (
-            <div className="w-full h-[400px] object-cover relative">
+            <div className="w-full h-[200px] object-cover relative">
               <img
                 key="imagetitle"
-                src={project.images[0]}
+                src={project.images[0].secure_url}
                 alt={project.title}
                 className="w-full h-full object-cover rounded shadow "
               />
-              <div className="absolute inset-0 bg-black/30 rounded shadow grid grid-cols-1 md:grid-cols-2 items-center px-4">
+              <div className="absolute top-0 left-0 w-full h-full bg-black/50 rounded flex justify-center items-center">
+                <p className="text-white text-4xl font-bold drop-shadow-lg">VIEW PROJECT DETAILS</p> 
+              </div>
+              {/* <div className="absolute inset-0 bg-black/30 rounded shadow grid grid-cols-1 md:grid-cols-2 items-center px-4">
                 <div className="flex justify-center items-center">
                   {project.youtube && (
                     <div>
@@ -186,7 +203,7 @@ const ViewSourceDetail = () => {
                     <span>https://www.facebook.com/vanhuong.to.71</span>
                   </p>
                 </div>
-              </div>
+              </div> */}
             </div>
           )}
           <div className="space-y-6">
@@ -198,15 +215,21 @@ const ViewSourceDetail = () => {
               <div className="text-[#05f7c0] mb-2">
                 <span className="font-semibold">Price: </span>
                 {project.price ? formatVND(project.price) : "Contact for price"}
+                <div className="flex gap-x-4 mt-6">
+                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">{personalInfo?.name}</span>
+                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">{personalInfo?.email}</span>
+                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">{personalInfo?.phone}</span>
+                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">{personalInfo?.facebook}</span>
+                </div>
               </div>
             </div>
             <div className="border-t border-[#33A1E0]/20 pt-4">
-              <p className="text-white/70 mb-2">Mô Tả Chi Tiết</p>
-              <div className="prose max-w-none rounded bg-white/80 p-4">
+              <p className="text-white mb-2">Mô Tả Chi Tiết</p>
+              <div className="prose max-w-none rounded p-4">
                 {editor && (
                   <EditorContent
                     editor={editor}
-                    className="tiptap-content min-h-[300px] focus:outline-none rounded-br-md rounded-bl-md focus:border-none"
+                    className="tiptap-content min-h-[300px] focus:outline-none rounded-br-md rounded-bl-md focus:border-none text-white"
                   />
                 )}
               </div>
