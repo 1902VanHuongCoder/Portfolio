@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db, storage } from "../../firebase_setup/firebase";
-import { doc, updateDoc, addDoc, collection, getDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { db } from "../../firebase_setup/firebase";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -24,66 +23,65 @@ import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
 import { Color, TextStyle } from "@tiptap/extension-text-style";
 import { IoCloseCircleSharp } from "react-icons/io5";
+import useToast from "../../hooks/toast-hook";
+import { useLoading } from "../../lib/loading-context";
+import { uploadImage } from "../../lib/cloundinary";
+import { MdDateRange } from "react-icons/md";
 
 const UpdateBlog = () => {
+  // Toast context
+  const { showToast } = useToast();
+  // Loading context
+  const { showLoading, hideLoading } = useLoading();
+
+  // Route parameters
   const { id } = useParams();
+
+  // Navigation
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+
+  // State for blog data
   const [blog, setBlog] = useState(null);
+
+  // State to manage updates data
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateDate, setUpdateDate] = useState("");
   const [, setUpdateContent] = useState("");
   const [updateImageFile, setUpdateImageFile] = useState(null);
   const [updateImagePreview, setUpdateImagePreview] = useState(null);
+
+  // State to show old content before changes
   const [content, setContent] = useState("");
 
-  useEffect(() => {
-    const fetchBlog = async () => {
-      setLoading(true);
-      const docRef = doc(db, "blogPosts", id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setBlog({ id, ...data });
-        setUpdateTitle(data.title || "");
-        setUpdateDate(data.date || "");
-        setUpdateContent(data.content || "");
-        setUpdateImagePreview(data.imageUrl || null);
-        setContent(data.content || null);
-      }
-      setLoading(false);
-    };
-    if (id) fetchBlog();
-  }, [id]);
-
- const editor = useEditor({
-   extensions: [
-     StarterKit,
-     Underline,
-     Link,
-     Image,
-     TextAlign.configure({ types: ["heading", "paragraph"] }),
-     Heading.configure({ levels: [1, 2, 3, 4, 5, 6] }),
-     BulletList,
-     ListItem,
-     Paragraph,
-     Text,
-     TaskList,
-     TaskItem.configure({ nested: true }),
-     HorizontalRule,
-     Table.configure({ resizable: true }),
-     TableRow,
-     TableHeader,
-     TableCell,
-     Gapcursor,
-     Color,
-     TextStyle,
-   ],
-   content: content,
-   onUpdate: ({ editor }) => {
-     setContent(editor.getJSON());
-   },
- });
+  // Initialize editor
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Link,
+      Image,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Heading.configure({ levels: [1, 2, 3, 4, 5, 6] }),
+      BulletList,
+      ListItem,
+      Paragraph,
+      Text,
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      HorizontalRule,
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      Gapcursor,
+      Color,
+      TextStyle,
+    ],
+    content: content,
+    onUpdate: ({ editor }) => {
+      setContent(editor.getJSON());
+    },
+  });
 
   const handleUpdateImageChange = (e) => {
     const file = e.target.files[0];
@@ -97,391 +95,381 @@ const UpdateBlog = () => {
     }
   };
 
-
   const handleUpdateBlog = async (e) => {
     e.preventDefault();
+    showLoading(); 
     if (!blog) return;
     try {
-      let imageUrl = blog.imageUrl || null;
+      let imageUrl = blog.image || ""; 
+      let publicID = blog.publicID || "";
 
-      if(!updateImagePreview){
-         alert("No image uploaded");
-         return;
+      if (!updateImagePreview) {
+        showToast("error", "No image uploaded");
+        return;
       }
 
       if (updateImageFile) {
         // Delete old image
-        const oldImageRef = ref(storage, blog.imageUrl);
-        await deleteObject(oldImageRef);
+        // const oldImageRef = ref(storage, blog.imageUrl);
+        // await deleteObject(oldImageRef);
 
-        const storageRef = ref(
-          storage,
-          `blog-thumbnails/${Date.now()}-${updateImageFile.name}`
-        );
-        await uploadBytes(storageRef, updateImageFile);
-        imageUrl = await getDownloadURL(storageRef);
+        // Upload new image to Cloundinary and get secure_url and image's public ID
+        const { secure_url, public_id } = await uploadImage(updateImageFile);
+
+        if (!secure_url && !public_id) {
+          showToast("error", "Error uploading image.");
+        }
+
+        imageUrl = secure_url;
+        publicID = public_id;
       }
-      await addDoc(collection(db, "blogPostsUpdateLog"), {
-        blogId: blog.id,
-        oldTitle: blog.title,
-        oldContent: blog.content,
-        oldDate: blog.date,
-        oldImageUrl: blog.imageUrl,
-        updatedAt: new Date(),
-      });
+      // await addDoc(collection(db, "blogPostsUpdateLog"), {
+      //   blogId: blog.id,
+      //   oldTitle: blog.title,
+      //   oldContent: blog.content,
+      //   oldDate: blog.date,
+      //   oldImageUrl: blog.imageUrl,
+      //   updatedAt: new Date(),
+      // });
+
       const blogDocRef = doc(db, "blogPosts", blog.id);
       await updateDoc(blogDocRef, {
         title: updateTitle,
         date: updateDate,
         content: content,
-        imageUrl,
+        image: imageUrl,
+        publicID: publicID, 
       });
-      alert("Blog post updated successfully!");
+
+      showToast("success", "Blog post updated successfully!");
       navigate(-1);
     } catch (error) {
-      alert("Error updating blog post.");
+      showToast("error", "Error updating blog post.");
       console.error("Error updating blog post: ", error);
     }
+    hideLoading();
   };
+
+    useEffect(() => {
+      const fetchBlog = async () => {
+        showLoading();
+        const docRef = doc(db, "blogPosts", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setBlog({ id, ...data });
+          setUpdateTitle(data.title || "");
+          setUpdateDate(data.date || "");
+          setUpdateContent(data.content || "");
+          setUpdateImagePreview(data.image || null);
+          setContent(data.content || "");
+          console.log(data);
+        }
+        hideLoading();
+      };
+      if (id) fetchBlog();
+    }, [hideLoading, id, showLoading]);
 
   useEffect(() => {
     if (editor && content !== null) {
       try {
         editor.commands.setContent(JSON.parse(content));
+        console.log(JSON.parse(content));
       } catch {
         editor.commands.setContent(content);
       }
     }
   }, [editor, content]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-xl">
-        Loading...
-      </div>
-    );
-  }
-  if (!blog) {
-    return (
-      <div className="flex justify-center items-center h-screen text-xl">
-        Blog not found.
-      </div>
-    );
-  }
+  
 
   if (!editor) return null;
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0] px-5">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
+      <h1 className="w-full text-2xl p-6 pt-6 pb-2 font-extrabold text-white drop-shadow-xl">
+        UPDATE BLOG POST
+      </h1>
+      <p className="w-full text-sm px-6 pb-6 font-medium text-white/80 drop-shadow-xl border-b-[1px] border-b-white/20">
+        Here you can update the blog post details.
+      </p>
       <form
         onSubmit={handleUpdateBlog}
         className="rounded-xl p-5 w-full shadow-2xl flex flex-col gap-3 relative"
       >
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold focus:outline-none"
-          aria-label="Close"
-        >
-          ×
-        </button>
-        <h2 className="text-lg font-bold mb-2 text-[#154D71]">
-          Update Blog Post
-        </h2>
         <div className="lg:flex gap-x-4">
           <label className="flex flex-col w-full">
-            <span className="text-gray-700">Title</span>
+            <span className="block mb-2 font-bold text-white">Title</span>
             <input
               type="text"
-              className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0] text-black"
+              className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-white bg-transparent"
               value={updateTitle}
               onChange={(e) => setUpdateTitle(e.target.value)}
               required
             />
           </label>
-          <label className="flex flex-col w-full">
-            <span className="text-gray-700">Date Created</span>
-            <input
-              type="date"
-              className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0] text-black"
-              value={updateDate}
-              onChange={(e) => setUpdateDate(e.target.value)}
-              required
-            />
-          </label>
+          <div className=" mb-4 w-full text-white">
+            <label htmlFor="date" className="block mb-2 font-bold">
+              Date Created
+            </label>
+            <div className="relative ">
+              <input
+                type="date"
+                id="date"
+                value={updateDate}
+                onChange={(e) => setUpdateDate(e.target.value)}
+                className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-white bg-transparent"
+                required
+              />
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 ">
+                <MdDateRange />
+              </span>
+            </div>
+          </div>
         </div>
         <label className="flex flex-col">
-          <span className="text-gray-700">Featured Image</span>
+          <span className="block mb-2 font-bold text-white">
+            Featured Image
+          </span>
           <input
             type="file"
-            className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0]"
+            className="mt-1 border border-[#33A1E0]/30 rounded-md p-2 focus:outline-none focus:border-[#33A1E0] text-white"
             onChange={handleUpdateImageChange}
           />
         </label>
         <div className="w-30 relative">
           {updateImagePreview && (
-           <div className="w-fit h-full relative">
-                         <img
-                           src={updateImagePreview}
-                           alt={`Project Image`}
-                           className="w-32 h-32 object-cover rounded mb-1"
-                         />
-                         <button
-                           type="button"
-                           onClick={() => setUpdateImagePreview(null)}
-                           className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded"
-                         >
-                           <IoCloseCircleSharp />
-                         </button>
-                       </div>
+            <div className="w-fit h-full relative">
+              <img
+                src={updateImagePreview}
+                alt={`Project Image`}
+                className="w-32 h-32 object-cover rounded mb-1"
+              />
+              <button
+                type="button"
+                onClick={() => setUpdateImagePreview(null)}
+                className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded"
+              >
+                <IoCloseCircleSharp />
+              </button>
+            </div>
           )}
         </div>
         <label className="flex flex-col">
-          <span className="text-gray-700">Blog Content</span>
-          <div className="border rounded">
+          <span className="block mb-2 font-bold text-white">Blog Content</span>
+          <div className="border-[2px] border-[#33A1E0]/30 rounded p-2 text-white">
             {/* Toolbar */}
-            <div className="border rounded p-2">
-              {/* Toolbar */}
-              <div className="flex flex-wrap gap-2 mb-2">
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={
-                    editor.isActive("bold")
-                      ? "font-bold bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  B
-                </button>
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={
-                    editor.isActive("italic")
-                      ? "italic bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  I
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().toggleUnderline().run()
-                  }
-                  className={
-                    editor.isActive("underline")
-                      ? "underline bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  U
-                </button>
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleStrike().run()}
-                  className={
-                    editor.isActive("strike")
-                      ? "line-through bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  S
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().toggleHeading({ level: 1 }).run()
-                  }
-                  className={
-                    editor.isActive("heading", { level: 1 })
-                      ? "font-bold bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  H1
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().toggleHeading({ level: 2 }).run()
-                  }
-                  className={
-                    editor.isActive("heading", { level: 2 })
-                      ? "font-bold bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  H2
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().toggleHeading({ level: 3 }).run()
-                  }
-                  className={
-                    editor.isActive("heading", { level: 3 })
-                      ? "font-bold bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  H3
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().toggleBulletList().run()
-                  }
-                  className={
-                    editor.isActive("bulletList")
-                      ? "bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  • List
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().toggleOrderedList().run()
-                  }
-                  className={
-                    editor.isActive("orderedList")
-                      ? "bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  1. List
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().toggleBlockquote().run()
-                  }
-                  className={
-                    editor.isActive("blockquote")
-                      ? "bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  ❝
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().toggleCodeBlock().run()
-                  }
-                  className={
-                    editor.isActive("codeBlock")
-                      ? "bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  {"<>"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().setHorizontalRule().run()
-                  }
-                  className="px-2"
-                >
-                  ―
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const url = prompt("Enter URL");
-                    if (url)
-                      editor.chain().focus().setLink({ href: url }).run();
-                  }}
-                  className={
-                    editor.isActive("link") ? "bg-white/30 px-2" : "px-2"
-                  }
-                >
-                  🔗
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const url = prompt("Image URL");
-                    if (url)
-                      editor.chain().focus().setImage({ src: url }).run();
-                  }}
-                  className="px-2"
-                >
-                  🖼️
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().setTextAlign("left").run()
-                  }
-                  className={
-                    editor.isActive({ textAlign: "left" })
-                      ? "bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  ⯇
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().setTextAlign("center").run()
-                  }
-                  className={
-                    editor.isActive({ textAlign: "center" })
-                      ? "bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  ≡
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor.chain().focus().setTextAlign("right").run()
-                  }
-                  className={
-                    editor.isActive({ textAlign: "right" })
-                      ? "bg-white/30 px-2"
-                      : "px-2"
-                  }
-                >
-                  ⯈
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    editor
-                      .chain()
-                      .focus()
-                      .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-                      .run()
-                  }
-                  className="px-2"
-                >
-                  ▦
-                </button>
-                <input
-                  type="color"
-                  onInput={(e) =>
-                    editor.chain().focus().setColor(e.target.value).run()
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().unsetColor().run()}
-                >
-                  Clear Color
-                </button>
-              </div>
-              <EditorContent
-                editor={editor}
-                className="tiptap-content min-h-[300px] p-3 focus:outline-none rounded-br-md rounded-bl-md focus:border-none"
+            <div className="flex flex-wrap gap-2 mb-2 bg-black/20 p-2 rounded-md">
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                className={
+                  editor.isActive("bold")
+                    ? "font-bold bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                B
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={
+                  editor.isActive("italic") ? "italic bg-white/30 px-2" : "px-2"
+                }
+              >
+                I
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={
+                  editor.isActive("underline")
+                    ? "underline bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                U
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+                className={
+                  editor.isActive("strike")
+                    ? "line-through bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                S
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 1 }).run()
+                }
+                className={
+                  editor.isActive("heading", { level: 1 })
+                    ? "font-bold bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                H1
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 2 }).run()
+                }
+                className={
+                  editor.isActive("heading", { level: 2 })
+                    ? "font-bold bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                H2
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 3 }).run()
+                }
+                className={
+                  editor.isActive("heading", { level: 3 })
+                    ? "font-bold bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                H3
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                className={
+                  editor.isActive("bulletList") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                • List
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                className={
+                  editor.isActive("orderedList") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                1. List
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                className={
+                  editor.isActive("blockquote") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                ❝
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                className={
+                  editor.isActive("codeBlock") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                {"<>"}
+              </button>
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                className="px-2"
+              >
+                ―
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = prompt("Enter URL");
+                  if (url) editor.chain().focus().setLink({ href: url }).run();
+                }}
+                className={
+                  editor.isActive("link") ? "bg-white/30 px-2" : "px-2"
+                }
+              >
+                🔗
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const url = prompt("Image URL");
+                  if (url) editor.chain().focus().setImage({ src: url }).run();
+                }}
+                className="px-2"
+              >
+                🖼️
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("left").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "left" })
+                    ? "bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                ⯇
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("center").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "center" })
+                    ? "bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                ≡
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("right").run()
+                }
+                className={
+                  editor.isActive({ textAlign: "right" })
+                    ? "bg-white/30 px-2"
+                    : "px-2"
+                }
+              >
+                ⯈
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  editor
+                    .chain()
+                    .focus()
+                    .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                    .run()
+                }
+                className="px-2"
+              >
+                ▦
+              </button>
+              <input
+                type="color"
+                onInput={(e) =>
+                  editor.chain().focus().setColor(e.target.value).run()
+                }
               />
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().unsetColor().run()}
+              >
+                Clear Color
+              </button>
             </div>
             <EditorContent
               editor={editor}

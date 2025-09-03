@@ -121,3 +121,18 @@
   @apply bg-gray-50;
 }
 
+
+/* Hide default calendar icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  z-index: 10;
+}
+input[type="date"]::-ms-clear {
+  display: none;
+}
+input[type="date"]::-ms-expand {
+  display: none;
+}
+input[type="date"] {
+  position: relative;
+}

@@ -1,39 +1,51 @@
 import { useEffect, useState } from "react";
-import { db, storage } from "../../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import {
   collection,
   addDoc,
-  getDocs,
-  // setDoc,
   doc,
   updateDoc,
-  getDoc,
   deleteDoc,
 } from "firebase/firestore";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
+import { uploadImage, deleteImage } from "../../lib/cloundinary";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaPlus } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
+import useToast from "../../hooks/toast-hook";
+import { getAllCertificates } from "../../lib/certificate-apis";
+import { useLoading } from "../../lib/loading-context";
 
 const ManipulateOnCertificates = () => {
+  // Custom hook for showing toast notifications
+  const { showToast } = useToast();
+
+  // State to hold loading status
+  const { showLoading, hideLoading } = useLoading();
+
+  // State to hold certificates
   const [cers, setCers] = useState();
+
+  // State to hold certificate ID to support updates and deletions
   const [cerId, setCerId] = useState({ show: false, cId: "" });
+
+  // State to hold form data for adding certificates
   const [formData, setFormData] = useState({
     certificateContent: "",
     certificateImgName: "",
     certificate: "",
   });
+
+  // State to control the visibility of the add certificate dialog
   const [showAddDialog, setShowAddDialog] = useState(false);
+
+  // State to control the visibility of the delete confirmation dialog
   const [confirmDelete, setConfirmDelete] = useState({
     show: false,
     id: null,
     imgName: null,
   });
 
+  // State to hold data for updating certificates
   const [dataToUpdate, setDataToUpdate] = useState({
     certificateContent: "",
     certificateImgName: "",
@@ -53,26 +65,41 @@ const ManipulateOnCertificates = () => {
     return value && typeof value === "object";
   };
 
-  const handleSubmit = async (e) => {
+  const handleUpdateCertificate = async (e) => {
     e.preventDefault();
+    showLoading();
+
+    // Check if a new file is being uploaded
     if (checkIfFile(dataToUpdate.certificate)) {
-      const desertRef = ref(storage, `cers/${dataToUpdate.certificateImgName}`);
       try {
-        await deleteObject(desertRef);
-        const storageRef = ref(
-          storage,
-          `cers/${dataToUpdate.certificate.name}`
+        // If there is an old image, delete it from Cloudinary
+        if (dataToUpdate.certificateImgName) {
+          try {
+            await deleteImage(dataToUpdate.certificateImgName);
+          } catch (err) {
+            console.error("Error deleting image: ", err);
+          }
+        }
+
+        // Upload new image to Cloudinary
+        const { secure_url, public_id } = await uploadImage(
+          dataToUpdate.certificate
         );
-        await uploadBytes(storageRef, dataToUpdate.certificate);
-        const downloadURL = await getDownloadURL(storageRef);
+
         const dataToSaveToFirebase = {
           certificateContent: dataToUpdate.certificateContent,
-          certificate: downloadURL,
-          certificateImgName: dataToUpdate.certificate.name,
+          certificate: secure_url,
+          certificateImgName: public_id,
         };
+
+        // Update Firestore document
         const docRef = doc(db, "cers", cerId.cId);
         await updateDoc(docRef, dataToSaveToFirebase);
-        alert("Certificate updated successfully!");
+
+        // Show notifications and refetch all certificates
+        showToast("success", "Certificate updated successfully!");
+        const newCertificates = await getAllCertificates();
+        setCers(newCertificates);
       } catch (error) {
         console.log("Error" + error);
       }
@@ -83,84 +110,100 @@ const ManipulateOnCertificates = () => {
       try {
         const docRef = doc(db, "cers", cerId.cId);
         await updateDoc(docRef, dataToSaveToFirebase);
-        alert("Certificate updated successfully!");
+
+        // Show notifications and refetch all certificates
+        showToast("success", "Certificate updated successfully!");
+        const newCertificates = await getAllCertificates();
+        setCers(newCertificates);
       } catch (error) {
         console.error("Error updating certificate", error);
       }
     }
+    hideLoading();
+    setCerId({ cId: "", show: false });
   };
 
-  const uploadImageToFirebase = async (e) => {
+  const handleCreateNewCertificate = async (e) => {
     e.preventDefault();
+    showLoading();
+
+    let dataToSaveToFirebase;
     if (formData.certificate) {
-      const storageRef = ref(storage, `cers/${formData.certificate.name}`);
       try {
-        await uploadBytes(storageRef, formData.certificate);
-        const downloadURL = await getDownloadURL(storageRef);
-        const dataToSaveToFirebase = {
+        // Upload image to Cloudinary
+        const { secure_url, public_id } = await uploadImage(
+          formData.certificate
+        );
+        dataToSaveToFirebase = {
           certificateContent: formData.certificateContent,
-          certificate: downloadURL,
-          certificateImgName: formData.certificate.name,
+          certificate: secure_url,
+          certificateImgName: public_id,
         };
-        try {
-          await addDoc(collection(db, "cers"), dataToSaveToFirebase);
-          window.location.reload();
-        } catch (error) {
-          alert("Thêm chứng chỉ không thành công do lỗi tham số!");
-          console.error("Error adding document: ", error);
-        }
       } catch (error) {
-        alert("Thêm chứng chỉ không thành công do upload hình ảnh!");
+        showToast(
+          "error",
+          "Failed to add certificate due to image upload error!"
+        );
         console.error("Error uploading file: ", error);
+        hideLoading();
+        setShowAddDialog(false);
+        return;
+      }
+      try {
+        await addDoc(collection(db, "cers"), dataToSaveToFirebase);
+        const newCertificates = await getAllCertificates();
+        setCers(newCertificates);
+        showToast("success", "Added certificates successfully!");
+      } catch (error) {
+        showToast("error", "Failed to add certificate due to parameter error!");
+        console.error("Error adding document: ", error);
       }
     } else {
-      alert("Chưa thêm ảnh chứng chỉ!");
+      showToast("error", "No certificate image added!");
     }
+    hideLoading();
+    setShowAddDialog(false);
   };
 
-  const handleDeleteCer = async (id, projectImgName) => {
-    try {
-      await deleteDoc(doc(db, "cers", id));
-      const desertRef = ref(storage, `cers/${projectImgName}`);
+  const handleDeleteCer = async (id, certificateImgName) => {
+    showLoading();
+    if (certificateImgName) {
       try {
-        await deleteObject(desertRef);
-        window.location.reload();
+        await deleteImage(certificateImgName);
       } catch (error) {
         console.error("Error deleting image: ", error);
       }
+    }
+
+    try {
+      await deleteDoc(doc(db, "cers", id));
+      showToast("success", "Certificate deleted successfully!");
+      const newCertificates = await getAllCertificates();
+      setCers(newCertificates);
     } catch (error) {
       console.error("Error deleting document: ", error);
     }
+    hideLoading();
   };
 
   useEffect(() => {
     const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "cers"));
-      const usersData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setCers(usersData);
+      const newCertificates = await getAllCertificates();
+      setCers(newCertificates);
     };
     fetchData();
   }, []);
 
   useEffect(() => {
     if (cerId.cId !== "") {
-      const fetchProject = async () => {
-        const docRef = doc(db, "cers", cerId.cId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setDataToUpdate(docSnap.data());
-        } else {
-          console.log("No such document!");
-        }
-      };
-      fetchProject();
+       const cerToEdit = cers.find((cer) => cer.id === cerId.cId);
+       if (cerToEdit) {
+         setDataToUpdate(cerToEdit);
+       }
     } else {
       return;
     }
-  }, [cerId.cId]);
+  }, [cerId.cId, cers]);
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
@@ -172,7 +215,7 @@ const ManipulateOnCertificates = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onSubmit={handleSubmit}
+              onSubmit={handleUpdateCertificate}
               className="bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 relative"
             >
               <button
@@ -181,7 +224,7 @@ const ManipulateOnCertificates = () => {
                 className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold focus:outline-none"
                 aria-label="Close"
               >
-                ×
+                <IoClose />
               </button>
               <h2 className="text-lg font-bold mb-2 text-[#154D71]">
                 Update Certificate
@@ -250,9 +293,13 @@ const ManipulateOnCertificates = () => {
         )}
       </AnimatePresence>
 
-      <h1 className="w-full text-4xl p-4 font-extrabold text-white drop-shadow-xl border-b-[1px]">
-        CÁC THAO TÁC VỚI CERTIFICATES
+      <h1 className="w-full text-2xl p-6 pt-6 pb-2 font-extrabold text-white drop-shadow-xl">
+        MY CERTIFICATES
       </h1>
+      <p className="w-full text-sm px-6 pb-6 font-medium text-white/80 drop-shadow-xl border-b-[1px] border-b-white/20">
+        Here you can manage your certificates, add new ones, and update existing
+        ones.
+      </p>
 
       <AnimatePresence>
         {showAddDialog && (
@@ -261,7 +308,7 @@ const ManipulateOnCertificates = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              onSubmit={uploadImageToFirebase}
+              onSubmit={handleCreateNewCertificate}
               className="bg-white rounded-xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 relative"
             >
               <button
@@ -270,7 +317,7 @@ const ManipulateOnCertificates = () => {
                 className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl font-bold focus:outline-none"
                 aria-label="Close"
               >
-                ×
+                <IoClose />
               </button>
               <h2 className="text-lg font-bold mb-2 text-[#154D71]">
                 Add New Certificate
@@ -313,11 +360,11 @@ const ManipulateOnCertificates = () => {
         )}
       </AnimatePresence>
 
-      <p className="w-full p-6 font-bold text-white flex justify-between items-center">
-        <span className="text-xl"> Skills List</span>
+      <p className="w-full p-6 px-6 font-semibold text-white flex justify-between items-center">
+        <span className="text-xl"> Certificates</span>
         <button
-          className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
-          onClick={() => setShowAddDialog(true)}
+          className="bg-white text-[#33A1E0] px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 hover:text-white transition"
+          onClick={() => setShowAddDialog((prev) => !prev)}
         >
           <FaPlus /> Add Certificate
         </button>
@@ -326,11 +373,11 @@ const ManipulateOnCertificates = () => {
       <div className="w-full min-w-[600px] px-4 overflow-x-auto mb-10">
         <table className="w-full bg-white/10 backdrop-blur-sm border shadow-xl font-sans border-[#33A1E0]/20 rounded-md overflow-hidden">
           <thead className="">
-            <tr className="text-white text-sm leading-normal border-b border-[#33A1E0]/20">
+            <tr className="text-white text-sm leading-normal border-b border-[#33A1E0]/20 bg-[#002b5b]">
               <th className="py-6 px-4 text-center">Order</th>
               <th className="py-6 px-4 text-left">Certificate Name</th>
-              <th className="py-6 px-4 text-left">Certificate Image</th>
-              <th className="py-6 px-4 text-left">Actions</th>
+              <th className="py-6 px-4 text-center">Certificate Image</th>
+              <th className="py-6 text-left">Actions</th>
             </tr>
           </thead>
           <tbody className="text-white text-sm">

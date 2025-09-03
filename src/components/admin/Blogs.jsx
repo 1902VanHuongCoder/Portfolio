@@ -7,7 +7,6 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FaRegTrashAlt, FaPencilAlt } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link as ReactLink } from "react-router-dom";
@@ -32,20 +31,41 @@ import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
 import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
-import {deleteObject, ref as storageRef} from "firebase/storage";
+import { deleteObject, ref as storageRef } from "firebase/storage";
+import { uploadImage } from "../../lib/cloundinary";
+import useToast from "../../hooks/toast-hook";
+import { useLoading } from "../../lib/loading-context";
+import { MdDateRange } from "react-icons/md";
+
 const ManipulateOnBlogs = () => {
+  // Toast context
+  const { showToast } = useToast();
+
+  // Loading context
+  const { showLoading, hideLoading } = useLoading();
+
+  // State to manage blog title
   const [title, setTitle] = useState("");
+
+  // For blog date
   const [date, setDate] = useState("");
 
+  // For blog content
   const [content, setContent] = useState("");
 
+  // For blog image
   const [imageFile, setImageFile] = useState(null);
+
+  // For image preview
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Blog list
   const [blogs, setBlogs] = useState([]);
+
+  // For delete confirmation
   const [confirmDelete, setConfirmDelete] = useState({ show: false, id: null });
 
   // Initialize text editor
-
   const addEditor = useEditor({
     extensions: [
       StarterKit,
@@ -75,6 +95,7 @@ const ManipulateOnBlogs = () => {
     },
   });
 
+  // Handle image change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -87,28 +108,29 @@ const ManipulateOnBlogs = () => {
     }
   };
 
-  const uploadImage = async () => {
-    if (!imageFile) return null;
-    const storageRef = ref(
-      storage,
-      `blog-thumbnails/${Date.now()}-${imageFile.name}`
-    );
-    await uploadBytes(storageRef, imageFile);
-    return getDownloadURL(storageRef);
-  };
-
-  const handleSubmit = async (e) => {
+  // Handle add a new blog
+  const handleAddNewBlog = async (e) => {
     e.preventDefault();
+    showLoading();
+
     try {
-      const imageUrl = await uploadImage();
+      const { secure_url, public_id } = await uploadImage(imageFile);
+
+      if(!secure_url && !public_id) {
+        showToast("error", "Error uploading image.");
+        return;
+      }
+
       await addDoc(collection(db, "blogPosts"), {
         title,
         date,
         content,
-        imageUrl,
+        image: secure_url,
+        publicID: public_id,
         createdAt: new Date(),
       });
-      alert("Blog post added successfully!");
+
+      showToast("success", "Blog post added successfully!");
       setTitle("");
       setDate("");
       setContent("");
@@ -117,10 +139,12 @@ const ManipulateOnBlogs = () => {
       fetchBlogs();
     } catch (error) {
       console.error("Error adding blog post: ", error);
-      alert("Error adding blog post. Please try again.");
+      showToast("error", "Error adding blog post.");
     }
+    hideLoading();
   };
 
+  // Fetch all blogs from FireStore
   const fetchBlogs = async () => {
     const querySnapshot = await getDocs(collection(db, "blogPosts"));
     const blogsData = querySnapshot.docs.map((doc) => ({
@@ -130,20 +154,18 @@ const ManipulateOnBlogs = () => {
     setBlogs(blogsData);
   };
 
-  useEffect(() => {
-    fetchBlogs();
-  }, []);
-
+  // Handle blog deletion
   const handleDeleteBlog = async (id) => {
     try {
       // Delete all relative images
-      const blogThumbnailImage = blogs.find(blog => blog.id === id)?.imageUrl;
+      const blogThumbnailImage = blogs.find((blog) => blog.id === id)?.imageUrl;
       if (blogThumbnailImage) {
         const imageRef = storageRef(storage, blogThumbnailImage);
         await deleteObject(imageRef);
       }
 
       await deleteDoc(doc(db, "blogPosts", id));
+      showToast("success", "Blog post deleted successfully!");
       fetchBlogs();
     } catch (error) {
       alert("Error deleting blog post.");
@@ -151,11 +173,18 @@ const ManipulateOnBlogs = () => {
     }
   };
 
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0] px-4">
-      <h1 className="w-full text-4xl px-4 py-6 font-extrabold text-white drop-shadow-xl border-b-[1px] border-b-white/10">
-        BLOG OPERATIONS
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
+      <h1 className="w-full text-2xl p-6 pt-6 pb-2 font-extrabold text-white drop-shadow-xl">
+        MY PROJECTS
       </h1>
+      <p className="w-full text-sm px-6 pb-6 font-medium text-white/80 drop-shadow-xl border-b-[1px] border-b-white/20">
+        Here you can manage your projects, add new ones, and update existing
+        ones.
+      </p>
       <AnimatePresence>
         {confirmDelete.show && (
           <motion.div className="fixed top-0 left-0 w-full h-full bg-black/40 flex justify-center items-center z-50">
@@ -190,35 +219,41 @@ const ManipulateOnBlogs = () => {
         )}
       </AnimatePresence>
 
-      <div className="mx-auto mt-6 px-4 text-white">
-        <form onSubmit={handleSubmit} className="mb-10">
-          <p className="text-xl font-semibold mb-4">Add New Blog Post</p>
-          <div className="mb-4">
-            <label htmlFor="title" className="block mb-2 font-bold">
-              Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-black"
-              required
-              placeholder="Enter title"
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="date" className="block mb-2 font-bold">
-              Date Created
-            </label>
-            <input
-              type="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-black"
-              required
-            />
+      <div className="mx-auto mt-6 px-6 text-white">
+        <form onSubmit={handleAddNewBlog} className="mb-10">
+          <div className="flex items-center gap-x-4">
+            <div className="mb-4 w-full">
+              <label htmlFor="title" className="block mb-2 font-bold">
+                Title
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-3 py-2 border-[#33A1E0]/30 border-[2px] rounded focus:outline-none focus:border-[#33A1E0] text-white bg-transparent"
+                required
+                placeholder="Enter title"
+              />
+            </div>
+            <div className=" mb-4 w-full">
+              <label htmlFor="date" className="block mb-2 font-bold">
+                Date Created
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  id="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0] text-white bg-transparent"
+                  required
+                />
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <MdDateRange />
+                </span>
+              </div>
+            </div>
           </div>
           <div className="mb-4">
             <label htmlFor="image" className="block mb-2 font-bold">
@@ -229,7 +264,7 @@ const ManipulateOnBlogs = () => {
               id="image"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full px-3 py-2 border border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0]"
+              className="w-full px-3 py-2 border-[2px] border-[#33A1E0]/30 rounded focus:outline-none focus:border-[#33A1E0]"
             />
             {imagePreview && (
               <img
@@ -243,9 +278,9 @@ const ManipulateOnBlogs = () => {
             <label htmlFor="content" className="block mb-2 font-bold">
               Blog Content
             </label>
-            <div className="border rounded p-2">
+            <div className="border-[2px] border-[#33A1E0]/30 rounded p-2">
               {/* Toolbar */}
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-2 mb-2 bg-black/20 p-2 rounded-md">
                 <button
                   type="button"
                   onClick={() => addEditor.chain().focus().toggleBold().run()}
@@ -490,55 +525,54 @@ const ManipulateOnBlogs = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-white text-[#33A1E0] font-bold px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 hover:text-white transition"
+              className="bg-white text-[#33A1E0] font-semibold px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 hover:text-white transition"
             >
               Đăng bài viết
             </button>
           </div>
         </form>
-
-        {/* Blog List Cards */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10 mb-8 border-t-[1px] border-white/40 py-6">
-          {blogs.map((item, index) => (
-            <div
-              key={item.id}
-              className="bg-white/90 border border-[#33A1E0]/20 rounded-xl shadow-xl flex flex-col items-center p-6 transition-all"
-            >
-              <div className="w-full flex justify-between items-center mb-2">
-                <span className="text-xs text-[#1178b3] font-bold">
-                  #{index + 1}
-                </span>
-                <span className="text-xs text-gray-500">{item.date}</span>
-              </div>
-              {item.imageUrl && (
+      </div>
+      {/* Blog List Cards */}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10 mb-8 border-t-[1px] border-white/30 py-6 px-6">
+        {blogs.map((item, index) => (
+          <div
+            key={item.id}
+            className="bg-transparent border border-[#33A1E0]/20 rounded-xl shadow-xl flex flex-col items-center transition-all p-4"
+          >
+            <div className="w-full flex justify-between items-center mb-2">
+              <span className="text-xs text-white font-bold">#{index + 1}</span>
+              <span className="text-xs text-white">{item.date}</span>
+            </div>
+            <div className="w-full h-[150px] my-3">
+              {item.image && (
                 <img
-                  src={item.imageUrl}
+                  src={item.image}
                   alt={item.title}
-                  className="w-24 h-24 rounded-md border border-[#33A1E0]/20 object-cover mb-4"
+                  className="w-full h-full rounded-md border border-[#33A1E0]/20 object-cover mb-4"
                 />
               )}
-              <div className="font-bold text-lg text-[#154D71] mb-2 truncate w-full text-center">
-                {item.title}
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-2 mt-2 w-full justify-center">
-                <ReactLink
-                  to={`/admin/dashboard/blogs/update/${item.id}`}
-                  className="font-bold py-2 px-4 rounded-lg transition duration-200 text-slate-600 flex items-center gap-x-2 border-slate-600 border bg-white hover:bg-[#33A1E0]/10"
-                >
-                  <FaPencilAlt />
-                  Update
-                </ReactLink>
-                <button
-                  onClick={() => setConfirmDelete({ show: true, id: item.id })}
-                  className="flex items-center justify-center gap-x-2 text-red-500 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-500 border bg-white hover:bg-red-100"
-                >
-                  <FaRegTrashAlt />
-                  Delete
-                </button>
-              </div>
             </div>
-          ))}
-        </div>
+            <div className="font-bold text-lg text-white mb-2 truncate w-full text-center">
+              {item.title}
+            </div>
+            <div className="flex flex-row items-center gap-2 mt-2 w-full justify-center">
+              <ReactLink
+                to={`/admin/blogs/update/${item.id}`}
+                className="font-bold py-2 px-4 rounded-lg transition duration-200 text-white flex items-center gap-x-2 border-white border "
+              >
+                <FaPencilAlt />
+                Update
+              </ReactLink>
+              <button
+                onClick={() => setConfirmDelete({ show: true, id: item.id })}
+                className="flex items-center justify-center gap-x-2 text-red-500 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-500 border bg-white hover:bg-red-100"
+              >
+                <FaRegTrashAlt />
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

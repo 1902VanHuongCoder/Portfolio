@@ -3,8 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./Home";
 import ManipulateOnProjects from "./components/admin/Projects";
 import ManipulateOnSkills from "./components/admin/Skills";
-import ManipulateOnCertificates from "./components/admin/ManipulateOnCertificates";
-import AddBlogPost from "./components/admin/ManipulateOnBlogs";
+import ManipulateOnCertificates from "./components/admin/Certificates";
+// import AddBlogPost from "./components/admin/ManipulateOnBlogs";
 import BlogsList from "./components/BlogsList";
 import BlogDetail from "./components/BlogDetail";
 import { AnimatePresence } from "framer-motion";
@@ -12,7 +12,7 @@ import SideBarBlogList from "./components/partials/SideBarBlogList";
 import { useContext } from "react";
 import { SideBarBlogListContext } from "./contexts/SideBarBlogListContext";
 import AdminLayout from "./components/admin/AdminLayout";
-import ManipulateOnBlogs from "./components/admin/ManipulateOnBlogs";
+import ManipulateOnBlogs from "./components/admin/Blogs";
 import SourceCodeAdmin from "./components/admin/SourceCodeAdmin";
 import EditSourceCodeAdmin from "./components/admin/EditSourceCodeAdmin";
 import ExChangeSource from "./components/ExChangeSource";
@@ -34,7 +34,7 @@ function App() {
             path="/certificates"
             element={<ManipulateOnCertificates />}
           ></Route>
-          <Route path="/add/blogs" element={<AddBlogPost />}></Route>
+          {/* <Route path="/add/blogs" element={<AddBlogPost />}></Route> */}
           <Route path="/blogs" element={<BlogsList />}></Route>
           <Route path="/blog/detail/:id" element={<BlogDetail />}></Route>
           <Route path="/exchange-source-code" element={<ExChangeSource />} />
