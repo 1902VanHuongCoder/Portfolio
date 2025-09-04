@@ -11,7 +11,8 @@ import Toast from "../partials/Toast";
 import useToast from "../../hooks/toast-hook";
 import AdminLoading from "../partials/AdminLoading";
 import { useLoading } from "../../lib/loading-context";
-import { LiaCommentSolid } from "react-icons/lia";  
+import { LiaCommentSolid } from "react-icons/lia";
+import { IoLibrary } from "react-icons/io5";
 const AdminLayout = () => {
   const location = useLocation();
   const [isShowSideBar, setIsShowSideBar] = useState(true);
@@ -117,9 +118,7 @@ const AdminLayout = () => {
             <Link
               to="/admin/comments"
               className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
-                location.pathname === "/admin/comments"
-                  ? "bg-[#33A1E0]"
-                  : ""
+                location.pathname === "/admin/comments" ? "bg-[#33A1E0]" : ""
               }`}
             >
               <span>
@@ -139,6 +138,17 @@ const AdminLayout = () => {
                 <FaUserTie />
               </span>
               <span>Personal Info</span>
+            </Link>
+            <Link
+              to="/admin/media"
+              className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
+                location.pathname === "/admin/media" ? "bg-[#33A1E0]" : ""
+              }`}
+            >
+              <span>
+                <IoLibrary />
+              </span>
+              <span>Media</span>
             </Link>
           </nav>
         </div>
