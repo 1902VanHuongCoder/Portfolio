@@ -2,23 +2,31 @@ import  { useState, } from 'react';
 import { db } from '../../firebase_setup/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { FaThumbsUp } from 'react-icons/fa';
+import { useLoading } from '../../lib/loading-context';
+import useToast from '../../hooks/toast-hook';
 
 const LikeButton = () => {
-  const [isLiked, setIsLiked] = useState(false);
+  // Loading context
+  const { showLoading, hideLoading } = useLoading();
+
+  // Toast context
+  const { showToast } = useToast(); 
   
+  const [isLiked, setIsLiked] = useState(false);
 
   const handleLike = async () => {
-    console.log("hello");
     if (!isLiked) {
       setIsLiked(true);
-      
-      const likeRef = doc(db, 'likes', 'likeDocument');
-      
+      showLoading();
+      const likeRef = doc(db, "likes", "likeDocument");
+
       try {
         await updateDoc(likeRef, {
-          count: increment(1)
+          count: increment(1),
         });
-        console.log("Like count updated successfully");
+        hideLoading();
+        showToast("success", "Thank you for your like!");
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (error) {
         console.error("Error updating like count: ", error);
         setIsLiked(false); // Revert state if update fails

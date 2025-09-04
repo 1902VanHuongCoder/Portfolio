@@ -80,9 +80,9 @@ const ManipulateOnProjects = () => {
     if (checkIfFile(dataToUpdate.projectImage)) {
       try {
         // Delete the existing image from Cloudinary if it exists using image's public ID
-        if (dataToUpdate.projectPublicId) {
-          await deleteImage(dataToUpdate.projectPublicId);
-        }
+        // if (dataToUpdate.projectPublicId) {
+        //   await deleteImage(dataToUpdate.projectPublicId);
+        // }
 
         // Upload new image to Cloudinary
         const { secure_url, public_id } = await uploadImage(

@@ -3,7 +3,15 @@ import { useState } from "react";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../../firebase_setup/firebase";
 import LikeButton from "./Interaction";
+import { useLoading } from "../../lib/loading-context";
+import useToast from "../../hooks/toast-hook";
 const Contact = () => {
+  // Loading context
+  const { showLoading, hideLoading } = useLoading();
+
+  // Toast context 
+  const { showToast } = useToast();
+
   const [formData, setFormData] = useState({
     email: "",
     yourName: "",
@@ -17,11 +25,21 @@ const Contact = () => {
 
   const handleSubmitContact = async (e) => {
     e.preventDefault();
+    showLoading();
+
     try {
       await addDoc(collection(db, "comments"), formData);
-      window.location.reload();
+      hideLoading();
+      showToast("success", "Thanks your contact! I will reply soon");
+      setFormData({
+        email: "",
+        yourName: "",
+        comment: "",
+      });
     } catch (error) {
-      alert("Lỗi rồi mày ơi!" + error);
+      hideLoading();
+      showToast("error", "Something went wrong! Please try again.");
+      console.error("Error adding document: ", error);
     }
   };
 
@@ -49,13 +67,14 @@ const Contact = () => {
             <div className="flex flex-col sm:flex-row gap-x-6 w-full gap-y-6">
               <input
                 className="bg-white/70 placeholder:text-[#154D71] font-normal p-4 rounded-xl text-[#154D71] outline-none w-full border border-[#33A1E0]/30 focus:bg-white/90 focus:border-[#33A1E0] transition"
-                type="text"
+                type="email"
                 autoComplete="true"
                 placeholder="Enter your email"
                 name="email"
                 id="email"
                 onChange={handleChange}
                 value={formData.email}
+                required
               />
               <input
                 className="bg-white/70 placeholder:text-[#154D71] font-normal p-4 rounded-xl text-[#154D71] w-full outline-none border border-[#33A1E0]/30 focus:bg-white/90 focus:border-[#33A1E0] transition"
@@ -66,6 +85,7 @@ const Contact = () => {
                 value={formData.yourName}
                 name="yourName"
                 id="yourName"
+                required
               />
             </div>
             <textarea

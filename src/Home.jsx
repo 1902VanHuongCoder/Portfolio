@@ -12,10 +12,16 @@ import DetailedCertificate from "./components/partials/DetailedCertificate";
 import { ShowCertificateContext } from "./contexts/ShowCertificateContext";
 import Contact from "./components/visitor/Contact";
 import ToTop from "./components/partials/ToTop";
+import useToast from "./hooks/toast-hook";
+import { useLoading } from "./lib/loading-context";
+import Toast from "./components/partials/Toast";
+import AdminLoading from "./components/partials/AdminLoading";
 const Home = () => {
   const { isSidebar } = useContext(SidebarContext);
   const { zoomCertificate, certificate } = useContext(ShowCertificateContext);
   const { scrollYProgress } = useScroll();
+    const { toast } = useToast();
+    const { loading } = useLoading();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
@@ -26,6 +32,13 @@ const Home = () => {
       id="top"
       className="relative bg-white min-h-screen max-w-screen overflow-hidden font-test"
     >
+    {/* Toast */}
+          <AnimatePresence>
+             {toast.show && <Toast />}
+          </AnimatePresence>
+    
+          {/* Loading Spinner */}
+          {loading.show && <AdminLoading text={loading.text} />}
       <motion.div
         className="fixed h-[12px] w-full top-0 left-0 origin-left z-50 rounded-b-xl shadow-lg"
         style={{
@@ -46,7 +59,6 @@ const Home = () => {
       </AnimatePresence>
       <Contact />
       <ToTop />
-      {/* <Link className="opacity-10" to="/admin">Admin</Link>  */}
     </div>
   );
 };
