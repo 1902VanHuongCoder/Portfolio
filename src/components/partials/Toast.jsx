@@ -4,10 +4,10 @@ import { FaCheck, FaExclamationTriangle, FaInfoCircle } from "react-icons/fa";
 import { VscError } from "react-icons/vsc";
 import { motion } from "framer-motion";
 const toastTypeStyles = {
-  success: "bg-green-500 text-white border-green-600",
-  error: "bg-red-500 text-white border-red-600",
-  info: "bg-blue-500 text-white border-blue-600",
-  warning: "bg-yellow-500 text-white border-yellow-500",
+  success: " text-green-600 border-green-600",
+  error: " text-red-600 border-red-600",
+  info: " text-blue-600 border-blue-600",
+  warning: " text-yellow-600 border-yellow-600",
 };
 
 export default function Toast() {
@@ -17,14 +17,14 @@ export default function Toast() {
         initial={{ x: 400 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ x: 400, opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className={`top-6 right-6 fixed z-[9999] shadow-lg w-fit max-w-[85%] h-fit lg:flex items-center lg:gap-3 bg-white rounded-md overflow-hidden`}
+        transition={{ duration: 0.2 }}
+        className={`top-6 right-6 fixed z-[9999] shadow-lg w-fit max-w-[85%] h-fit bg-white rounded-md flex overflow-hidden`}
         role="alert"
       >
         <div
           className={`${
             toastTypeStyles[toast.type] || toastTypeStyles.info
-          } lg:flex items-center gap-x-2 lg:pl-2 lg:pr-3 hidden py-4`}
+          } lg:flex justify-center items-center hidden pl-4 text-2xl`}
         >
           <span>
             {toast.type === "success" ? (
@@ -37,9 +37,9 @@ export default function Toast() {
               <VscError />
             )}
           </span>
-          <span className="font-semibold capitalize">{toast.type}</span>
+          {/* <span className="font-semibold capitalize">{toast.type}</span> */}
         </div>
-        <div className="flex items-center justify-between gap-2 px-4 py-4">
+        <div className="flex items-center justify-between gap-2 pl-1 pr-4 py-3">
           <span className="ml-2">{toast.content}</span>
           <button
             className="ml-4 text-xl hover:text-black/60 focus:outline-none"

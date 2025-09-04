@@ -29,7 +29,8 @@ import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { useLoading } from "../../lib/loading-context";
 import useToast from "../../hooks/toast-hook";
-
+import { TiDocumentText } from "react-icons/ti";
+import { HiCalendarDateRange } from "react-icons/hi2";
 
 const BlogDetail = () => {
   // Toast context
@@ -43,17 +44,17 @@ const BlogDetail = () => {
   // Blog post state
   const [blog, setBlog] = useState(null);
 
-  // Sidebar context 
+  // Sidebar context
   const { setShow } = useContext(SideBarBlogListContext);
 
-  // Blog content state 
+  // Blog content state
   const [content, setContent] = useState(null);
 
   const handleCloseSideBarBlogList = () => {
     setShow(true);
   };
 
-  // Initialize editor with extensions 
+  // Initialize editor with extensions
   const editor = useEditor({
     editable: false,
     extensions: [
@@ -84,7 +85,6 @@ const BlogDetail = () => {
     },
   });
 
-
   useEffect(() => {
     const fetchBlog = async () => {
       showLoading();
@@ -97,7 +97,7 @@ const BlogDetail = () => {
           setContent(docSnap.data().content);
           console.log("Fetched blog:", { id: docSnap.id, ...docSnap.data() });
         } else {
-          showToast("info", "Không tìm thấy bài viết"); 
+          showToast("info", "Không tìm thấy bài viết");
         }
       } catch (err) {
         showToast("error", "Có lỗi xảy ra khi tải bài viết");
@@ -124,80 +124,78 @@ const BlogDetail = () => {
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
-          <div className="flex justify-between items-center px-4 sm:px-10 py-4 bg-white/10 backdrop-blur-md shadow-lg border-b border-[#33A1E0]/30">
-            <div className="flex gap-2 items-center justify-between w-full">
-              <p className="text-2xl text-white font-bold hidden sm:block drop-shadow">
-                Paul To - <span>Challenge is an opportunity</span>
-              </p>
-              <div className="flex gap-x-4">
-                <div className="flex gap-2 items-center">
-                  <ReactLink
-                    to="/"
-                    className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
-                  >
-                    <span className="hidden lg:block">Trang Chủ</span>
-                    <span className="text-2xl lg:text-md">
-                      <IoHome />
-                    </span>
-                  </ReactLink>
-                </div>
-                <div className="flex gap-2 items-center">
-                  <ReactLink
-                    to="/blogs"
-                    className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
-                  >
-                    <span className="hidden lg:block">Danh Sách Bài Viết</span>
-                    <span className="text-2xl lg:text-md">
-                      <FaBookAtlas />
-                    </span>
-                  </ReactLink>
-                </div>
-              </div>
+      <div className="flex justify-between items-center px-4 sm:px-10 py-4 bg-white/10 backdrop-blur-md shadow-lg border-b border-[#33A1E0]/30">
+        <div className="flex gap-2 items-center justify-between w-full">
+          <p className="text-2xl text-white font-bold hidden sm:block drop-shadow">
+            Paul To - <span>Challenge is an opportunity</span>
+          </p>
+          <div className="flex gap-x-4">
+            <div className="flex gap-2 items-center">
+              <ReactLink
+                to="/"
+                className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
+              >
+                <span className="hidden lg:block">Trang Chủ</span>
+                <span className="text-2xl lg:text-md">
+                  <IoHome />
+                </span>
+              </ReactLink>
             </div>
-            <p
-              onClick={handleCloseSideBarBlogList}
-              className="block sm:hidden text-4xl text-white rounded-full hover:bg-[#33A1E0]/20 p-1 transition-all cursor-pointer"
-            >
-              <MdMenu />
-            </p>
+            <div className="flex gap-2 items-center">
+              <ReactLink
+                to="/blogs"
+                className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
+              >
+                <span className="hidden lg:block">Danh Sách Bài Viết</span>
+                <span className="text-2xl lg:text-md">
+                  <FaBookAtlas />
+                </span>
+              </ReactLink>
+            </div>
           </div>
-          {blog && (
-            <div className="w-full mx-auto max-w-[80%] rounded-2xl p-4 sm:p-10 flex flex-col gap-4">
-              <img
-                src={blog.image}
-                alt={blog.title}
-                className="w-full h-auto sm:h-[400px] object-cover mb-4 rounded-xl border border-[#33A1E0]/20 shadow"
-              />
-              <div className="px-1 sm:px-0">
-                <h1 className="text-2xl sm:text-4xl font-extrabold mb-4 text-white drop-shadow">
-                  {blog.title}
-                </h1>
-                <p className="text-[#33A1E0] mb-4 flex items-center font-semibold">
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    ></path>
-                  </svg>
-                  {blog.date}
-                </p>
-                <div className="prose max-w-none p-4 rounded">
-                  <EditorContent
-                    editor={editor}
-                    className="tiptap-content min-h-[300px] p-3 focus:outline-none rounded-br-md rounded-bl-md focus:border-none text-white"
-                  />
-                </div>
+        </div>
+        <p
+          onClick={handleCloseSideBarBlogList}
+          className="block sm:hidden text-4xl text-white rounded-full hover:bg-[#33A1E0]/20 p-1 transition-all cursor-pointer"
+        >
+          <MdMenu />
+        </p>
+      </div>
+      {blog && (
+        <div className="w-full mx-auto lg:max-w-[80%] rounded-2xl p-4 sm:p-10 flex flex-col gap-4">
+          <img
+            src={blog.image}
+            alt={blog.title}
+            className="w-full h-auto sm:h-[400px] object-cover mb-4 rounded-xl border border-[#33A1E0]/20 shadow"
+          />
+          <div className="px-1 sm:px-0">
+            <h1 className="text-2xl sm:text-4xl font-extrabold mb-4 text-white drop-shadow">
+              {blog.title}
+            </h1>
+            <p className="text-white/70 mb-4 flex items-center font-semibold gap-x-2">
+              <HiCalendarDateRange />
+              {blog.date}
+            </p>
+            <div className="mt-6">
+              <div className="flex items-center gap-x-3 mb-4">
+                {" "}
+                <p className="flex gap-x-2 items-center text-white/80 font-semibold shrink-0 bg-white/10 px-3 py-2 rounded-full">
+                  <span>
+                    <TiDocumentText />
+                  </span>
+                  <span>Blog content</span>
+                </p>{" "}
+                <span className="w-full h-[2px] bg-white/20 rounded-full"></span>
               </div>
+
+              <EditorContent
+                editor={editor}
+                className="tiptap-content min-h-[300px] focus:outline-none rounded-br-md rounded-bl-md focus:border-none text-white"
+              />
             </div>
-          )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

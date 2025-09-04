@@ -120,6 +120,9 @@
 .tiptap-content tr:nth-child(even) td {
   @apply bg-gray-50;
 }
+.tiptap-content img {
+  @apply max-w-full lg:max-w-[60%] h-auto my-4 mx-auto;
+}
 
 
 /* Hide default calendar icon */

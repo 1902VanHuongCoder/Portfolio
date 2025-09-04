@@ -8,6 +8,12 @@ import { createSkill, deleteSkill, getAllSkills, updateSkill } from "../../lib/s
 import { useLoading } from "../../lib/loading-context";
 
 const ManipulateOnSkills = () => {
+  // Loading state
+  const { showLoading, hideLoading } = useLoading();
+
+  // Toast for notifications
+  const { showToast } = useToast();
+
   // State for managing skills
   const [skills, setSkills] = useState();
 
@@ -49,12 +55,6 @@ const ManipulateOnSkills = () => {
   const checkIfFile = (value) => {
     return value && typeof value === "object";
   };
-
-  // Toast for notifications
-  const { showToast } = useToast();
-
-  // Loading spinner
-  const { showLoading, hideLoading } = useLoading();
 
   // Handle updating a skill
   const handleUpdateSkill = async (e) => {
@@ -102,7 +102,7 @@ const ManipulateOnSkills = () => {
       };
       try {
         await updateSkill(skill.sId, dataToSaveToFirebase);
-        setSkill({show:false, sId:""});
+        setSkill({ show: false, sId: "" });
         showToast("success", "Updated skill successfully!");
         const updatedSkills = await getAllSkills();
         setSkills(updatedSkills);
@@ -157,6 +157,7 @@ const ManipulateOnSkills = () => {
 
   // Handle deleting a skill
   const handleDeleteSkill = async (id) => {
+    showLoading();
     try {
       await deleteSkill(id);
       const updatedSkills = await getAllSkills();
@@ -166,6 +167,7 @@ const ManipulateOnSkills = () => {
       showToast("error", "Error deleting skill!");
       console.error("Error deleting document: ", error);
     }
+    hideLoading();
   };
 
   // Fetch all skills on mount
@@ -177,7 +179,6 @@ const ManipulateOnSkills = () => {
     };
     fetchData();
   }, []);
-
 
   // Set data to update when a skill is selected
   useEffect(() => {

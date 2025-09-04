@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 export const ToastContext = createContext();
 
 export const ToastProvider = ({ children }) => {
-  const [toast, setToast] = useState({ show: false, type: "info", content: "Your message here" });
+  const [toast, setToast] = useState({ show: false, type: "info", content: "Thanks for accessing my portfolio!" });
 
   // Show toast with type and content
   const showToast = useCallback((type, content) => {

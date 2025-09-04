@@ -11,6 +11,7 @@ import Toast from "../partials/Toast";
 import useToast from "../../hooks/toast-hook";
 import AdminLoading from "../partials/AdminLoading";
 import { useLoading } from "../../lib/loading-context";
+import { LiaCommentSolid } from "react-icons/lia";  
 const AdminLayout = () => {
   const location = useLocation();
   const [isShowSideBar, setIsShowSideBar] = useState(true);
@@ -19,9 +20,7 @@ const AdminLayout = () => {
   return (
     <div className="relative min-h-screen flex w-full overflow-hidden">
       {/* Toast */}
-      <AnimatePresence>
-         {toast.show && <Toast />}
-      </AnimatePresence>
+      <AnimatePresence>{toast.show && <Toast />}</AnimatePresence>
 
       {/* Loading Spinner */}
       {loading.show && <AdminLoading text={loading.text} />}
@@ -114,6 +113,19 @@ const AdminLayout = () => {
                 <FaFileCode />
               </span>
               <span>Source Code</span>
+            </Link>
+            <Link
+              to="/admin/comments"
+              className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
+                location.pathname === "/admin/comments"
+                  ? "bg-[#33A1E0]"
+                  : ""
+              }`}
+            >
+              <span>
+                <LiaCommentSolid />
+              </span>
+              <span>Comments</span>
             </Link>
             <Link
               to="/admin/personal-info"

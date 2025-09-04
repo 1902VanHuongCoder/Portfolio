@@ -18,6 +18,7 @@ import ViewSourceDetail from "./components/visitor/ViewSourceDetail";
 import UpdateBlog from "./components/admin/UpdateBlog";
 import PersonalInfo from "./components/admin/PersonalInfo";
 import EditSourceCodeAdmin from "./components/admin/EditSource";
+import Comments from "./components/admin/Comments";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
@@ -49,10 +50,12 @@ function App() {
             <Route path="source-code" element={<SourceCodeAdmin />} />
             <Route path="blogs/update/:id" element={<UpdateBlog />} />
             <Route path="personal-info" element={<PersonalInfo />} />
+            <Route path="comments" element={<Comments />} />
             <Route
               path="edit/source-code/:id"
               element={<EditSourceCodeAdmin />}
             />
+
           </Route>
         </Routes>
       </BrowserRouter>

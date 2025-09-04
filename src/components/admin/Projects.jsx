@@ -16,6 +16,7 @@ import {
   getProjectById,
   updateProject,
 } from "../../lib/project-apis";
+import { MdDateRange } from "react-icons/md";
 
 const ManipulateOnProjects = () => {
   // State to manage filtering projects by project name
@@ -468,16 +469,21 @@ const ManipulateOnProjects = () => {
 
                 <label htmlFor="completeTime" className="flex flex-col w-full">
                   <span className="text-gray-700">Complete time</span>
-                  <input
-                    type="date"
-                    className="mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
-                    value={form.completeTime}
-                    onChange={(e) =>
-                      setForm({ ...form, completeTime: e.target.value })
-                    }
-                    placeholder="Enter complete time"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type="date"
+                      className="w-full mt-1 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-blue-500"
+                      value={form.completeTime}
+                      onChange={(e) =>
+                        setForm({ ...form, completeTime: e.target.value })
+                      }
+                      placeholder="Enter complete time"
+                      required
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black">
+                      <MdDateRange />
+                    </span>
+                  </div>
                 </label>
               </div>
 
