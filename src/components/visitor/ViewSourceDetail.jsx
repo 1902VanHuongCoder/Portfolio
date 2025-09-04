@@ -25,6 +25,7 @@ import { FaBookAtlas } from "react-icons/fa6";
 import { MdMenu } from "react-icons/md";
 import { IoHome } from "react-icons/io5";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
+import AdminLoading from "../partials/AdminLoading";
 const ViewSourceDetail = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
@@ -98,7 +99,7 @@ const ViewSourceDetail = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
-        <span className="text-white text-xl font-bold">Loading...</span>
+          <AdminLoading />
       </div>
     );
   }

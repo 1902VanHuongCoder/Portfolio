@@ -63,7 +63,7 @@ const PersonalInfo = () => {
       publicId: publicId,
     });
     hideLoading();
-    showToast("Personal information updated successfully!");
+    showToast("success","Personal information updated successfully!");
   };
 
   // Fetch personal information to show in the form

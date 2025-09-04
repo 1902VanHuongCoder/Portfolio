@@ -105,6 +105,7 @@ const UpdateBlog = () => {
 
       if (!updateImagePreview) {
         showToast("error", "No image uploaded");
+        hideLoading();
         return;
       }
 

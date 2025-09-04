@@ -26,7 +26,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
-import { db} from "../../firebase_setup/firebase";
+import { db } from "../../firebase_setup/firebase";
 import { FaRegTrashAlt, FaPencilAlt } from "react-icons/fa";
 import useToast from "../../hooks/toast-hook";
 import { useLoading } from "../../lib/loading-context";
@@ -63,6 +63,7 @@ const SourceCodeAdmin = () => {
 
   // State to manage local image previews for project images
   const [localImages, setLocalImages] = useState([]);
+
   // State to manage local images inserted in the editor
   const [editorLocalImages, setEditorLocalImages] = useState([]); // {file, url, id}
 
@@ -107,15 +108,32 @@ const SourceCodeAdmin = () => {
     const file = e.target.files[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
-    const id = `local-img-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    const id = `local-img-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
     setEditorLocalImages((prev) => [...prev, { file, url, id }]);
     // Insert image with unique id as src (so we can find/replace later)
     editor.chain().focus().setImage({ src: url, alt: id }).run();
     e.target.value = "";
   };
 
+  // Function to format price input from 1000000 => 1.000.000
+  const formatPrice = (value) => {
+    // Remove non-digits
+    const num = value.replace(/\D/g, "");
+    // Format with dots
+    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "price" && !isNaN(value)) {
+      setForm((f) => ({ ...f, price: formatPrice(value) }));
+      return;
+    }
+
     setForm((f) => ({ ...f, [name]: value }));
   };
 
@@ -140,9 +158,10 @@ const SourceCodeAdmin = () => {
     let updatedHtml = htmlContent;
     for (const img of editorLocalImages) {
       try {
-        const { secure_url } = await uploadImage(img.file);
+        const { secure_url, public_id } = await uploadImage(img.file);
         // Replace local url with Cloudinary url in HTML
         updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+        uploadedImages.push({ secure_url, public_id });
       } catch (err) {
         showToast("error", "Error uploading editor image");
         console.error(err);
@@ -182,6 +201,7 @@ const SourceCodeAdmin = () => {
 
   // Confirm deletion of a project
   const confirmDeleteProject = async () => {
+    showLoading(); 
     if (confirmDelete.id) {
       // Delete all relative images
       // const project = projects.find((p) => p.id === confirmDelete.id);
@@ -200,6 +220,7 @@ const SourceCodeAdmin = () => {
       setConfirmDelete({ show: false, id: null });
       showToast("success", "Project deleted successfully");
     }
+    hideLoading();
   };
 
   const cancelDelete = () => {
@@ -287,7 +308,9 @@ const SourceCodeAdmin = () => {
                     type="button"
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-80 group-hover:opacity-100"
                     onClick={() => {
-                      setLocalImages((prev) => prev.filter((_, idx) => idx !== i));
+                      setLocalImages((prev) =>
+                        prev.filter((_, idx) => idx !== i)
+                      );
                     }}
                   >
                     <IoClose />
@@ -559,11 +582,28 @@ const SourceCodeAdmin = () => {
                 >
                   ▦
                 </button>
+                <input
+                  className="w-5 h-5 p-0"
+                  type="color"
+                  onInput={(e) =>
+                    editor.chain().focus().setColor(e.target.value).run()
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => editor.chain().focus().unsetColor().run()}
+                >
+                  Clear Color
+                </button>
               </div>
-              <EditorContent
-                editor={editor}
-                className="tiptap-content min-h-[300px] px-1 focus:outline-none rounded-br-md rounded-bl-md focus:border-none"
-              />
+              <div
+                tabIndex={0}
+                onClick={() => editor && editor.commands.focus()}
+                className="tiptap-content min-h-[300px] px-1 focus:outline-none rounded-br-md rounded-bl-md focus:border-none cursor-text"
+                style={{ outline: "none" }}
+              >
+                <EditorContent editor={editor} />
+              </div>
             </div>
           </div>
           <div className="flex justify-end">

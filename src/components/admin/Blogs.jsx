@@ -44,6 +44,12 @@ const ManipulateOnBlogs = () => {
   // Loading context
   const { showLoading, hideLoading } = useLoading();
 
+  // State to manage image upload input
+  const [imageUploadInput, setImageUploadInput] = useState(null);
+
+  // State to manage local images inserted in the editor
+  const [editorLocalImages, setEditorLocalImages] = useState([]); // {file, url, id}
+
   // State to manage blog title
   const [title, setTitle] = useState("");
 
@@ -112,11 +118,33 @@ const ManipulateOnBlogs = () => {
   const handleAddNewBlog = async (e) => {
     e.preventDefault();
     showLoading();
+    // Upload all local editor images to Cloudinary and replace in editor content
+    let htmlContent = addEditor.getHTML();
+    let updatedHtml = htmlContent;
+    let editorImages = []; // To track uploaded editor images
+    for (const img of editorLocalImages) {
+      try {
+        const { secure_url, public_id } = await uploadImage(img.file);
+        // Replace local url with Cloudinary url in HTML
+        updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+
+        // Track uploaded editor images to delete later if needed
+        editorImages.push({ secure_url, public_id });
+      } catch (err) {
+        showToast("error", "Error uploading editor image");
+        console.error(err);
+      }
+    }
+    // Set editor content to updated HTML (with Cloudinary URLs)
+    addEditor.commands.setContent(updatedHtml, false);
+
+    // Save JSON content after replacement
+    const finalContent = addEditor.getJSON();
 
     try {
       const { secure_url, public_id } = await uploadImage(imageFile);
 
-      if(!secure_url && !public_id) {
+      if (!secure_url && !public_id) {
         showToast("error", "Error uploading image.");
         return;
       }
@@ -124,9 +152,10 @@ const ManipulateOnBlogs = () => {
       await addDoc(collection(db, "blogPosts"), {
         title,
         date,
-        content,
+        content: finalContent,
         image: secure_url,
         publicID: public_id,
+        editorImages: editorImages, // Store uploaded editor images info
         createdAt: new Date(),
       });
 
@@ -142,6 +171,20 @@ const ManipulateOnBlogs = () => {
       showToast("error", "Error adding blog post.");
     }
     hideLoading();
+  };
+
+  // Insert local image into editor and track it
+  const handleEditorImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const id = `local-img-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
+    setEditorLocalImages((prev) => [...prev, { file, url, id }]);
+    // Insert image with unique id as src (so we can find/replace later)
+    addEditor.chain().focus().setImage({ src: url, alt: id }).run();
+    e.target.value = "";
   };
 
   // Fetch all blogs from FireStore
@@ -278,7 +321,7 @@ const ManipulateOnBlogs = () => {
             <label htmlFor="content" className="block mb-2 font-bold">
               Blog Content
             </label>
-            <div className="border-[2px] border-[#33A1E0]/30 rounded p-2">
+            <div className="border-[2px] border-[#33A1E0]/30 rounded p-2 bg-white/10">
               {/* Toolbar */}
               <div className="flex flex-wrap gap-2 mb-2 bg-black/20 p-2 rounded-md">
                 <button
@@ -442,15 +485,19 @@ const ManipulateOnBlogs = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    const url = prompt("Image URL");
-                    if (url)
-                      addEditor.chain().focus().setImage({ src: url }).run();
-                  }}
+                  onClick={() => imageUploadInput && imageUploadInput.click()}
                   className="px-2"
+                  title="Upload Image"
                 >
                   🖼️
                 </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  ref={(el) => setImageUploadInput(el)}
+                  onChange={handleEditorImageUpload}
+                />
                 <button
                   type="button"
                   onClick={() =>
@@ -504,6 +551,7 @@ const ManipulateOnBlogs = () => {
                   ▦
                 </button>
                 <input
+                  className="w-5 h-5 p-0"
                   type="color"
                   onInput={(e) =>
                     addEditor.chain().focus().setColor(e.target.value).run()
@@ -516,10 +564,13 @@ const ManipulateOnBlogs = () => {
                   Clear Color
                 </button>
               </div>
-              <EditorContent
-                editor={addEditor}
+              <div
+                onClick={() => addEditor && addEditor.commands.focus()}
                 className="tiptap-content min-h-[300px] p-3 focus:outline-none rounded-br-md rounded-bl-md focus:border-none"
-              />
+                style={{ outline: "none" }}
+              >
+                <EditorContent editor={addEditor} />
+              </div>
             </div>
           </div>
           <div className="flex justify-end">
