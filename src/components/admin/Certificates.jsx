@@ -370,14 +370,14 @@ const ManipulateOnCertificates = () => {
         </button>
       </p>
 
-      <div className="w-full min-w-[600px] px-4 overflow-x-auto mb-10">
-        <table className="w-full bg-white/10 backdrop-blur-sm border shadow-xl font-sans border-[#33A1E0]/20 rounded-md overflow-hidden">
+      <div className="w-full px-4 overflow-x-auto mb-10">
+        <table className="w-[1024px] md:w-full bg-white/10 backdrop-blur-sm border shadow-xl font-sans border-[#33A1E0]/20 rounded-md overflow-hidden">
           <thead className="">
             <tr className="text-white text-sm leading-normal border-b border-[#33A1E0]/20 bg-[#002b5b]">
               <th className="py-6 px-4 text-center">Order</th>
               <th className="py-6 px-4 text-left">Certificate Name</th>
               <th className="py-6 px-4 text-center">Certificate Image</th>
-              <th className="py-6 text-left">Actions</th>
+              <th className="py-6 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="text-white text-sm">
@@ -399,7 +399,7 @@ const ManipulateOnCertificates = () => {
                     className="w-10 h-10 rounded-md border border-[#33A1E0]/20 mx-auto"
                   />
                 </td>
-                <td className="flex flex-col sm:flex-row items-center gap-2 py-3">
+                <td className="flex flex-col sm:flex-row justify-center items-center gap-2 py-3">
                   <button
                     onClick={() => {
                       setCerId({ cId: item.id, show: true });

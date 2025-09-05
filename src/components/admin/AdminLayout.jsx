@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { FaFileCode, FaUserTie } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { IoIosArrowDropleft } from "react-icons/io";
+import { IoMdArrowDropright } from "react-icons/io";
 import { FaListAlt } from "react-icons/fa";
 import { FcSearch } from "react-icons/fc";
 import { PiCertificateBold } from "react-icons/pi";
@@ -16,6 +16,7 @@ import { IoLibrary } from "react-icons/io5";
 const AdminLayout = () => {
   const location = useLocation();
   const [isShowSideBar, setIsShowSideBar] = useState(true);
+  const [collapse, setCollapse] = useState(false);
   const { toast } = useToast();
   const { loading } = useLoading();
   return (
@@ -40,22 +41,35 @@ const AdminLayout = () => {
         animate={{ width: isShowSideBar ? "" : 0, originX: 1 }}
         exit={{ width: 0, originX: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-[80%] lg:w-[20%] fixed top-0 left-0 min-h-screen bg-[#002b5b] text-white flex flex-col border-r border-gray-100/20 z-10"
+        className="w-[80%] lg:w-[20%] fixed top-0 left-0 h-screen md:min-h-screen bg-[#002b5b] text-white flex flex-col border-r border-gray-100/20 z-10"
         style={{ originX: 1 }}
+        onHoverStart={() => {
+          setCollapse(true);
+        }}
+        onHoverEnd={() => {
+          setCollapse(false);
+        }}
       >
-        <div
-          className={`absolute bottom-0 -translate-y-[50%] -right-5 cursor-pointer text-4xl p-1 bg-[#1075b4] rounded-full border-[1px] border-gray-200 text-white ${
-            isShowSideBar ? "" : "rotate-180"
-          }`}
-        >
-          <IoIosArrowDropleft
-            onClick={() => setIsShowSideBar(!isShowSideBar)}
-          />
-        </div>
+        <AnimatePresence>
+          {(collapse || !isShowSideBar) && (
+            <motion.div
+              initial={{ x: -100 }}
+              animate={{ x: 0 }}
+              exit={{ x: -100 }}
+              transition={{ duration: 0.2 }}
+              className={`absolute bottom-10 -right-10 z-1 cursor-pointer text-4xl p-1 bg-[#002b5b] text-white rounded-tr-lg rounded-br-lg border border-gray-100/20 transition`}
+            >
+              <IoMdArrowDropright
+                onClick={() => setIsShowSideBar(!isShowSideBar)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div
           className={`${
             isShowSideBar ? "w-full py-8 px-4" : "w-0"
-          } h-full  overflow-hidden`}
+          } h-full  overflow-hidden relative z-10 bg-[#002b5b]`}
         >
           <h2 className="text-2xl font-bold mb-8 flex items-center gap-x-2">
             <FaUserTie />
