@@ -25,8 +25,8 @@ function App() {
   const { isShow } = useContext(SideBarBlogListContext);
   return (
     <div className="w-full h-full">
-      <AnimatePresence>{isShow && <SideBarBlogList />}</AnimatePresence>
-      <BrowserRouter future={{v7_startStransition: true}}>
+      <BrowserRouter future={{ v7_startStransition: true }}>
+        <AnimatePresence>{isShow && <SideBarBlogList />}</AnimatePresence>
         <Routes>
           <Route path="/" element={<Home />}></Route>
           <Route path="/projects" element={<ManipulateOnProjects />}></Route>
@@ -57,7 +57,6 @@ function App() {
               path="edit/source-code/:id"
               element={<EditSourceCodeAdmin />}
             />
-
           </Route>
         </Routes>
       </BrowserRouter>

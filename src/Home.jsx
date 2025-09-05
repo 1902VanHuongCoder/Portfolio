@@ -20,8 +20,8 @@ const Home = () => {
   const { isSidebar } = useContext(SidebarContext);
   const { zoomCertificate, certificate } = useContext(ShowCertificateContext);
   const { scrollYProgress } = useScroll();
-    const { toast } = useToast();
-    const { loading } = useLoading();
+  const { toast } = useToast();
+  const { loading } = useLoading();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
@@ -32,20 +32,19 @@ const Home = () => {
       id="top"
       className="relative bg-white min-h-screen max-w-screen overflow-hidden font-test"
     >
-    {/* Toast */}
-          <AnimatePresence>
-             {toast.show && <Toast />}
-          </AnimatePresence>
-    
-          {/* Loading Spinner */}
-          {loading.show && <AdminLoading text={loading.text} />}
+      
+      {/* Toast */}
+      <AnimatePresence>{toast.show && <Toast />}</AnimatePresence>
+
+      {/* Loading Spinner */}
+      {loading.show && <AdminLoading text={loading.text} />}
       <motion.div
         className="fixed h-[12px] w-full top-0 left-0 origin-left z-50 rounded-b-xl shadow-lg"
         style={{
           scaleX,
-          background: 'linear-gradient(90deg, #33A1E0 0%, #154D71 100%)',
-          boxShadow: '0 2px 16px 0 rgba(51,161,224,0.15)',
-          backdropFilter: 'blur(2px)',
+          background: "linear-gradient(90deg, #33A1E0 0%, #154D71 100%)",
+          boxShadow: "0 2px 16px 0 rgba(51,161,224,0.15)",
+          backdropFilter: "blur(2px)",
         }}
       />
       <NavigationBar />

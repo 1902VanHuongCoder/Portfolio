@@ -11,7 +11,7 @@ export const ToastProvider = ({ children }) => {
   const showToast = useCallback((type, content) => {
     setToast({ show: true, type, content });
     // Auto-hide after 3s
-    setTimeout(() => setToast((t) => ({ ...t, show: false })), 3000);
+    // setTimeout(() => setToast((t) => ({ ...t, show: false })), 3000);
   }, []);
 
   // Hide toast manually

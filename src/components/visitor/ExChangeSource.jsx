@@ -170,20 +170,20 @@ const ExChangeSource = () => {
                 </ul>
               </div>
             </aside>
-            <div className="italic font-medium text-xl text-white uppercase drop-shadow-2xl w-full text-center pt-10 sm:hidden">
-              <span className="relative text-[#e4d1ed] font-semibold text-4xl">
+            <div className="italic font-medium text-xl text-white uppercase drop-shadow-2xl w-full pt-10 sm:hidden px-4">
+              {/* <span className="relative text-[#e4d1ed] font-semibold text-4xl">
                 Challenge
-                <span className="absolute top-[10px] left-[1px] text-[#33A1E0] opacity-80">
-                  Challenge
-                </span>
+                <span className="absolute top-[10px] left-[1px] text-[#33A1E0] opacity-80">Challenge</span>
               </span>
               <br />
-              <span className="not-italic">is an opportunity</span>
+              <span className="not-italic">is an opportunity</span> */}
+              <h1>Share IT Projects</h1>
+              <div className="w-full h-[2px] bg-[#33A1E0]/20 mt-2 mb-1"></div>
             </div>
             <div className="lg:border-l border-[#33A1E0]/20"></div>
 
             {/* Source Code Cards */}
-            <div className="w-full h-fit grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-10 sm:pt-7 px-3 sm:px-6">
+            <div className="w-full h-fit grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-10 sm:pt-7 px-3 sm:px-6 mb-8">
               {sourceProjects.length > 0 ? (
                 sourceProjects.map((proj) => (
                   <div

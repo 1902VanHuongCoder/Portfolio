@@ -27,7 +27,7 @@ const DetailedCertificate = () => {
       <div onClick={handleZoomOutCertificate} className="absolute top-4 right-6 text-white text-4xl hover:bg-[rgba(255,255,255,.5)] rounded-full p-1 transition-all">
         <IoCloseCircleSharp />
       </div>
-      <div className="w-full sm:w-[70%] h-screen p-2" >
+      <div className="w-full sm:w-[70%] h-screen max-h-[80%] p-2">
         <img
           className="w-full h-full object-contain rounded-md drop-shadow-2xl"
           src={certificate}

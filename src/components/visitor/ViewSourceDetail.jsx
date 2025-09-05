@@ -21,11 +21,12 @@ import { useParams, Link } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase_setup/firebase";
 import { formatVND } from "../../lib/formatVND";
-import { FaBookAtlas } from "react-icons/fa6";
 import { MdMenu } from "react-icons/md";
 import { IoHome } from "react-icons/io5";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
 import AdminLoading from "../partials/AdminLoading";
+import { GrProjects } from "react-icons/gr";
+
 const ViewSourceDetail = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
@@ -133,7 +134,7 @@ const ViewSourceDetail = () => {
                 to="/"
                 className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
               >
-                <span className="hidden lg:block">Trang Chủ</span>
+                <span className="hidden lg:block">Homepage</span>
                 <span className="text-2xl lg:text-md">
                   <IoHome />
                 </span>
@@ -141,12 +142,12 @@ const ViewSourceDetail = () => {
             </div>
             <div className="flex gap-2 items-center">
               <Link
-                to="/blogs"
+                to="/exchange-source-code"
                 className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
               >
-                <span className="hidden lg:block">Danh Sách Bài Viết</span>
+                <span className="hidden lg:block">Projects</span>
                 <span className="text-2xl lg:text-md">
-                  <FaBookAtlas />
+                  <GrProjects />
                 </span>
               </Link>
             </div>
@@ -170,7 +171,9 @@ const ViewSourceDetail = () => {
                 className="w-full h-full object-cover rounded shadow "
               />
               <div className="absolute top-0 left-0 w-full h-full bg-black/50 rounded flex justify-center items-center">
-                <p className="text-white text-4xl font-bold drop-shadow-lg">VIEW PROJECT DETAILS</p> 
+                <p className="text-white text-4xl font-bold drop-shadow-lg">
+                  VIEW PROJECT DETAILS
+                </p>
               </div>
               {/* <div className="absolute inset-0 bg-black/30 rounded shadow grid grid-cols-1 md:grid-cols-2 items-center px-4">
                 <div className="flex justify-center items-center">
@@ -217,10 +220,18 @@ const ViewSourceDetail = () => {
                 <span className="font-semibold">Price: </span>
                 {project.price ? formatVND(project.price) : "Contact for price"}
                 <div className="flex gap-x-4 mt-6">
-                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">{personalInfo?.name}</span>
-                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">{personalInfo?.email}</span>
-                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">{personalInfo?.phone}</span>
-                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">{personalInfo?.facebook}</span>
+                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">
+                    {personalInfo?.name}
+                  </span>
+                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">
+                    {personalInfo?.email}
+                  </span>
+                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">
+                    {personalInfo?.phone}
+                  </span>
+                  <span className="bg-white/20 px-4 py-2 rounded-full text-white">
+                    {personalInfo?.facebook}
+                  </span>
                 </div>
               </div>
             </div>

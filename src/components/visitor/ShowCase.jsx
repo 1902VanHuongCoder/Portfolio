@@ -40,7 +40,7 @@ const ShowCase = () => {
         className="relative"
       >
         <div className="w-full h-full flex justify-center items-center">
-          <div className="relative rounded-full border-4 border-[#33A1E0] shadow-xl overflow-hidden w-[300px] sm:w-[400px] sm:h-[400px] bg-white/80 flex items-center justify-center transition-transform duration-300">
+          <div className="relative rounded-full border-4 border-[#33A1E0] shadow-xl overflow-hidden w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-white/80 flex items-center justify-center transition-transform duration-300">
             {personalInfo.avatar ? (
               <img
                 src={personalInfo.avatar ? personalInfo.avatar : paultoavatar}

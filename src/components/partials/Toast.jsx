@@ -18,13 +18,13 @@ export default function Toast() {
         animate={{ opacity: 1, x: 0 }}
         exit={{ x: 400, opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className={`top-6 right-6 fixed z-[9999] shadow-lg w-fit max-w-[85%] h-fit bg-white rounded-md flex overflow-hidden`}
+        className={`top-6 right-6 fixed z-[9999] shadow-lg w-fit max-w-[85%] h-fit bg-white rounded-md flex overflow-hidden items-center border-[1px] border-[#154D71]`}
         role="alert"
       >
         <div
           className={`${
             toastTypeStyles[toast.type] || toastTypeStyles.info
-          } lg:flex justify-center items-center hidden pl-4 text-2xl`}
+          } lg:flex justify-center items-center pl-4 text-2xl`}
         >
           <span>
             {toast.type === "success" ? (
