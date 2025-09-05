@@ -165,7 +165,10 @@ const ExChangeSource = () => {
                     <a href="https://www.tiktok.com/@huongto007">Tik tok</a>
                   </li>
                   <li className="text-[#33A1E0] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
-                    <Link to="/blogs">Bài viết</Link>
+                    <Link to="/exchange-source-code">Exchange Source Code</Link>
+                  </li>
+                  <li className="text-[#33A1E0] text-sm hover:scale-110 hover:text-white transition-transform origin-left">
+                    <Link to="/blogs">Blogs</Link>
                   </li>
                 </ul>
               </div>

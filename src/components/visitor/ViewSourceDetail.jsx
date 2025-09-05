@@ -100,7 +100,7 @@ const ViewSourceDetail = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
-          <AdminLoading />
+        <AdminLoading />
       </div>
     );
   }
@@ -134,21 +134,21 @@ const ViewSourceDetail = () => {
                 to="/"
                 className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
               >
-                <span className="hidden lg:block">Homepage</span>
-                <span className="text-2xl lg:text-md">
+                <span className="text-2xl lg:text-sm">
                   <IoHome />
                 </span>
+                <span className="hidden lg:block">Homepage</span>
               </Link>
             </div>
             <div className="flex gap-2 items-center">
               <Link
                 to="/exchange-source-code"
                 className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
-              >
-                <span className="hidden lg:block">Projects</span>
-                <span className="text-2xl lg:text-md">
+              > <span className="text-2xl lg:text-sm">
                   <GrProjects />
                 </span>
+                <span className="hidden lg:block">Projects</span>
+               
               </Link>
             </div>
           </div>
@@ -163,7 +163,7 @@ const ViewSourceDetail = () => {
       <div className="p-6">
         <div className="flex flex-col gap-6">
           {project.images && project.images.length > 0 && (
-            <div className="w-full h-[200px] object-cover relative">
+            <div className="w-full h-[200px] object-cover relative rounded-xl overflow-hidden">
               <img
                 key="imagetitle"
                 src={project.images[0].secure_url}
@@ -171,7 +171,7 @@ const ViewSourceDetail = () => {
                 className="w-full h-full object-cover rounded shadow "
               />
               <div className="absolute top-0 left-0 w-full h-full bg-black/50 rounded flex justify-center items-center">
-                <p className="text-white text-4xl font-bold drop-shadow-lg">
+                <p className="text-white text-2xl md:text-4xl font-bold drop-shadow-lg">
                   VIEW PROJECT DETAILS
                 </p>
               </div>
@@ -219,7 +219,7 @@ const ViewSourceDetail = () => {
               <div className="text-[#05f7c0] mb-2">
                 <span className="font-semibold">Price: </span>
                 {project.price ? formatVND(project.price) : "Contact for price"}
-                <div className="flex gap-x-4 mt-6">
+                <div className="flex gap-4 mt-6 flex-wrap">
                   <span className="bg-white/20 px-4 py-2 rounded-full text-white">
                     {personalInfo?.name}
                   </span>
