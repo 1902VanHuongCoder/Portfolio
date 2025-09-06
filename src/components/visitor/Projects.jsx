@@ -47,7 +47,7 @@ const Projects = () => {
               demoLink={item.demoLink}
               githubLink={item.githubLink}
               projectImage={item.projectImage}
-              projectName={item.projectName}
+              projectName={item.name}
               key={index}
               index={index}
             />

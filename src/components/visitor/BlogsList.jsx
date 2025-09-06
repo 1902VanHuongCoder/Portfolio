@@ -195,7 +195,7 @@ const BlogsList = () => {
                 {blogs.map((blog) => (
                   <div
                     key={blog.id}
-                    className="bg-white/10 rounded-2xl shadow-lg border border-[#33A1E0]/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 p-4 flex flex-col gap-2"
+                    className="bg-white/10 rounded-2xl shadow-lg border border-[#33A1E0]/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 flex flex-col gap-2"
                   >
                     <Blog
                       imageUrl={blog.image}

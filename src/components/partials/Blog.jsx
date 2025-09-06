@@ -13,18 +13,18 @@ const Blog = ({ imageUrl, title, date, blogId }) => {
       className="relative h-fit cursor-pointer space-y-4"
       onClick={handleClick}
     >
-      <div className='h-fit w-full shadow-lg'>
+      <div className='relative h-fit w-full translate-y-9 px-2 shadow-lg hover:translate-y-3 hover:rotate-6 transition-transform duration-300'>
         <img
           src={imageUrl}
           alt={title}
           className="w-full h-48 object-cover rounded-md"
         />
       </div>
-      <div className="">
-        <h3 className="text-white text-left text-lg font-semibold mb-2">
+      <div className="relative bg-white px-4 py-3 rounded-tr-lg rounded-tl-lg z-5 shadow-xl rounded-b-md">
+        <h3 className="text-[#33A1E0] text-left text-lg font-semibold mb-2">
           {title}
         </h3>
-        <div className="flex items-center text-white/70 text-sm">
+        <div className="flex items-center text-black text-sm">
           <svg
             className="w-4 h-4 mr-2"
             fill="none"

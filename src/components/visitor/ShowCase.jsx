@@ -53,6 +53,17 @@ const ShowCase = () => {
               </div>
             )}
           </div>
+          <div className="absolute bottom-0 right-10 w-14 h-14">
+            {personalInfo.smallAvatar ? (
+              <img
+                src={personalInfo.smallAvatar}
+                alt="Small avatar next to main avatar"
+                className="w-full h-full rounded-full object-cover border-2 border-[#33A1E0] shadow bg-white absolute bottom-2 right-2"
+              />
+            ) : (
+              <span className="text-[#33A1E0] text-2xl">&#128515;</span>
+            )}
+          </div>
         </div>
       </motion.div>
       <motion.div className="p-6 flex flex-col items-start gap-y-6">
@@ -99,9 +110,7 @@ const ShowCase = () => {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="text-[#154D71] text-2xl sm:text-4xl font-bold"
         >
-          {personalInfo.role
-            ? personalInfo.role
-            : "IT Helpdesk"} 
+          {personalInfo.role ? personalInfo.role : "IT Helpdesk"}
         </motion.p>
 
         <motion.p

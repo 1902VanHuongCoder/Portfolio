@@ -100,9 +100,14 @@ const SideBar = () => {
           </Link>
         </div>
       </div>
-      <div
-       onClick={handleCloseSidebar}
-       className="w-[20%] bg-black/40 h-full"></div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.1, delay: 0.1 }}
+        onClick={handleCloseSidebar}
+        className="w-[20%] bg-black/20 h-full"
+      ></motion.div>
     </motion.div>
   );
 };
