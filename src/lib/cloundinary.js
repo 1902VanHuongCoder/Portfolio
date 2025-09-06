@@ -12,13 +12,10 @@ async function uploadImage(file) {
   );
   formData.append("folder", "paulto-porfolio");
 
-  const response = await fetch(
-    import.meta.env.VITE_CLOUDINARY_URL,
-    {
-      method: "POST",
-      body: formData,
-    }
-  );
+  const response = await fetch(import.meta.env.VITE_CLOUDINARY_URL, {
+    method: "POST",
+    body: formData,
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -37,22 +34,20 @@ async function uploadImages(files) {
 
 // Function to delete image use URL out of Cloundinary
 async function deleteImage(publicId) {
-  const response = await fetch(
-    `${import.meta.env.VITE_CLOUDINARY_URL}/${publicId}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_CLOUDINARY_API_KEY}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to delete image");
+  let res;
+  try {
+    res = await fetch("/.netlify/functions/delete-cloudinary-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ publicId: publicId }),
+    });
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary: ", error);
   }
-
-  const data = await response.json();
-  return data.result;
+  return {
+    success: res.ok,
+    data: await res.json(),
+  };
 }
 
 export { uploadImage, deleteImage, uploadImages };

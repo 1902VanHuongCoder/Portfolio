@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import useToast from "../../hooks/toast-hook";
-import { uploadImage } from "../../lib/cloundinary";
+import { deleteImage, uploadImage } from "../../lib/cloundinary";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaPencilAlt, FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import { createSkill, deleteSkill, getAllSkills, updateSkill } from "../../lib/skill-apis";
+import {
+  createSkill,
+  deleteSkill,
+  getAllSkills,
+  updateSkill,
+} from "../../lib/skill-apis";
 import { useLoading } from "../../lib/loading-context";
 
 const ManipulateOnSkills = () => {
@@ -159,14 +164,10 @@ const ManipulateOnSkills = () => {
   const handleDeleteSkill = async (id, imgName) => {
     showLoading();
     // Delete skill image from Cloudinary and skill document from Firestore
+    if (imgName) {
+      await deleteImage(imgName);
+    }
     try {
-      if (imgName) {
-        await fetch("/.netlify/functions/delete-cloudinary-image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publicId: imgName }),
-        });
-      }
       await deleteSkill(id);
       const updatedSkills = await getAllSkills();
       setSkills(updatedSkills);
