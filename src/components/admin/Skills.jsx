@@ -156,9 +156,17 @@ const ManipulateOnSkills = () => {
   };
 
   // Handle deleting a skill
-  const handleDeleteSkill = async (id) => {
+  const handleDeleteSkill = async (id, imgName) => {
     showLoading();
+    // Delete skill image from Cloudinary and skill document from Firestore
     try {
+      if (imgName) {
+        await fetch("/.netlify/functions/delete-cloudinary-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ publicId: imgName }),
+        });
+      }
       await deleteSkill(id);
       const updatedSkills = await getAllSkills();
       setSkills(updatedSkills);

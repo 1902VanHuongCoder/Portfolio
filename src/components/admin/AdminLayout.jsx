@@ -50,7 +50,7 @@ const AdminLayout = () => {
         animate={{ width: isShowSideBar ? "" : 0, originX: 1 }}
         exit={{ width: 0, originX: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-[80%] lg:w-[20%] fixed top-0 left-0 h-screen md:min-h-screen bg-[#002b5b] text-white flex flex-col border-r border-gray-100/20 z-10"
+        className="w-[80%] lg:w-[20%] fixed top-0 left-0 h-screen lg:min-h-screen bg-[#002b5b] text-white flex flex-col border-r border-gray-100/20 z-10"
         style={{ originX: 1 }}
         onHoverStart={() => {
           setCollapse(true);

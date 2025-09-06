@@ -41,6 +41,7 @@
     "@tiptap/extension-underline": "^3.3.0",
     "@tiptap/react": "^3.3.0",
     "@tiptap/starter-kit": "^3.3.0",
+    "cloudinary": "^2.7.0",
     "firebase": "^10.6.0",
     "framer-motion": "^11.3.30",
     "lowlight": "^3.3.0",

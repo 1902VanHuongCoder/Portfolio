@@ -53,7 +53,7 @@ const ShowCase = () => {
               </div>
             )}
           </div>
-          <div className="absolute bottom-0 right-10 w-14 h-14">
+          <div className="absolute bottom-0 right-10 md:right-[30%] lg:right-[10%] w-14 h-14">
             {personalInfo.smallAvatar ? (
               <img
                 src={personalInfo.smallAvatar}
