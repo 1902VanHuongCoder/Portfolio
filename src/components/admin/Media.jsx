@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { deleteImage } from "../../lib/cloundinary";
 
-const CLOUDINARY_SEARCH_URL = "https://api.cloudinary.com/v1_1/" + import.meta.env.VITE_CLOUDINARY_CLOUD_NAME + "/resources/search";
-const CLOUDINARY_API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY;
-const CLOUDINARY_API_SECRET = import.meta.env.VITE_CLOUDINARY_API_SECRET;
-
 const Media = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -12,20 +8,17 @@ const Media = () => {
   // Fetch images from Cloudinary folder
   const fetchImages = async () => {
     setLoading(true);
-    const query = {
-      expression: "folder:paulto-porfolio",
-      max_results: 100,
-    };
-    const response = await fetch(CLOUDINARY_SEARCH_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization:
-          "Basic " +
-          btoa(CLOUDINARY_API_KEY + ":" + CLOUDINARY_API_SECRET),
-      },
-      body: JSON.stringify(query),
+    const response = await fetch("/.netlify/functions/get-cloudinary-images", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
     });
+
+    console.log("Fetch images response:", response);
+    if (!response.ok) {
+      console.error("Error fetching images:", response.statusText);
+      setLoading(false);
+      return;
+    }
     const data = await response.json();
     setImages(data.resources || []);
     setLoading(false);
