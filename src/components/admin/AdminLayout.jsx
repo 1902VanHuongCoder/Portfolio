@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { FaFileCode, FaUserTie } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoMdArrowDropright } from "react-icons/io";
 import { FaListAlt } from "react-icons/fa";
 import { FcSearch } from "react-icons/fc";
@@ -19,6 +19,15 @@ const AdminLayout = () => {
   const [collapse, setCollapse] = useState(false);
   const { toast } = useToast();
   const { loading } = useLoading();
+
+  // Get screen width to handle show toggle sidebar button on small screen
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className="relative min-h-screen flex w-full overflow-hidden">
       {/* Toast */}
@@ -51,7 +60,7 @@ const AdminLayout = () => {
         }}
       >
         <AnimatePresence>
-          {(collapse || !isShowSideBar) && (
+          {(collapse || !isShowSideBar || screenWidth < 768) && (
             <motion.div
               initial={{ x: -100 }}
               animate={{ x: 0 }}
