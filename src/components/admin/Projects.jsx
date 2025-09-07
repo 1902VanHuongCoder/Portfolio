@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FaPencilAlt,
   FaPlus,
@@ -79,25 +79,39 @@ const ManipulateOnProjects = () => {
 
     // Check if a new project image is being uploaded
     if (checkIfFile(dataToUpdate.projectImage)) {
+      let secureUrl = dataToUpdate.projectImage;
+      let publicId = dataToUpdate.projectPublicId;
+      let newImageUploadedToCloudFlag = false;
       try {
-        // Delete the existing image from Cloudinary if it exists using image's public ID
-        // if (dataToUpdate.projectPublicId) {
-        //   await deleteImage(dataToUpdate.projectPublicId);
-        // }
-
-        // Upload new image to Cloudinary
+        // Upload new image to Cloudinary before
         const { secure_url, public_id } = await uploadImage(
           dataToUpdate.projectImage
         );
+        secureUrl = secure_url;
+        publicId = public_id;
+        newImageUploadedToCloudFlag = true;
+      } catch {
+        showToast("error", "Error uploading new image to Cloudinary");
+      }
 
+      // Delete the existing image from Cloudinary if it exists using image's public ID
+      if (dataToUpdate.projectPublicId && newImageUploadedToCloudFlag) {
+        try {
+          await deleteImage(dataToUpdate.projectPublicId);
+        } catch {
+          showToast("error", "Error deleting image from Cloudinary");
+        }
+      }
+
+      try {
         // Prepare data to save to Firebase
         const dataToSaveToFirebase = {
           name: dataToUpdate.name,
           demoLink: dataToUpdate.demoLink,
           githubLink: dataToUpdate.githubLink,
           completeTime: dataToUpdate.completeTime,
-          projectImage: secure_url,
-          projectPublicId: public_id,
+          projectImage: secureUrl,
+          projectPublicId: publicId,
         };
 
         // Update Firestore document after uploading new image to Cloudinary
@@ -190,6 +204,7 @@ const ManipulateOnProjects = () => {
       }
     } catch (error) {
       console.error("Error deleting image: ", error);
+      showToast("error", "Error deleting image from Cloudinary");
     }
 
     // Delete the Firestore document
@@ -293,7 +308,6 @@ const ManipulateOnProjects = () => {
                       value={dataToUpdate.demoLink}
                       onChange={handleChange}
                       placeholder="Enter demo link"
-                 
                     />
                   </label>
                 </div>
@@ -311,7 +325,6 @@ const ManipulateOnProjects = () => {
                       value={dataToUpdate.githubLink}
                       onChange={handleChange}
                       placeholder="Enter GitHub link"
-                   
                     />
                   </label>
                   <label
@@ -448,7 +461,6 @@ const ManipulateOnProjects = () => {
                       setForm({ ...form, demoLink: e.target.value })
                     }
                     placeholder="Enter demo link"
-                
                   />
                 </label>
               </div>
@@ -463,7 +475,6 @@ const ManipulateOnProjects = () => {
                       setForm({ ...form, githubLink: e.target.value })
                     }
                     placeholder="Enter GitHub link"
-                
                   />
                 </label>
 

@@ -65,56 +65,51 @@ const ManipulateOnSkills = () => {
   const handleUpdateSkill = async (e) => {
     e.preventDefault();
     showLoading();
-    let dataToSaveToFirebase;
-
+    let secureUrl = dataToUpdate.logoTechLink;
+    let publicID = dataToUpdate.techLogoName;
+    let newImageIsUploaded = false;
     // Check if a new logo file is being uploaded
     if (checkIfFile(dataToUpdate.logoTechLink)) {
+      // Upload new logo to Cloudinary and get secure_url and public_id
       try {
-        // Upload new logo to Cloudinary and get secure_url and public_id
         const { secure_url, public_id } = await uploadImage(
           dataToUpdate.logoTechLink
         );
-        // Set the data to save to Firebase
-        dataToSaveToFirebase = {
-          tech: dataToUpdate.tech,
-          logoTechLink: secure_url,
-          techLogoName: public_id,
-        };
+        secureUrl = secure_url;
+        publicID = public_id;
+        newImageIsUploaded = true;
       } catch (error) {
         showToast("error", "Error uploading image!");
         console.error("Error uploading file: ", error);
         hideLoading();
-        return;
       }
 
-      try {
-        // Update the skill document in Firestore
-        await updateSkill(skill.sId, dataToSaveToFirebase);
+      // Delete old image from Cloudinary if it exists
+      if (dataToUpdate.techLogoName && newImageIsUploaded) {
+        try{
+          await deleteImage(dataToUpdate.techLogoName);
+        }catch{
+          showToast("error", "Error deleting old image!");
+        }
+      } 
+    }
+    // Update only text info
 
-        // Show success toast and refetch skills
-        const updatedSkills = await getAllSkills();
-        setSkills(updatedSkills);
-        setSkill({ show: false, sId: "" });
-        showToast("success", "Updated skill successfully!");
-      } catch (error) {
-        showToast("error", "Error updating skill!");
-        console.log("Error" + error);
-      }
-    } else {
-      // Update only text info
-      const dataToSaveToFirebase = {
-        tech: dataToUpdate.tech,
-      };
-      try {
-        await updateSkill(skill.sId, dataToSaveToFirebase);
-        setSkill({ show: false, sId: "" });
-        showToast("success", "Updated skill successfully!");
-        const updatedSkills = await getAllSkills();
-        setSkills(updatedSkills);
-      } catch (error) {
-        showToast("error", "Error updating skill!");
-        console.error("Error updating skill", error);
-      }
+    const dataToSaveToFirebase = {
+      tech: dataToUpdate.tech,
+      logoTechLink: secureUrl,
+      techLogoName: publicID,
+    };
+
+    try {
+      await updateSkill(skill.sId, dataToSaveToFirebase);
+      setSkill({ show: false, sId: "" });
+      showToast("success", "Updated skill successfully!");
+      const updatedSkills = await getAllSkills();
+      setSkills(updatedSkills);
+    } catch (error) {
+      showToast("error", "Error updating skill!");
+      console.error("Error updating skill", error);
     }
     hideLoading();
   };

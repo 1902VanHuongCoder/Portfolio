@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { db, storage } from "../../firebase_setup/firebase";
+import { db} from "../../firebase_setup/firebase";
 import {
   collection,
   addDoc,
@@ -31,8 +31,7 @@ import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
 import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
-import { deleteObject, ref as storageRef } from "firebase/storage";
-import { uploadImage } from "../../lib/cloundinary";
+import { uploadImage, deleteImage } from "../../lib/cloundinary";
 import useToast from "../../hooks/toast-hook";
 import { useLoading } from "../../lib/loading-context";
 import { MdDateRange } from "react-icons/md";
@@ -200,13 +199,27 @@ const ManipulateOnBlogs = () => {
   // Handle blog deletion
   const handleDeleteBlog = async (id) => {
     try {
-      // Delete all relative images
-      const blogThumbnailImage = blogs.find((blog) => blog.id === id)?.imageUrl;
-      if (blogThumbnailImage) {
-        const imageRef = storageRef(storage, blogThumbnailImage);
-        await deleteObject(imageRef);
+      const blog = blogs.find((blog) => blog.id === id);
+      // Delete main blog image from Cloudinary
+      if (blog?.publicID) {
+        try {
+          await deleteImage(blog.publicID);
+        } catch (err) {
+          console.error("Error deleting main image from Cloudinary:", err);
+        }
       }
-
+      // Delete all editor images from Cloudinary
+      if (Array.isArray(blog?.editorImages)) {
+        for (const img of blog.editorImages) {
+          if (img.public_id) {
+            try {
+              await deleteImage(img.public_id);
+            } catch (err) {
+              console.error("Error deleting editor image from Cloudinary:", err);
+            }
+          }
+        }
+      }
       await deleteDoc(doc(db, "blogPosts", id));
       showToast("success", "Blog post deleted successfully!");
       fetchBlogs();

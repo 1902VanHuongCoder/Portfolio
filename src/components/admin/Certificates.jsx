@@ -69,55 +69,51 @@ const ManipulateOnCertificates = () => {
     e.preventDefault();
     showLoading();
 
-    // Check if a new file is being uploaded
+    let secureUrl = dataToUpdate.certificate;
+    let publicID = dataToUpdate.certificateImgName;
+    let newImageIsUploaded = false;
+
+    // Check if a new image file is being uploaded
     if (checkIfFile(dataToUpdate.certificate)) {
       try {
-        // If there is an old image, delete it from Cloudinary
-        if (dataToUpdate.certificateImgName) {
-          try {
-            await deleteImage(dataToUpdate.certificateImgName);
-          } catch (err) {
-            console.error("Error deleting image: ", err);
-          }
-        }
-
         // Upload new image to Cloudinary
-        const { secure_url, public_id } = await uploadImage(
-          dataToUpdate.certificate
-        );
-
-        const dataToSaveToFirebase = {
-          certificateContent: dataToUpdate.certificateContent,
-          certificate: secure_url,
-          certificateImgName: public_id,
-        };
-
-        // Update Firestore document
-        const docRef = doc(db, "cers", cerId.cId);
-        await updateDoc(docRef, dataToSaveToFirebase);
-
-        // Show notifications and refetch all certificates
-        showToast("success", "Certificate updated successfully!");
-        const newCertificates = await getAllCertificates();
-        setCers(newCertificates);
+        const { secure_url, public_id } = await uploadImage(dataToUpdate.certificate);
+        secureUrl = secure_url;
+        publicID = public_id;
+        newImageIsUploaded = true;
       } catch (error) {
-        console.log("Error" + error);
+        showToast("error", "Error uploading image!");
+        console.error("Error uploading file: ", error);
+        hideLoading();
+        return;
       }
-    } else {
-      const dataToSaveToFirebase = {
-        certificateContent: dataToUpdate.certificateContent,
-      };
-      try {
-        const docRef = doc(db, "cers", cerId.cId);
-        await updateDoc(docRef, dataToSaveToFirebase);
 
-        // Show notifications and refetch all certificates
-        showToast("success", "Certificate updated successfully!");
-        const newCertificates = await getAllCertificates();
-        setCers(newCertificates);
-      } catch (error) {
-        console.error("Error updating certificate", error);
+      // Delete old image from Cloudinary if it exists and new image was uploaded
+      if (dataToUpdate.certificateImgName && newImageIsUploaded) {
+        try {
+          await deleteImage(dataToUpdate.certificateImgName);
+        } catch {
+          showToast("error", "Error deleting old image!");
+        }
       }
+    }
+
+    // Prepare data to update Firestore
+    const dataToSaveToFirebase = {
+      certificateContent: dataToUpdate.certificateContent,
+      certificate: secureUrl,
+      certificateImgName: publicID,
+    };
+
+    try {
+      const docRef = doc(db, "cers", cerId.cId);
+      await updateDoc(docRef, dataToSaveToFirebase);
+      showToast("success", "Certificate updated successfully!");
+      const newCertificates = await getAllCertificates();
+      setCers(newCertificates);
+    } catch (error) {
+      showToast("error", "Error updating certificate!");
+      console.error("Error updating certificate", error);
     }
     hideLoading();
     setCerId({ cId: "", show: false });
@@ -172,6 +168,7 @@ const ManipulateOnCertificates = () => {
         await deleteImage(certificateImgName);
       } catch (error) {
         console.error("Error deleting image: ", error);
+        showToast("error", "Error deleting certificate image!");
       }
     }
 

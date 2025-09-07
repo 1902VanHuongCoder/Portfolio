@@ -25,7 +25,7 @@ import { Color, TextStyle } from "@tiptap/extension-text-style";
 import { IoCloseCircleSharp } from "react-icons/io5";
 import useToast from "../../hooks/toast-hook";
 import { useLoading } from "../../lib/loading-context";
-import { uploadImage } from "../../lib/cloundinary";
+import { deleteImage, uploadImage } from "../../lib/cloundinary";
 import { MdDateRange } from "react-icons/md";
 
 const UpdateBlog = () => {
@@ -52,6 +52,15 @@ const UpdateBlog = () => {
 
   // State to show old content before changes
   const [content, setContent] = useState("");
+
+  // State to manage image upload input
+  const [imageUploadInput, setImageUploadInput] = useState(null);
+
+  // State to manage local images inserted in the editor
+  const [editorLocalImages, setEditorLocalImages] = useState([]); // {file, url, id}
+
+  // All editor images
+  const [allEditorImages, setAllEditorImages] = useState([]); // [{secure_url, public_id},...]
 
   // Initialize editor
   const editor = useEditor({
@@ -95,14 +104,77 @@ const UpdateBlog = () => {
     }
   };
 
+  // Insert local image into editor and track it
+  const handleEditorImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const id = `local-img-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
+    setEditorLocalImages((prev) => [...prev, { file, url, id }]);
+    // Insert image with unique id as src (so we can find/replace later)
+    editor.chain().focus().setImage({ src: url, alt: id }).run();
+    e.target.value = "";
+  };
+
+  // Function to replace all local images in text editor with Cloudinary url after uploading
+  const replaceLocalImageInTextEditor = async (imagesArray) => {
+    let htmlContent = editor.getHTML();
+    let updatedHtml = htmlContent;
+    let editorImages = [];
+    for (const img of imagesArray) {
+      try {
+        const { secure_url, public_id } = await uploadImage(img.file);
+        updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+        editorImages.push({ secure_url, public_id });
+      } catch {
+        showToast("error", "Error uploading image in text editor");
+      }
+    }
+    editor.commands.setContent(updatedHtml, false);
+    return { editorImages };
+  };
+
+  // Function to get all images url from text editor to check which images are no longer used
+  const getAllImagesInTextEditor = () => {
+    const htmlContent = editor.getHTML();
+    const doc = new DOMParser().parseFromString(htmlContent, "text/html");
+    const images = doc.querySelectorAll("img");
+    return Array.from(images).map((img) => img.src);
+  };
+
+  // Handle form submission to update blog
   const handleUpdateBlog = async (e) => {
     e.preventDefault();
-    showLoading(); 
+    showLoading();
     if (!blog) return;
-    try {
-      let imageUrl = blog.image || ""; 
-      let publicID = blog.publicID || "";
 
+    // Check if user add new images into text editor, if so, system has to upload all local images to Cloud, get url and replace into content to ensure images are showed when deploying
+    if (editorLocalImages.length > 0) {
+      await replaceLocalImageInTextEditor(editorLocalImages);
+
+      // Delete old images that are no longer used in the text editor
+      const allUsedImages = getAllImagesInTextEditor(); // Return url array
+      const unusedImages = allEditorImages.filter(
+        // Filter out unused images
+        (img) => !allUsedImages.includes(img.secure_url)
+      );
+
+      // Loop unusedImages to delete from Cloudinary
+      for (const img of unusedImages) {
+        try {
+          await deleteImage(img.public_id);
+        } catch (error) {
+          console.error("Error deleting unused image from Cloudinary: ", error);
+        }
+      }
+    }
+
+    try {
+      let imageUrl = blog.image || "";
+      let publicID = blog.publicID || "";
+      let newImageIsUploadedToCloud = false;
       if (!updateImagePreview) {
         showToast("error", "No image uploaded");
         hideLoading();
@@ -110,10 +182,6 @@ const UpdateBlog = () => {
       }
 
       if (updateImageFile) {
-        // Delete old image
-        // const oldImageRef = ref(storage, blog.imageUrl);
-        // await deleteObject(oldImageRef);
-
         // Upload new image to Cloundinary and get secure_url and image's public ID
         const { secure_url, public_id } = await uploadImage(updateImageFile);
 
@@ -123,15 +191,17 @@ const UpdateBlog = () => {
 
         imageUrl = secure_url;
         publicID = public_id;
+        newImageIsUploadedToCloud = true;
       }
-      // await addDoc(collection(db, "blogPostsUpdateLog"), {
-      //   blogId: blog.id,
-      //   oldTitle: blog.title,
-      //   oldContent: blog.content,
-      //   oldDate: blog.date,
-      //   oldImageUrl: blog.imageUrl,
-      //   updatedAt: new Date(),
-      // });
+
+      // Delete old image from Cloudinary
+      if (newImageIsUploadedToCloud && blog.publicID) {
+        try {
+          await deleteImage(blog.publicID);
+        } catch (error) {
+          console.error("Error deleting old blog image from Cloudinary: ", error);
+        }
+      }
 
       const blogDocRef = doc(db, "blogPosts", blog.id);
       await updateDoc(blogDocRef, {
@@ -139,7 +209,7 @@ const UpdateBlog = () => {
         date: updateDate,
         content: content,
         image: imageUrl,
-        publicID: publicID, 
+        publicID: publicID,
       });
 
       showToast("success", "Blog post updated successfully!");
@@ -151,25 +221,25 @@ const UpdateBlog = () => {
     hideLoading();
   };
 
-    useEffect(() => {
-      const fetchBlog = async () => {
-        showLoading();
-        const docRef = doc(db, "blogPosts", id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setBlog({ id, ...data });
-          setUpdateTitle(data.title || "");
-          setUpdateDate(data.date || "");
-          setUpdateContent(data.content || "");
-          setUpdateImagePreview(data.image || null);
-          setContent(data.content || "");
-          console.log(data);
-        }
-        hideLoading();
-      };
-      if (id) fetchBlog();
-    }, [hideLoading, id, showLoading]);
+  useEffect(() => {
+    const fetchBlog = async () => {
+      showLoading();
+      const docRef = doc(db, "blogPosts", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setBlog({ id, ...data });
+        setUpdateTitle(data.title || "");
+        setUpdateDate(data.date || "");
+        setUpdateContent(data.content || "");
+        setUpdateImagePreview(data.image || null);
+        setContent(data.content || "");
+        setAllEditorImages(data.editorImages || []);
+      }
+      hideLoading();
+    };
+    if (id) fetchBlog();
+  }, [hideLoading, id, showLoading]);
 
   useEffect(() => {
     if (editor && content !== null) {
@@ -181,8 +251,6 @@ const UpdateBlog = () => {
       }
     }
   }, [editor, content]);
-
-  
 
   if (!editor) return null;
 
@@ -399,14 +467,19 @@ const UpdateBlog = () => {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const url = prompt("Image URL");
-                  if (url) editor.chain().focus().setImage({ src: url }).run();
-                }}
+                onClick={() => imageUploadInput && imageUploadInput.click()}
                 className="px-2"
+                title="Upload Image"
               >
                 🖼️
               </button>
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                ref={(el) => setImageUploadInput(el)}
+                onChange={handleEditorImageUpload}
+              />
               <button
                 type="button"
                 onClick={() =>
