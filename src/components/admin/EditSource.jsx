@@ -25,6 +25,7 @@ import { IoClose } from "react-icons/io5";
 import { deleteImage, uploadImage } from "../../lib/cloundinary";
 import useToast from "../../hooks/toast-hook";
 import { useLoading } from "../../lib/loading-context";
+import { Color, TextStyle } from "@tiptap/extension-text-style";
 
 const EditSourceCodeAdmin = () => {
   // Get project ID from URL parameters
@@ -53,6 +54,9 @@ const EditSourceCodeAdmin = () => {
   const [localImages, setLocalImages] = useState([]); // local previews
   const [editorLocalImages, setEditorLocalImages] = useState([]); // for editor upload
   const [imageUploadInput, setImageUploadInput] = useState(null);
+
+  // State to manage main project images that were removed
+  const [removedImages, setRemovedImages] = useState([]);
 
   // Fetch project data
   useEffect(() => {
@@ -88,19 +92,14 @@ const EditSourceCodeAdmin = () => {
       TableHeader,
       TableCell,
       Gapcursor,
+         Color,
+            TextStyle,
     ],
     content: form.content,
     onUpdate: ({ editor }) => {
       setForm((f) => ({ ...f, content: editor.getJSON() }));
     },
   });
-
-  // Update editor content when form.content changes
-  useEffect(() => {
-    if (editor && form.content) {
-      editor.commands.setContent(form.content);
-    }
-  }, [form.content, editor]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -123,6 +122,7 @@ const EditSourceCodeAdmin = () => {
       ...f,
       images: f.images.filter((_, idx) => idx !== i),
     }));
+    setRemovedImages((prev) => [...prev, form.images[i]]);
   };
 
   // Function to get all images url from text editor to check which images are no longer used
@@ -141,7 +141,7 @@ const EditSourceCodeAdmin = () => {
       // Upload new local project images
       let images = [...form.images];
       let editorImages = [...form.editorImages];
-      let content = form.content; 
+      let content = form.content;
       if (localImages.length > 0) {
         for (const img of localImages) {
           const { secure_url, public_id } = await uploadImage(img.file);
@@ -149,9 +149,6 @@ const EditSourceCodeAdmin = () => {
         }
 
         // Delete old project images that were removed
-        const removedImages = form.images.filter(
-          (img) => !images.find((i) => i.secure_url === img.secure_url)
-        );
         for (const img of removedImages) {
           try {
             await deleteImage(img.public_id);
@@ -161,7 +158,7 @@ const EditSourceCodeAdmin = () => {
         }
       }
 
-      if( editorLocalImages.length > 0) {
+      if (editorLocalImages.length > 0) {
         // Upload new editor images
         let htmlContent = editor.getHTML();
         let updatedHtml = htmlContent;
@@ -209,6 +206,15 @@ const EditSourceCodeAdmin = () => {
 
     hideLoading();
   };
+
+  // Update editor content when form.content changes
+  useEffect(() => {
+    if (editor && form.content) {
+      editor.commands.setContent(form.content);
+    }
+  }, [form.content, editor]);
+
+  if (!editor) return null;
 
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">

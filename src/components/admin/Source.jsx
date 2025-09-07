@@ -179,6 +179,9 @@ const SourceCodeAdmin = () => {
       editorImages: editorImages,
       content: finalContent,
     };
+
+    console.log("Final project data to add: ", projectData);
+    
     await addDoc(collection(db, "sourceProjects"), projectData);
     setForm({
       title: "",
