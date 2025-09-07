@@ -81,11 +81,10 @@ const Comments = () => {
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
       <h1 className="w-full text-2xl p-6 pt-6 pb-2 font-extrabold text-white drop-shadow-xl">
-        MY PROJECTS
+        COMMENTS
       </h1>
       <p className="w-full text-sm px-6 pb-6 font-medium text-white/80 drop-shadow-xl border-b-[1px] border-b-white/20">
-        Here you can manage your projects, add new ones, and update existing
-        ones.
+        Here you can manage your comments and delete unwanted ones.
       </p>
       <div className="w-full p-6 pb-8">
         <div className="flex justify-between items-center mb-4">
