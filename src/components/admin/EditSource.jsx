@@ -22,7 +22,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import Gapcursor from "@tiptap/extension-gapcursor";
 import { IoClose } from "react-icons/io5";
-import { uploadImage } from "../../lib/cloundinary";
+import { deleteImage, uploadImage } from "../../lib/cloundinary";
 import useToast from "../../hooks/toast-hook";
 import { useLoading } from "../../lib/loading-context";
 
@@ -43,16 +43,16 @@ const EditSourceCodeAdmin = () => {
     title: "",
     subtitle: "",
     images: [],
+    editorImages: [],
     price: "",
     github: "",
     content: "",
     youtube: "",
   });
 
-
   const [localImages, setLocalImages] = useState([]); // local previews
-  const [editorLocalImages, setEditorLocalImages] = useState([]); // for editor upload 
-  const [imageUploadInput, setImageUploadInput] = useState(null);  
+  const [editorLocalImages, setEditorLocalImages] = useState([]); // for editor upload
+  const [imageUploadInput, setImageUploadInput] = useState(null);
 
   // Fetch project data
   useEffect(() => {
@@ -102,13 +102,12 @@ const EditSourceCodeAdmin = () => {
     }
   }, [form.content, editor]);
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  // Handle image upload for editor, 
+  // Handle image upload for editor,
   const handleEditorImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -126,37 +125,82 @@ const EditSourceCodeAdmin = () => {
     }));
   };
 
+  // Function to get all images url from text editor to check which images are no longer used
+  const getAllImagesInTextEditor = () => {
+    const htmlContent = editor.getHTML();
+    const doc = new DOMParser().parseFromString(htmlContent, "text/html");
+    const images = doc.querySelectorAll("img");
+    return Array.from(images).map((img) => img.src);
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     showLoading();
 
     try {
       // Upload new local project images
-      let uploadedImages = [...form.images];
-      for (const img of localImages) {
-        const { secure_url, public_id } = await uploadImage(img.file);
-        if (secure_url) uploadedImages.push({ secure_url, public_id });
+      let images = [...form.images];
+      let editorImages = [...form.editorImages];
+      let content = form.content; 
+      if (localImages.length > 0) {
+        for (const img of localImages) {
+          const { secure_url, public_id } = await uploadImage(img.file);
+          if (secure_url) images.push({ secure_url, public_id });
+        }
+
+        // Delete old project images that were removed
+        const removedImages = form.images.filter(
+          (img) => !images.find((i) => i.secure_url === img.secure_url)
+        );
+        for (const img of removedImages) {
+          try {
+            await deleteImage(img.public_id);
+          } catch (error) {
+            console.error("Error deleting image:", error);
+          }
+        }
       }
 
-      // Upload new editor images
-      let htmlContent = editor.getHTML();
-      let updatedHtml = htmlContent;
-      for (const img of editorLocalImages) {
-        const { secure_url } = await uploadImage(img.file);
-        updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+      if( editorLocalImages.length > 0) {
+        // Upload new editor images
+        let htmlContent = editor.getHTML();
+        let updatedHtml = htmlContent;
+        for (const img of editorLocalImages) {
+          const { secure_url } = await uploadImage(img.file);
+          updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+        }
+        editor.commands.setContent(updatedHtml, false);
+        content = editor.getJSON();
       }
-      editor.commands.setContent(updatedHtml, false);
-      const finalContent = editor.getJSON();
 
       const projectData = {
         ...form,
-        images: uploadedImages,
-        content: finalContent,
+        images: images,
+        editorImages: editorImages,
+        content: content,
       };
 
       await updateDoc(doc(db, "sourceProjects", id), projectData);
-
       showToast("success", "Project updated successfully");
+
+      // Get all images url in the text editor
+      const editorImageUrls = getAllImagesInTextEditor();
+
+      // Find and delete unused images from Cloudinary
+      const unusedImages = form.editorImages.filter(
+        (img) => !editorImageUrls.includes(img.secure_url)
+      );
+
+      // Delete unused images from Cloudinary
+      for (const img of unusedImages) {
+        try {
+          await deleteImage(img.public_id);
+        } catch (error) {
+          console.error("Error deleting unused image:", error);
+        }
+      }
+
+      // Navigate back to previous page
       navigate(-1);
     } catch (err) {
       console.error(err);

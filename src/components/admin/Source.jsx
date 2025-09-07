@@ -31,7 +31,7 @@ import { FaRegTrashAlt, FaPencilAlt } from "react-icons/fa";
 import useToast from "../../hooks/toast-hook";
 import { useLoading } from "../../lib/loading-context";
 import { Color, TextStyle } from "@tiptap/extension-text-style";
-import { uploadImage } from "../../lib/cloundinary";
+import { deleteImage, uploadImage } from "../../lib/cloundinary";
 import { IoClose } from "react-icons/io5";
 
 const SourceCodeAdmin = () => {
@@ -125,7 +125,6 @@ const SourceCodeAdmin = () => {
     return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -142,11 +141,12 @@ const SourceCodeAdmin = () => {
     e.preventDefault();
     showLoading();
     // Upload all local project images to Cloudinary
-    let uploadedImages = [];
+    let editorImages = [];
+    let projectImages = [];
     for (const img of localImages) {
       try {
         const { secure_url, public_id } = await uploadImage(img.file);
-        if (secure_url) uploadedImages.push({ secure_url, public_id });
+        if (secure_url) projectImages.push({ secure_url, public_id });
       } catch (err) {
         showToast("error", "Error uploading image");
         console.error(err);
@@ -161,7 +161,7 @@ const SourceCodeAdmin = () => {
         const { secure_url, public_id } = await uploadImage(img.file);
         // Replace local url with Cloudinary url in HTML
         updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
-        uploadedImages.push({ secure_url, public_id });
+        editorImages.push({ secure_url, public_id });
       } catch (err) {
         showToast("error", "Error uploading editor image");
         console.error(err);
@@ -175,7 +175,8 @@ const SourceCodeAdmin = () => {
 
     const projectData = {
       ...form,
-      images: uploadedImages,
+      images: projectImages,
+      editorImages: editorImages,
       content: finalContent,
     };
     await addDoc(collection(db, "sourceProjects"), projectData);
@@ -201,16 +202,19 @@ const SourceCodeAdmin = () => {
 
   // Confirm deletion of a project
   const confirmDeleteProject = async () => {
-    showLoading(); 
+    showLoading();
     if (confirmDelete.id) {
       // Delete all relative images
-      // const project = projects.find((p) => p.id === confirmDelete.id);
-      // if (project) {
-      //   project.images.forEach(async (img) => {
-      //     const imgRef = storageRef(storage, img);
-      //     await deleteObject(imgRef);
-      //   });
-      // }
+      const project = projects.find((p) => p.id === confirmDelete.id);
+      if (project) {
+        project.images.forEach(async (img) => {
+          try {
+            await deleteImage(img.public_id);
+          } catch (error) {
+            console.error("Error deleting image:", error);
+          }
+        });
+      }
       try {
         await deleteDoc(doc(db, "sourceProjects", confirmDelete.id));
       } catch (error) {
