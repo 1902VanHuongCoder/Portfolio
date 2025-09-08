@@ -65,6 +65,7 @@ const UpdateBlog = () => {
   // Helper to update allEditorImages.current
   const setAllEditorImages = (images) => {
     allEditorImages.current = Array.isArray(images) ? images : [];
+    console.log(allEditorImages.current);
   };
 
   // Initialize editor
@@ -185,6 +186,7 @@ const UpdateBlog = () => {
         : allEditorImages.current
       : [];
 
+    console.log("Editor images after changes: ", editorImagesAfterChanges);
     if (imagesWereRemoved.length > 0) {
       // If there are unused images, delete them from Cloudinary
       for (const img of imagesWereRemoved) {
