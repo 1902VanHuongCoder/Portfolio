@@ -64,7 +64,7 @@ const UpdateBlog = () => {
 
   // Helper to update allEditorImages.current
   const setAllEditorImages = (images) => {
-    allEditorImages.current = images;
+    allEditorImages.current = Array.isArray(images) ? images : [];
   };
 
   // Initialize editor
@@ -128,14 +128,14 @@ const UpdateBlog = () => {
     let htmlContent = editor.getHTML();
     let updatedHtml = htmlContent;
     for (const img of imagesArray) {
-        try {
-          const { secure_url, public_id } = await uploadImage(img.file);
+      try {
+        const { secure_url, public_id } = await uploadImage(img.file);
 
-          updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
-          setAllEditorImages((prev) => [...prev, { secure_url, public_id }]);
-        } catch {
-          showToast("error", "Error uploading image in text editor");
-        }
+        updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+        setAllEditorImages((prev) => [...prev, { secure_url, public_id }]);
+      } catch {
+        showToast("error", "Error uploading image in text editor");
+      }
       // }
     }
 
@@ -157,29 +157,38 @@ const UpdateBlog = () => {
     e.preventDefault();
     showLoading();
     if (!blog) return;
-    
+
     // Check if user add new images into text editor, if so, system has to upload all local images to Cloud, get url and replace into content to ensure images are showed when deploying
     if (editorLocalImages.length > 0) {
       await replaceLocalImageInTextEditor(editorLocalImages);
     }
 
-    const allUsedImagesInTextEditor = getAllImagesInTextEditor(); 
+    const allUsedImagesInTextEditor = getAllImagesInTextEditor();
 
     console.log("All used images in text editor: ", allUsedImagesInTextEditor);
 
-    const imagesWereRemoved = allEditorImages.current.filter((img) => !allUsedImagesInTextEditor.includes(img.secure_url));
-
+    const imagesWereRemoved = Array.isArray(allEditorImages.current)
+      ? allEditorImages.current.filter(
+          (img) => !allUsedImagesInTextEditor.includes(img.secure_url)
+        )
+      : [];
+      
     console.log("All used images in text editor: ", allUsedImagesInTextEditor);
     console.log("All editor images: ", allEditorImages.current);
-    console.log("Images were removed: ", imagesWereRemoved); 
+    console.log("Images were removed: ", imagesWereRemoved);
 
-    const editorImagesAfterChanges = imagesWereRemoved.length > 0 ? allEditorImages.current.filter((img) => allUsedImagesInTextEditor.includes(img.secure_url)) : allEditorImages.current;
+    const editorImagesAfterChanges =
+      imagesWereRemoved.length > 0
+        ? allEditorImages.current.filter((img) =>
+            allUsedImagesInTextEditor.includes(img.secure_url)
+          )
+        : allEditorImages.current;
 
     if (imagesWereRemoved.length > 0) {
       // If there are unused images, delete them from Cloudinary
       for (const img of imagesWereRemoved) {
         try {
-          if(!img.public_id) continue;
+          if (!img.public_id) continue;
           await deleteImage(img.public_id);
           console.log("Deleted unused image: ", img.public_id);
         } catch (error) {
@@ -255,7 +264,9 @@ const UpdateBlog = () => {
         setUpdateContent(data.content || "");
         setUpdateImagePreview(data.image || null);
         setContent(data.content || "");
-        setAllEditorImages(data.editorImages || []);
+        setAllEditorImages(
+          Array.isArray(data.editorImages) ? data.editorImages : []
+        );
       }
       hideLoading();
     };
