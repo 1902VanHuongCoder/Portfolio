@@ -125,7 +125,7 @@ const UpdateBlog = () => {
     let editorImages = [];
     for (const img of imagesArray) {
       // Only replace if url is a blob url
-      if (img.url.startsWith("blob:")) {
+      // if (!img.url.startsWith("blob:")) {
         try {
           const { secure_url, public_id } = await uploadImage(img.file);
           updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
@@ -133,7 +133,7 @@ const UpdateBlog = () => {
         } catch {
           showToast("error", "Error uploading image in text editor");
         }
-      }
+      // }
     }
 
     editor.commands.setContent(editor.getJSON(), false);
@@ -222,7 +222,7 @@ const UpdateBlog = () => {
         content: content,
         image: imageUrl,
         publicID: publicID,
-        editorImages: getAllImagesInTextEditor() 
+        editorImages: getAllImagesInTextEditor(),
       });
 
       showToast("success", "Blog post updated successfully!");
