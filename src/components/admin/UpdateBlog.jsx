@@ -70,7 +70,7 @@ const UpdateBlog = () => {
       allEditorImages.current = Array.isArray(updater) ? updater : [];
     }
   };
-  
+
   console.log(allEditorImages.current);
 
   // Initialize editor
@@ -133,18 +133,20 @@ const UpdateBlog = () => {
   const replaceLocalImageInTextEditor = async (imagesArray) => {
     let htmlContent = editor.getHTML();
     let updatedHtml = htmlContent;
+    const newImages = []; 
     for (const img of imagesArray) {
       try {
         const { secure_url, public_id } = await uploadImage(img.file);
 
         updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
-        setAllEditorImages((prev) => [...prev, { secure_url, public_id }]);
+        newImages.push({ secure_url, public_id }); 
       } catch {
         showToast("error", "Error uploading image in text editor");
       }
-      // }
     }
-
+    const currentWithNew = [...allEditorImages.current, ...newImages];
+    console.log("Current with new: ", currentWithNew); 
+    setAllEditorImages(currentWithNew);
     editor.commands.setContent(updatedHtml, false);
   };
 
