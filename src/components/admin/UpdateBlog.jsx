@@ -63,10 +63,15 @@ const UpdateBlog = () => {
   const allEditorImages = useRef([]); // [{secure_url, public_id},...]
 
   // Helper to update allEditorImages.current
-  const setAllEditorImages = (images) => {
-    allEditorImages.current = Array.isArray(images) ? images : [];
-    console.log(allEditorImages.current);
+  const setAllEditorImages = (updater) => {
+    if (typeof updater === "function") {
+      allEditorImages.current = updater(allEditorImages.current);
+    } else {
+      allEditorImages.current = Array.isArray(updater) ? updater : [];
+    }
   };
+  
+  console.log(allEditorImages.current);
 
   // Initialize editor
   const editor = useEditor({
