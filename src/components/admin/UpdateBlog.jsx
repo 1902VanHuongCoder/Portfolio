@@ -122,22 +122,17 @@ const UpdateBlog = () => {
   const replaceLocalImageInTextEditor = async (imagesArray) => {
     let htmlContent = editor.getHTML();
     let updatedHtml = htmlContent;
-    let editorImages = [];
     for (const img of imagesArray) {
-      // Only replace if url is a blob url
-      // if (!img.url.startsWith("blob:")) {
         try {
-          const { secure_url, public_id } = await uploadImage(img.file);
+          const { secure_url } = await uploadImage(img.file);
           updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
-          editorImages.push({ secure_url, public_id });
         } catch {
           showToast("error", "Error uploading image in text editor");
         }
       // }
     }
 
-    editor.commands.setContent(editor.getJSON(), false);
-    return { editorImages };
+    editor.commands.setContent(updatedHtml, false);
   };
 
   // Function to get all images url from text editor to check which images are no longer used
@@ -155,19 +150,25 @@ const UpdateBlog = () => {
     e.preventDefault();
     showLoading();
     if (!blog) return;
-    const allUsedImages = getAllImagesInTextEditor(); // Return url array
-
+    
     // Check if user add new images into text editor, if so, system has to upload all local images to Cloud, get url and replace into content to ensure images are showed when deploying
     if (editorLocalImages.length > 0) {
       await replaceLocalImageInTextEditor(editorLocalImages);
     }
 
+    const allUsedImagesInTextEditor = getAllImagesInTextEditor(); 
+
+    console.log("All used images in text editor: ", allUsedImagesInTextEditor);
+
     const imagesWereRemoved = allEditorImages.filter(
-      (img) => !allUsedImages.includes(img.secure_url)
+      (img) => !allUsedImagesInTextEditor.includes(img.secure_url)
     );
-    console.log("All used images: ", allUsedImages);
+
+    console.log("All used images in text editor: ", allUsedImagesInTextEditor);
     console.log("All editor images: ", allEditorImages);
     console.log("Images were removed: ", imagesWereRemoved); 
+
+
     if (imagesWereRemoved.length > 0) {
       // If there are unused images, delete them from Cloudinary
       for (const img of imagesWereRemoved) {
@@ -226,7 +227,7 @@ const UpdateBlog = () => {
       });
 
       showToast("success", "Blog post updated successfully!");
-      navigate(-1);
+      // navigate(-1);
     } catch (error) {
       showToast("error", "Error updating blog post.");
       console.error("Error updating blog post: ", error);

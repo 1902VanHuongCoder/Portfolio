@@ -128,7 +128,7 @@ const ManipulateOnBlogs = () => {
         updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
 
         // Track uploaded editor images to delete later if needed
-        editorImages.push({ secure_url, public_id });
+        editorImages.push({ secure_url: secure_url, public_id: public_id });
       } catch (err) {
         showToast("error", "Error uploading editor image");
         console.error(err);
