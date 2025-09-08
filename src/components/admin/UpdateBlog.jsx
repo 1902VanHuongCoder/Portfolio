@@ -135,7 +135,8 @@ const UpdateBlog = () => {
         }
       }
     }
-    editor.commands.setContent(updatedHtml, false);
+
+    editor.commands.setContent(editor.getJSON(), false);
     return { editorImages };
   };
 
