@@ -124,12 +124,15 @@ const UpdateBlog = () => {
     let updatedHtml = htmlContent;
     let editorImages = [];
     for (const img of imagesArray) {
-      try {
-        const { secure_url, public_id } = await uploadImage(img.file);
-        updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
-        editorImages.push({ secure_url, public_id });
-      } catch {
-        showToast("error", "Error uploading image in text editor");
+      // Only replace if url is a blob url
+      if (img.url.startsWith("blob:")) {
+        try {
+          const { secure_url, public_id } = await uploadImage(img.file);
+          updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+          editorImages.push({ secure_url, public_id });
+        } catch {
+          showToast("error", "Error uploading image in text editor");
+        }
       }
     }
     editor.commands.setContent(updatedHtml, false);
