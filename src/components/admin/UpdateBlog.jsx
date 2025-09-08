@@ -167,6 +167,7 @@ const UpdateBlog = () => {
       for (const img of imagesWereRemoved) {
         try {
           await deleteImage(img.public_id);
+          console.log("Deleted unused image: ", img.public_id);
         } catch (error) {
           console.error("Error deleting unused image from Cloudinary: ", error);
         }
