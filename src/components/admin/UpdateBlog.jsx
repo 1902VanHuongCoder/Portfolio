@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../../firebase_setup/firebase";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
@@ -60,7 +60,12 @@ const UpdateBlog = () => {
   const [editorLocalImages, setEditorLocalImages] = useState([]); // {file, url, id}
 
   // All editor images
-  const [allEditorImages, setAllEditorImages] = useState([]); // [{secure_url, public_id},...]
+  const allEditorImages = useRef([]); // [{secure_url, public_id},...]
+
+  // Helper to update allEditorImages.current
+  const setAllEditorImages = (images) => {
+    allEditorImages.current = images;
+  };
 
   // Initialize editor
   const editor = useEditor({
@@ -124,8 +129,10 @@ const UpdateBlog = () => {
     let updatedHtml = htmlContent;
     for (const img of imagesArray) {
         try {
-          const { secure_url } = await uploadImage(img.file);
+          const { secure_url, public_id } = await uploadImage(img.file);
+
           updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+          setAllEditorImages((prev) => [...prev, { secure_url, public_id }]);
         } catch {
           showToast("error", "Error uploading image in text editor");
         }
@@ -160,14 +167,13 @@ const UpdateBlog = () => {
 
     console.log("All used images in text editor: ", allUsedImagesInTextEditor);
 
-    const imagesWereRemoved = allEditorImages.filter(
-      (img) => !allUsedImagesInTextEditor.includes(img.secure_url)
-    );
+    const imagesWereRemoved = allEditorImages.current.filter((img) => !allUsedImagesInTextEditor.includes(img.secure_url));
 
     console.log("All used images in text editor: ", allUsedImagesInTextEditor);
-    console.log("All editor images: ", allEditorImages);
+    console.log("All editor images: ", allEditorImages.current);
     console.log("Images were removed: ", imagesWereRemoved); 
 
+    const editorImagesAfterChanges = imagesWereRemoved.length > 0 ? allEditorImages.current.filter((img) => allUsedImagesInTextEditor.includes(img.secure_url)) : allEditorImages.current;
 
     if (imagesWereRemoved.length > 0) {
       // If there are unused images, delete them from Cloudinary
@@ -223,7 +229,7 @@ const UpdateBlog = () => {
         content: content,
         image: imageUrl,
         publicID: publicID,
-        editorImages: getAllImagesInTextEditor(),
+        editorImages: editorImagesAfterChanges,
       });
 
       showToast("success", "Blog post updated successfully!");
