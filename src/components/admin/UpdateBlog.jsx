@@ -173,11 +173,11 @@ const UpdateBlog = () => {
 
     const allUsedImagesInTextEditor = getAllImagesInTextEditor();
 
-    console.log("All used images in text editor: ", allUsedImagesInTextEditor);
+    console.log("All editor images: ", allEditorImages.current);
 
     const imagesWereRemoved = Array.isArray(allEditorImages.current)
       ? allEditorImages.current.filter(
-          (img) => !allUsedImagesInTextEditor.includes(img.secure_url)
+          (img) => !allUsedImagesInTextEditor.includes(img.public_id)
         )
       : [];
 
@@ -185,13 +185,8 @@ const UpdateBlog = () => {
     console.log("All editor images: ", allEditorImages.current);
     console.log("Images were removed: ", imagesWereRemoved);
 
-    const editorImagesAfterChanges = Array.isArray(allEditorImages.current)
-      ? imagesWereRemoved.length > 0
-        ? allEditorImages.current.filter((img) =>
-            allUsedImagesInTextEditor.includes(img.secure_url)
-          )
-        : allEditorImages.current
-      : [];
+    console.log("Type of allEditorImages.current: ", typeof allEditorImages.current);
+    const editorImagesAfterChanges = Array.isArray(allEditorImages.current) && imagesWereRemoved.length > 0 ? allEditorImages.current.filter((img) => !imagesWereRemoved.includes(img)) : [];
 
     console.log("Editor images after changes: ", editorImagesAfterChanges);
     if (imagesWereRemoved.length > 0) {
