@@ -149,20 +149,22 @@ const UpdateBlog = () => {
     e.preventDefault();
     showLoading();
     if (!blog) return;
+    const allUsedImages = getAllImagesInTextEditor(); // Return url array
 
     // Check if user add new images into text editor, if so, system has to upload all local images to Cloud, get url and replace into content to ensure images are showed when deploying
     if (editorLocalImages.length > 0) {
       await replaceLocalImageInTextEditor(editorLocalImages);
+    }
 
-      // Delete old images that are no longer used in the text editor
-      const allUsedImages = getAllImagesInTextEditor(); // Return url array
-      const unusedImages = allEditorImages.filter(
-        // Filter out unused images
-        (img) => !allUsedImages.includes(img.secure_url)
-      );
-
-      // Loop unusedImages to delete from Cloudinary
-      for (const img of unusedImages) {
+    const imagesWereRemoved = allEditorImages.filter(
+      (img) => !allUsedImages.includes(img.secure_url)
+    );
+    console.log("All used images: ", allUsedImages);
+    console.log("All editor images: ", allEditorImages);
+    console.log("Images were removed: ", imagesWereRemoved); 
+    if (imagesWereRemoved.length > 0) {
+      // If there are unused images, delete them from Cloudinary
+      for (const img of imagesWereRemoved) {
         try {
           await deleteImage(img.public_id);
         } catch (error) {
@@ -199,7 +201,10 @@ const UpdateBlog = () => {
         try {
           await deleteImage(blog.publicID);
         } catch (error) {
-          console.error("Error deleting old blog image from Cloudinary: ", error);
+          console.error(
+            "Error deleting old blog image from Cloudinary: ",
+            error
+          );
         }
       }
 
