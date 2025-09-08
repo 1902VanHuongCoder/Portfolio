@@ -172,17 +172,18 @@ const UpdateBlog = () => {
           (img) => !allUsedImagesInTextEditor.includes(img.secure_url)
         )
       : [];
-      
+
     console.log("All used images in text editor: ", allUsedImagesInTextEditor);
     console.log("All editor images: ", allEditorImages.current);
     console.log("Images were removed: ", imagesWereRemoved);
 
-    const editorImagesAfterChanges =
-      imagesWereRemoved.length > 0
+    const editorImagesAfterChanges = Array.isArray(allEditorImages.current)
+      ? imagesWereRemoved.length > 0
         ? allEditorImages.current.filter((img) =>
             allUsedImagesInTextEditor.includes(img.secure_url)
           )
-        : allEditorImages.current;
+        : allEditorImages.current
+      : [];
 
     if (imagesWereRemoved.length > 0) {
       // If there are unused images, delete them from Cloudinary
@@ -243,6 +244,7 @@ const UpdateBlog = () => {
       });
 
       showToast("success", "Blog post updated successfully!");
+      setEditorLocalImages([]);
       // navigate(-1);
     } catch (error) {
       showToast("error", "Error updating blog post.");
