@@ -145,7 +145,9 @@ const UpdateBlog = () => {
     const htmlContent = editor.getHTML();
     const doc = new DOMParser().parseFromString(htmlContent, "text/html");
     const images = doc.querySelectorAll("img");
-    return Array.from(images).map((img) => img.src);
+    return Array.from(images)
+      .map((img) => img.src)
+      .filter((src) => !src.startsWith("blob:"));
   };
 
   // Handle form submission to update blog
@@ -220,6 +222,7 @@ const UpdateBlog = () => {
         content: content,
         image: imageUrl,
         publicID: publicID,
+        editorImages: getAllImagesInTextEditor() 
       });
 
       showToast("success", "Blog post updated successfully!");
