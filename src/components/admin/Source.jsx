@@ -211,6 +211,8 @@ const SourceCodeAdmin = () => {
       const project = projects.find((p) => p.id === confirmDelete.id);
       if (project) {
         const imagesNeedToDelete = [project.images, project.editorImages].flat();
+
+        console.log("Images need to delete: ", imagesNeedToDelete); 
         imagesNeedToDelete.forEach(async (img) => {
           try {
             await deleteImage(img.public_id);
