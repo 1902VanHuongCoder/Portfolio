@@ -161,7 +161,7 @@ const SourceCodeAdmin = () => {
         const { secure_url, public_id } = await uploadImage(img.file);
         // Replace local url with Cloudinary url in HTML
         updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
-        editorImages.push({ secure_url, public_id });
+        editorImages.push({ secure_url: secure_url, public_id: public_id });
       } catch (err) {
         showToast("error", "Error uploading editor image");
         console.error(err);
@@ -207,10 +207,11 @@ const SourceCodeAdmin = () => {
   const confirmDeleteProject = async () => {
     showLoading();
     if (confirmDelete.id) {
-      // Delete all relative images
+      // Delete all images from Cloudinary
       const project = projects.find((p) => p.id === confirmDelete.id);
       if (project) {
-        project.images.forEach(async (img) => {
+        const imagesNeedToDelete = [project.images, project.editorImages].flat();
+        imagesNeedToDelete.forEach(async (img) => {
           try {
             await deleteImage(img.public_id);
           } catch (error) {
