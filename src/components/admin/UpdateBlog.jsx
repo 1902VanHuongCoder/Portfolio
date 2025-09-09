@@ -175,19 +175,26 @@ const UpdateBlog = () => {
 
     console.log("All editor images: ", allEditorImages.current);
 
-    const imagesWereRemoved = Array.isArray(allEditorImages.current)
-      ? allEditorImages.current.filter(
-          (img) => !allUsedImagesInTextEditor.includes(img.secure_url)
-        )
-      : [];
+    const imagesWereRemoved = []; 
+    for (const img of allEditorImages.current) {
+      if (!allUsedImagesInTextEditor.includes(img.secure_url)) {
+        imagesWereRemoved.push(img);
+        console.log("Image removed: ", img);
+      }
+    }
 
     console.log("All used images in text editor: ", allUsedImagesInTextEditor);
     console.log("All editor images: ", allEditorImages.current);
     console.log("Images were removed: ", imagesWereRemoved);
 
     console.log("Type of allEditorImages.current: ", typeof allEditorImages.current);
-    const editorImagesAfterChanges = Array.isArray(allEditorImages.current) && imagesWereRemoved.length > 0 ? allEditorImages.current.filter((img) => !imagesWereRemoved.includes(img)) : [];
-
+    const editorImagesAfterChanges = [];
+    for (const img of allEditorImages.current) {
+      if (allUsedImagesInTextEditor.includes(img.secure_url)) {
+        editorImagesAfterChanges.push(img);
+      }
+    }
+    
     console.log("Editor images after changes: ", editorImagesAfterChanges);
     if (imagesWereRemoved.length > 0) {
       // If there are unused images, delete them from Cloudinary
