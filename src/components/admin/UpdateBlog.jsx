@@ -177,7 +177,7 @@ const UpdateBlog = () => {
 
     const imagesWereRemoved = Array.isArray(allEditorImages.current)
       ? allEditorImages.current.filter(
-          (img) => !allUsedImagesInTextEditor.includes(img.public_id)
+          (img) => !allUsedImagesInTextEditor.includes(img.secure_url)
         )
       : [];
 
