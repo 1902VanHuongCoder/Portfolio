@@ -147,57 +147,69 @@ const EditSourceCodeAdmin = () => {
           const { secure_url, public_id } = await uploadImage(img.file);
           if (secure_url) images.push({ secure_url, public_id });
         }
-
-        // Delete old project images that were removed
-        for (const img of removedImages) {
-          try {
-            await deleteImage(img.public_id);
-          } catch (error) {
-            console.error("Error deleting image:", error);
-          }
-        }
       }
 
       if (editorLocalImages.length > 0) {
         // Upload new editor images
         let htmlContent = editor.getHTML();
         let updatedHtml = htmlContent;
+        const newEditorImages = [];
         for (const img of editorLocalImages) {
-          const { secure_url } = await uploadImage(img.file);
+          const { secure_url, public_id } = await uploadImage(img.file);
           updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
+          newEditorImages.push({ secure_url, public_id });
         }
         editor.commands.setContent(updatedHtml, false);
         content = editor.getJSON();
+        editorImages = [...editorImages, ...newEditorImages];
       }
+
+      // Get all used image URLs in the text editor
+      const allUsedEditorImageUrls = getAllImagesInTextEditor();
+      // Filter editorImages to only those still used
+      const editorImagesAfterChanges = Array.isArray(editorImages)
+        ? editorImages.filter((img) => allUsedEditorImageUrls.includes(img.secure_url))
+        : [];
+
+      // Find and delete unused editor images from Cloudinary
+      const imagesWereRemoved = Array.isArray(editorImages)
+        ? editorImages.filter((img) => !allUsedEditorImageUrls.includes(img.secure_url))
+        : [];
+      if (imagesWereRemoved.length > 0) {
+        for (const img of imagesWereRemoved) {
+          try {
+            await deleteImage(img.public_id);
+          } catch (error) {
+            console.error("Error deleting unused editor image:", error);
+          }
+        }
+      }
+
+      // Handle removed main project images (delete from Cloudinary)
+      if (removedImages.length > 0) {
+        for (const img of removedImages) {
+          try {
+            await deleteImage(img.public_id);
+          } catch (error) {
+            console.error("Error deleting removed project image:", error);
+          }
+        }
+      }
+
+      // Save only images that are still in use (project images)
+      // (Assume images array is already filtered by handleDeleteImage)
 
       const projectData = {
         ...form,
         images: images,
-        editorImages: editorImages,
+        editorImages: editorImagesAfterChanges,
         content: content,
       };
 
       await updateDoc(doc(db, "sourceProjects", id), projectData);
       showToast("success", "Project updated successfully");
-
-      // Get all images url in the text editor
-      const editorImageUrls = getAllImagesInTextEditor();
-
-      // Find and delete unused images from Cloudinary
-      const unusedImages = form.editorImages.filter(
-        (img) => !editorImageUrls.includes(img.secure_url)
-      );
-
-      // Delete unused images from Cloudinary
-      for (const img of unusedImages) {
-        try {
-          await deleteImage(img.public_id);
-        } catch (error) {
-          console.error("Error deleting unused image:", error);
-        }
-      }
-
-      // Navigate back to previous page
+      setEditorLocalImages([]);
+      setRemovedImages([]);
       navigate(-1);
     } catch (err) {
       console.error(err);
