@@ -16,7 +16,6 @@ import { IoHome } from "react-icons/io5";
 import { MdMenu } from "react-icons/md";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
 import Loading from "./Loading";
-import { formatVND } from "../../lib/formatVND";
 
 const ExChangeSource = () => {
   const [loading, setLoading] = useState(true);
@@ -207,7 +206,7 @@ const ExChangeSource = () => {
                       {proj.subtitle}
                     </div>
                     <div className="text-[#33A1E0] font-semibold text-center mb-1">
-                      {proj.price ? `Price: ${formatVND(proj.price)}` : ""}
+                      {proj.price ? <span>{proj.price} VND</span> : ""}
                     </div>
                     <Link
                       to={`/exchange-source-code/${proj.id}`}

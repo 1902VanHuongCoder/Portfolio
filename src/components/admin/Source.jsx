@@ -73,6 +73,8 @@ const SourceCodeAdmin = () => {
     setProjects(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   };
 
+
+
   // Editor for creating new project content
   const editor = useEditor({
     extensions: [

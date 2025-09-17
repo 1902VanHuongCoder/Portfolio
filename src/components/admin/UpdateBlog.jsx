@@ -133,19 +133,19 @@ const UpdateBlog = () => {
   const replaceLocalImageInTextEditor = async (imagesArray) => {
     let htmlContent = editor.getHTML();
     let updatedHtml = htmlContent;
-    const newImages = []; 
+    const newImages = [];
     for (const img of imagesArray) {
       try {
         const { secure_url, public_id } = await uploadImage(img.file);
 
         updatedHtml = updatedHtml.replaceAll(img.url, secure_url);
-        newImages.push({ secure_url, public_id }); 
+        newImages.push({ secure_url, public_id });
       } catch {
         showToast("error", "Error uploading image in text editor");
       }
     }
     const currentWithNew = [...allEditorImages.current, ...newImages];
-    console.log("Current with new: ", currentWithNew); 
+    console.log("Current with new: ", currentWithNew);
     setAllEditorImages(currentWithNew);
     editor.commands.setContent(updatedHtml, false);
   };
@@ -175,7 +175,7 @@ const UpdateBlog = () => {
 
     console.log("All editor images: ", allEditorImages.current);
 
-    const imagesWereRemoved = []; 
+    const imagesWereRemoved = [];
     for (const img of allEditorImages.current) {
       if (!allUsedImagesInTextEditor.includes(img.secure_url)) {
         imagesWereRemoved.push(img);
@@ -187,14 +187,17 @@ const UpdateBlog = () => {
     console.log("All editor images: ", allEditorImages.current);
     console.log("Images were removed: ", imagesWereRemoved);
 
-    console.log("Type of allEditorImages.current: ", typeof allEditorImages.current);
+    console.log(
+      "Type of allEditorImages.current: ",
+      typeof allEditorImages.current
+    );
     const editorImagesAfterChanges = [];
     for (const img of allEditorImages.current) {
       if (allUsedImagesInTextEditor.includes(img.secure_url)) {
         editorImagesAfterChanges.push(img);
       }
     }
-    
+
     console.log("Editor images after changes: ", editorImagesAfterChanges);
     if (imagesWereRemoved.length > 0) {
       // If there are unused images, delete them from Cloudinary
@@ -290,11 +293,11 @@ const UpdateBlog = () => {
     if (editor && content !== null) {
       try {
         editor.commands.setContent(JSON.parse(content));
-        console.log(JSON.parse(content));
       } catch {
         editor.commands.setContent(content);
       }
     }
+    console.log("Content set in editor: ", content); 
   }, [editor, content]);
 
   if (!editor) return null;

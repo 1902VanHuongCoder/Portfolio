@@ -20,12 +20,12 @@ import Gapcursor from "@tiptap/extension-gapcursor";
 import { useParams, Link } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase_setup/firebase";
-import { formatVND } from "../../lib/formatVND";
 import { MdMenu } from "react-icons/md";
 import { IoHome } from "react-icons/io5";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
 import AdminLoading from "../partials/AdminLoading";
 import { GrProjects } from "react-icons/gr";
+import { TiDocumentText } from "react-icons/ti";
 
 const ViewSourceDetail = () => {
   const { id } = useParams();
@@ -46,9 +46,11 @@ const ViewSourceDetail = () => {
       if (!id) return;
       const docRef = doc(db, "sourceProjects", id);
       const docSnap = await getDoc(docRef);
+
       if (docSnap.exists()) {
         setProject({ id: docSnap.id, ...docSnap.data() });
       }
+      console.log(docSnap.data());
       setLoading(false);
     };
     fetchProject();
@@ -144,11 +146,12 @@ const ViewSourceDetail = () => {
               <Link
                 to="/exchange-source-code"
                 className="bg-[#33A1E0]/10 text-white px-4 py-2 gap-x-2 rounded-md flex justify-center items-center border border-[#33A1E0]/40 shadow hover:bg-[#33A1E0]/30 transition"
-              > <span className="text-2xl lg:text-sm">
+              >
+                {" "}
+                <span className="text-2xl lg:text-sm">
                   <GrProjects />
                 </span>
                 <span className="hidden lg:block">Projects</span>
-               
               </Link>
             </div>
           </div>
@@ -160,21 +163,21 @@ const ViewSourceDetail = () => {
           <MdMenu />
         </p>
       </div>
-      <div className="p-6">
+      <div className="px-2 py-6 sm:p-6">
         <div className="flex flex-col gap-6">
           {project.images && project.images.length > 0 && (
-            <div className="w-full h-[200px] object-cover relative rounded-xl overflow-hidden">
+            <div className="w-full h-[400px] object-cover relative rounded-xl overflow-hidden">
               <img
                 key="imagetitle"
                 src={project.images[0].secure_url}
                 alt={project.title}
                 className="w-full h-full object-cover rounded shadow "
               />
-              <div className="absolute top-0 left-0 w-full h-full bg-black/50 rounded flex justify-center items-center">
+              {/* <div className="absolute top-0 left-0 w-full h-full bg-black/50 rounded flex justify-center items-center">
                 <p className="text-white text-2xl md:text-4xl font-bold drop-shadow-lg">
                   VIEW PROJECT DETAILS
                 </p>
-              </div>
+              </div> */}
               {/* <div className="absolute inset-0 bg-black/30 rounded shadow grid grid-cols-1 md:grid-cols-2 items-center px-4">
                 <div className="flex justify-center items-center">
                   {project.youtube && (
@@ -218,8 +221,8 @@ const ViewSourceDetail = () => {
               <h2 className="text-lg text-white/70 mb-2">{project.subtitle}</h2>
               <div className="text-[#05f7c0] mb-2">
                 <span className="font-semibold">Price: </span>
-                {project.price ? formatVND(project.price) : "Contact for price"}
-                <div className="flex gap-4 mt-6 flex-wrap">
+                {project.price ? project.price : "Contact for price"} VND
+                <div className="flex gap-2 mt-6 flex-wrap text-sm">
                   <span className="bg-white/20 px-4 py-2 rounded-full text-white">
                     {personalInfo?.name}
                   </span>
@@ -235,9 +238,18 @@ const ViewSourceDetail = () => {
                 </div>
               </div>
             </div>
-            <div className="border-t border-[#33A1E0]/20 pt-4">
-              <p className="text-white mb-2">Mô Tả Chi Tiết</p>
-              <div className="prose max-w-none rounded p-4">
+            <div className=" pt-4">
+              <div className="flex items-center gap-x-3 mb-4">
+                {" "}
+                <p className="flex gap-x-2 items-center text-white/80 font-semibold shrink-0 bg-white/10 px-3 py-2 rounded-full">
+                  <span>
+                    <TiDocumentText />
+                  </span>
+                  <span>Source code content</span>
+                </p>{" "}
+                <span className="w-full h-[2px] bg-white/20 rounded-full"></span>
+              </div>
+              <div className="prose max-w-none rounded ">
                 {editor && (
                   <EditorContent
                     editor={editor}

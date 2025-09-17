@@ -44,15 +44,17 @@ const Project = (props) => {
           </p>
         </div>
         <div className="flex gap-4 mt-2">
-          <a
-            href={githubLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold shadow hover:scale-105 transition-transform"
-          >
-            <FaGithubAlt />
-            <span>Github</span>
-          </a>
+          {githubLink && (
+            <a
+              href={githubLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white font-bold shadow hover:scale-105 transition-transform"
+            >
+              <FaGithubAlt />
+              <span>Github</span>
+            </a>
+          )}
           <a
             href={demoLink}
             target="_blank"

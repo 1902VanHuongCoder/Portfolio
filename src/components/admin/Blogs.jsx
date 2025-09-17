@@ -625,14 +625,14 @@ const ManipulateOnBlogs = () => {
                 className="font-bold py-2 px-4 rounded-lg transition duration-200 text-white flex items-center gap-x-2 border-white border "
               >
                 <FaPencilAlt />
-                Update
+          
               </ReactLink>
               <button
                 onClick={() => setConfirmDelete({ show: true, id: item.id })}
                 className="flex items-center justify-center gap-x-2 text-red-500 font-bold py-2 px-4 rounded-lg transition duration-200 border-red-500 border bg-white hover:bg-red-100"
               >
                 <FaRegTrashAlt />
-                Delete
+           
               </button>
             </div>
           </div>

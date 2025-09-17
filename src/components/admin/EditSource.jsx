@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Link as ReactLink } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase_setup/firebase";
@@ -55,6 +55,9 @@ const EditSourceCodeAdmin = () => {
   const [editorLocalImages, setEditorLocalImages] = useState([]); // for editor upload
   const [imageUploadInput, setImageUploadInput] = useState(null);
 
+  // Ref to track if content has been set => Prevent change editor content on every render 
+  const hasSetContent = useRef(false);
+
   // State to manage main project images that were removed
   const [removedImages, setRemovedImages] = useState([]);
 
@@ -92,8 +95,8 @@ const EditSourceCodeAdmin = () => {
       TableHeader,
       TableCell,
       Gapcursor,
-         Color,
-            TextStyle,
+      Color,
+      TextStyle,
     ],
     content: form.content,
     onUpdate: ({ editor }) => {
@@ -168,12 +171,16 @@ const EditSourceCodeAdmin = () => {
       const allUsedEditorImageUrls = getAllImagesInTextEditor();
       // Filter editorImages to only those still used
       const editorImagesAfterChanges = Array.isArray(editorImages)
-        ? editorImages.filter((img) => allUsedEditorImageUrls.includes(img.secure_url))
+        ? editorImages.filter((img) =>
+            allUsedEditorImageUrls.includes(img.secure_url)
+          )
         : [];
 
       // Find and delete unused editor images from Cloudinary
       const imagesWereRemoved = Array.isArray(editorImages)
-        ? editorImages.filter((img) => !allUsedEditorImageUrls.includes(img.secure_url))
+        ? editorImages.filter(
+            (img) => !allUsedEditorImageUrls.includes(img.secure_url)
+          )
         : [];
       if (imagesWereRemoved.length > 0) {
         for (const img of imagesWereRemoved) {
@@ -221,10 +228,11 @@ const EditSourceCodeAdmin = () => {
 
   // Update editor content when form.content changes
   useEffect(() => {
-    if (editor && form.content) {
+    if (editor && form.content && !hasSetContent.current) {
       editor.commands.setContent(form.content);
+      hasSetContent.current = true;
     }
-  }, [form.content, editor]);
+  }, [editor , form.content]);
 
   if (!editor) return null;
 
