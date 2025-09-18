@@ -55,7 +55,8 @@ const Project = (props) => {
               <span>Github</span>
             </a>
           )}
-          <a
+          {demoLink && (
+            <a
             href={demoLink}
             target="_blank"
             rel="noopener noreferrer"
@@ -63,7 +64,7 @@ const Project = (props) => {
           >
             <FaArrowUpRightFromSquare />
             <span>Demo</span>
-          </a>
+          </a> )}
         </div>
       </div>
     </motion.div>

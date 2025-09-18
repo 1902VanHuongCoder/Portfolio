@@ -565,6 +565,19 @@ const EditSourceCodeAdmin = () => {
                 ref={(el) => setImageUploadInput(el)}
                 onChange={handleEditorImageUpload}
               />
+              <input
+                className="w-5 h-5 p-0"
+                type="color"
+                onInput={(e) =>
+                  editor.chain().focus().setColor(e.target.value).run()
+                }
+              />
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().unsetColor().run()}
+              >
+                Clear Color
+              </button>
             </div>
             <EditorContent
               editor={editor}
