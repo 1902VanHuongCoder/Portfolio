@@ -7,6 +7,7 @@ import ShowCertificateProvider from "./contexts/ShowCertificateContext.jsx";
 import SideBarBlogListProvider from "./contexts/SideBarBlogListContext.jsx";
 import { ToastProvider } from "./lib/toast-context.jsx";
 import { LoadingProvider } from "./lib/loading-context.jsx";
+import { HelmetProvider } from "react-helmet-async";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById("root")).render(
         <SideBarBlogListProvider>
           <ToastProvider>
             <LoadingProvider>
+            <HelmetProvider>
               <App />
+            </HelmetProvider>
             </LoadingProvider>
           </ToastProvider>
         </SideBarBlogListProvider>

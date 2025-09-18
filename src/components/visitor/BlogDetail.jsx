@@ -5,7 +5,7 @@ import { db } from "../../firebase_setup/firebase";
 import { IoHome } from "react-icons/io5";
 import { MdMenu } from "react-icons/md";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
-import { FaBookAtlas } from "react-icons/fa6";
+import { FaBookAtlas, FaFacebook } from "react-icons/fa6";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -31,6 +31,7 @@ import { useLoading } from "../../lib/loading-context";
 import useToast from "../../hooks/toast-hook";
 import { TiDocumentText } from "react-icons/ti";
 import { HiCalendarDateRange } from "react-icons/hi2";
+import { Helmet } from "react-helmet-async";
 
 const BlogDetail = () => {
   // Toast context
@@ -124,6 +125,19 @@ const BlogDetail = () => {
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-br from-[#2E236C] via-[#154D71] to-[#33A1E0]">
+      {blog && (
+        <Helmet>
+          <title>{blog.title}</title>
+          <meta property="og:title" content={blog.title} />
+          <meta
+            property="og:description"
+            content={blog.description || blog.title}
+          />
+          <meta property="og:image" content={blog.image} />
+          <meta property="og:url" content={window.location.href} />
+          <meta property="og:type" content="article" />
+        </Helmet>
+      )}
       <div className="flex justify-between items-center px-4 sm:px-10 py-4 bg-white/10 backdrop-blur-md shadow-lg border-b border-[#33A1E0]/30">
         <div className="flex gap-2 items-center justify-between w-full">
           <p className="text-2xl text-white font-bold hidden sm:block drop-shadow">
@@ -163,11 +177,28 @@ const BlogDetail = () => {
       </div>
       {blog && (
         <div className="w-full mx-auto lg:max-w-[80%] rounded-2xl p-4 sm:p-10 flex flex-col gap-4">
-          <img
-            src={blog.image}
-            alt={blog.title}
-            className="w-full h-auto sm:h-[400px] object-cover mb-4 rounded-xl border border-[#33A1E0]/20 shadow"
-          />
+          <div className="relative w-full">
+            <img
+              src={blog.image}
+              alt={blog.title}
+              className="w-full h-auto sm:h-[400px] object-cover mb-4 rounded-xl border border-[#33A1E0]/20 shadow"
+            />
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                window.location.href
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"              
+              className="absolute bottom-8 right-4 bg-white/30 backdrop-blur-md px-4 py-2 rounded-md border border-[#33A1E0]/40 shadow hover:shadow-lg hover:scale-105 transition-all cursor-pointer"
+            >
+              <p className="text-white font-semibold flex items-center gap-x-2">
+                <span>Share on Facebook</span>{" "}
+                <span className="text-2xl">
+                  <FaFacebook />
+                </span>
+              </p>
+            </a>
+          </div>
           <div className="px-1 sm:px-0">
             <h1 className="text-2xl sm:text-4xl font-extrabold mb-4 text-white drop-shadow">
               {blog.title}
