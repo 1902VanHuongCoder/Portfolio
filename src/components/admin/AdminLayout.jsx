@@ -173,6 +173,19 @@ const AdminLayout = () => {
               </span>
               <span>Media</span>
             </Link>
+            
+            <Link 
+              to="/admin/themes"
+              className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
+                location.pathname === "/admin/themes" ? "bg-[#33A1E0]" : ""
+              }`}
+            >
+              <span>
+              {/* Theme icon  */}
+                <FaFileCode />
+              </span>
+              <span>Themes</span>
+            </Link>
           </nav>
         </div>
       </motion.aside>

@@ -16,9 +16,11 @@ import useToast from "./hooks/toast-hook";
 import { useLoading } from "./lib/loading-context";
 import Toast from "./components/partials/Toast";
 import AdminLoading from "./components/partials/AdminLoading";
+import { ThemeContext } from "./contexts/ThemeContext";
 const Home = () => {
   const { isSidebar } = useContext(SidebarContext);
   const { zoomCertificate, certificate } = useContext(ShowCertificateContext);
+  const { theme } = useContext(ThemeContext);
   const { scrollYProgress } = useScroll();
   const { toast } = useToast();
   const { loading } = useLoading();
@@ -27,12 +29,17 @@ const Home = () => {
     damping: 30,
     restDelta: 0.001,
   });
+  const colorBasedOnTheme = {
+    "christmas": "bg-[rgba(0,0,0,.9)] text-white",
+    "default": "bg-white",
+    "new-year": "bg-[#9F0D18] text-white",
+    "dark-mode": "bg-[rgba(0,0,0,.9)]",
+  };
   return (
     <div
       id="top"
-      className="relative bg-white min-h-screen max-w-screen overflow-hidden font-test"
+      className={`relative ${colorBasedOnTheme[theme?.themeSlug] || colorBasedOnTheme["default"]}  min-h-screen max-w-screen overflow-hidden font-test`}
     >
-      
       {/* Toast */}
       <AnimatePresence>{toast.show && <Toast />}</AnimatePresence>
 

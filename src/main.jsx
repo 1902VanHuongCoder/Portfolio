@@ -8,6 +8,7 @@ import SideBarBlogListProvider from "./contexts/SideBarBlogListContext.jsx";
 import { ToastProvider } from "./lib/toast-context.jsx";
 import { LoadingProvider } from "./lib/loading-context.jsx";
 import { HelmetProvider } from "react-helmet-async";
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -17,7 +18,9 @@ createRoot(document.getElementById("root")).render(
           <ToastProvider>
             <LoadingProvider>
             <HelmetProvider>
+            <ThemeProvider>
               <App />
+            </ThemeProvider>
             </HelmetProvider>
             </LoadingProvider>
           </ToastProvider>

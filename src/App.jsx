@@ -20,9 +20,11 @@ import PersonalInfo from "./components/admin/PersonalInfo";
 import EditSourceCodeAdmin from "./components/admin/EditSource";
 import Comments from "./components/admin/Comments";
 import Media from "./components/admin/Media";
+import Theme from "./components/admin/Theme";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
+  
   return (
     <div className="w-full h-full">
       <BrowserRouter future={{ v7_startStransition: true }}>
@@ -57,6 +59,7 @@ function App() {
               path="edit/source-code/:id"
               element={<EditSourceCodeAdmin />}
             />
+            <Route path="themes" element={<Theme />} />
           </Route>
         </Routes>
       </BrowserRouter>
