@@ -39,19 +39,27 @@ const NavigationBar = () => {
   }, []);
   const styleBasedOnTheme = () => {
     if (theme?.themeSlug === "christmas") {
-      return "backdrop-blur-2xl bg-white/10 text-white";
+      return {
+        generalStyle: "backdrop-blur-2xl bg-white/10 text-white",
+        // Add #33A1E0 text shadow for text 
+        brandStyle: "from-[#33A1E0] to-[#33A1E0]  drop-shadow-[0_0_10px_#33A1E0]",
+      };
+      
     } else if (theme?.themeSlug === "new-year") {
       return "backdrop-blur-2xl bg-gradient-to-r from-white/70 via-white/20 to-white/10 text-white";
     }
     
     else {
-      return "backdrop-blur-2xl bg-white/80 text-[#154D71]";
+      return {
+        generalStyle: "backdrop-blur-2xl bg-white/80 text-[#154D71]",
+        brandStyle: "from-[#154D71] to-[#33A1E0]",
+      };
     }
   };
  
   return (
-    <div className={`relative flex justify-between items-center px-6 py-2 mx-2 border-[1.5px] border-[#154D71] shadow-lg md:mx-4 rounded-full mt-2 ${styleBasedOnTheme()} z-50`}>
-      <p className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#154D71] to-[#33A1E0] drop-shadow tracking-wide select-none">Paul To</p>
+    <div className={`relative flex justify-between items-center px-6 py-2 mx-2 border-[1.5px] border-[#154D71] shadow-lg md:mx-4 rounded-full mt-2 ${styleBasedOnTheme().generalStyle} z-50`}>
+      <p className={`text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r ${styleBasedOnTheme().brandStyle} drop-shadow tracking-wide select-none`}>Paul To</p>
       <div>
         <div className="hidden lg:flex gap-x-8 items-center">
           <a

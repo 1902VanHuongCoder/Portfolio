@@ -7,6 +7,7 @@ import { db } from "../../firebase_setup/firebase";
 import { FaImage } from "react-icons/fa";
 import ThemeCanvas from "../partials/ThemeCanvas";
 import { ThemeContext } from "../../contexts/ThemeContext";
+import ChristmasScene from "../partials/ChristmasScene";
 
 const ShowCase = () => {
   // Personal info
@@ -97,7 +98,13 @@ const ShowCase = () => {
                 </div>
               )}
             </div>
-            <div className="absolute bottom-0 right-10 md:right-[30%] lg:right-[10%] w-14 h-14">
+            <div className="absolute bottom-[-20px] right-[-80px] md:right-[15%] lg:right-[-100px]"> 
+              {/* Using christmas scene here */}
+              {theme?.themeSlug === "christmas" && (
+                <ChristmasScene scale={0.7}/>
+              )}
+            </div>
+            {/* <div className="absolute bottom-0 right-10 md:right-[30%] lg:right-[10%] w-14 h-14">
               {personalInfo.smallAvatar ? (
                 <img
                   src={personalInfo.smallAvatar}
@@ -111,7 +118,7 @@ const ShowCase = () => {
               ) : (
                 <span className="text-[#33A1E0] text-2xl">&#128515;</span>
               )}
-            </div>
+            </div> */}
           </div>
         </motion.div>
         <motion.div className={`p-6 flex flex-col items-start gap-y-6 ${styleBasedOnTheme().heroTitleBackground ? styleBasedOnTheme().heroTitleBackground : "" } rounded-2xl`}>
