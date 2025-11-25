@@ -7,7 +7,8 @@ import { db } from "../../firebase_setup/firebase";
 import { FaImage } from "react-icons/fa";
 import ThemeCanvas from "../partials/ThemeCanvas";
 import { ThemeContext } from "../../contexts/ThemeContext";
-import ChristmasScene from "../partials/ChristmasScene";
+
+import christmasGift from "../../assets/christmas-gift.png";
 
 const ShowCase = () => {
   // Personal info
@@ -79,31 +80,40 @@ const ShowCase = () => {
           className="relative"
         >
           <div className="w-full h-full flex justify-center items-center">
-            <div
-              className={`relative rounded-full border-4 ${
-                styleBasedOnTheme().borderColor
-                  ? styleBasedOnTheme().borderColor
-                  : "border-[#33A1E0]"
-              } shadow-xl overflow-hidden w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-white/80 flex items-center justify-center transition-transform duration-300`}
-            >
-              {personalInfo.avatar ? (
-                <img
-                  src={personalInfo.avatar ? personalInfo.avatar : paultoavatar}
-                  alt="avatar"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-6xl text-[#33A1E0] font-bold">
-                  <FaImage />
-                </div>
-              )}
+            <div className="relative">
+              <div
+                className={`relative rounded-full border-4 ${
+                  styleBasedOnTheme().borderColor
+                    ? styleBasedOnTheme().borderColor
+                    : "border-[#33A1E0]"
+                } shadow-xl overflow-hidden w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] bg-white/80 flex items-center justify-center transition-transform duration-300`}
+              >
+                {personalInfo.avatar ? (
+                  <img
+                    src={
+                      personalInfo.avatar ? personalInfo.avatar : paultoavatar
+                    }
+                    alt="avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-6xl text-[#33A1E0] font-bold">
+                    <FaImage />
+                  </div>
+                )}
+              </div>
+              <div className="absolute bottom-[-6%] right-[-5%] sm:bottom-[-8%] sm:right-[-10%] drop-shadow-2xl">
+                {/* Using christmas scene here */}
+                {theme?.themeSlug === "christmas" && (
+                  <img
+                    src={christmasGift}
+                    alt="Christmas Gift"
+                    className="w-32 h-32 sm:w-44 sm:h-44"
+                  />
+                )}
+              </div>
             </div>
-            <div className="absolute bottom-[-20px] right-[-80px] md:right-[15%] lg:right-[-100px]"> 
-              {/* Using christmas scene here */}
-              {theme?.themeSlug === "christmas" && (
-                <ChristmasScene scale={0.7}/>
-              )}
-            </div>
+
             {/* <div className="absolute bottom-0 right-10 md:right-[30%] lg:right-[10%] w-14 h-14">
               {personalInfo.smallAvatar ? (
                 <img
@@ -121,7 +131,13 @@ const ShowCase = () => {
             </div> */}
           </div>
         </motion.div>
-        <motion.div className={`p-6 flex flex-col items-start gap-y-6 ${styleBasedOnTheme().heroTitleBackground ? styleBasedOnTheme().heroTitleBackground : "" } rounded-2xl`}>
+        <motion.div
+          className={`p-6 flex flex-col items-start gap-y-6 ${
+            styleBasedOnTheme().heroTitleBackground
+              ? styleBasedOnTheme().heroTitleBackground
+              : ""
+          } rounded-2xl backdrop-blur-md bg-white/10 md:backdrop-blur-none md:bg-transparent transition-all duration-300`}
+        >
           <motion.p
             initial={{
               opacity: 0,
@@ -196,7 +212,11 @@ const ShowCase = () => {
           >
             <Button
               title="Contact"
-              className={`font-bold px-8 py-3 rounded-full shadow-lg transition-all duration-200 ${styleBasedOnTheme().contactButton ? styleBasedOnTheme().contactButton : "bg-[#33A1E0] text-white hover:bg-[#154D71]" }`}
+              className={`font-bold px-8 py-3 rounded-full shadow-lg transition-all duration-200 ${
+                styleBasedOnTheme().contactButton
+                  ? styleBasedOnTheme().contactButton
+                  : "bg-[#33A1E0] text-white hover:bg-[#154D71]"
+              }`}
               link="#contact"
             />
           </motion.div>
