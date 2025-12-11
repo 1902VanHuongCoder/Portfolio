@@ -21,6 +21,7 @@ import EditSourceCodeAdmin from "./components/admin/EditSource";
 import Comments from "./components/admin/Comments";
 import Media from "./components/admin/Media";
 import Theme from "./components/admin/Theme";
+import RemoveBackground from "./components/visitor/RemoveBackground";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
@@ -41,6 +42,10 @@ function App() {
           <Route path="/blogs" element={<BlogsList />}></Route>
           <Route path="/blog/detail/:id" element={<BlogDetail />}></Route>
           <Route path="/exchange-source-code" element={<ExChangeSource />} />
+          
+          <Route path="/remove-bg-tool" element={<RemoveBackground />} />
+          
+          
           <Route
             path="/exchange-source-code/:id"
             element={<ViewSourceDetail />}

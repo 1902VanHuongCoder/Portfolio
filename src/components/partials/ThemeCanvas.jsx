@@ -280,72 +280,6 @@ function getCurveTangent(t, start, control, end) {
   return Math.atan2(dy, dx);
 }
 
-// Draw Chinese New Year couplet (câu đối Tết)
-function drawCouplet(ctx, x, y, text, scrollOffset) {
-  const coupletWidth = 80;
-  const coupletHeight = 400;
-  const charSpacing = 60;
-  
-  ctx.save();
-  ctx.translate(x, y);
-  
-  // Red background scroll
-  const gradient = ctx.createLinearGradient(0, 0, 0, coupletHeight);
-  gradient.addColorStop(0, "#C8102E");
-  gradient.addColorStop(0.5, "#DC143C");
-  gradient.addColorStop(1, "#C8102E");
-  ctx.fillStyle = gradient;
-  
-  // Main scroll body
-  ctx.beginPath();
-  ctx.roundRect(0, scrollOffset, coupletWidth, coupletHeight, 10);
-  ctx.fill();
-  
-  // Gold border
-  ctx.strokeStyle = "#FFD700";
-  ctx.lineWidth = 3;
-  ctx.stroke();
-  
-  // Decorative pattern border
-  ctx.strokeStyle = "#FFA500";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.roundRect(5, scrollOffset + 5, coupletWidth - 10, coupletHeight - 10, 8);
-  ctx.stroke();
-  
-  // Top ornament (scroll end)
-  ctx.fillStyle = "#8B0000";
-  ctx.beginPath();
-  ctx.roundRect(5, scrollOffset - 20, coupletWidth - 10, 25, [0, 0, 5, 5]);
-  ctx.fill();
-  ctx.strokeStyle = "#FFD700";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  // Bottom ornament (scroll end)
-  ctx.fillStyle = "#8B0000";
-  ctx.beginPath();
-  ctx.roundRect(5, scrollOffset + coupletHeight - 5, coupletWidth - 10, 25, [5, 5, 0, 0]);
-  ctx.fill();
-  ctx.strokeStyle = "#FFD700";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  // Draw text vertically (Chinese characters)
-  ctx.fillStyle = "#FFD700";
-  ctx.font = "bold 36px serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.shadowColor = "#000";
-  ctx.shadowBlur = 3;
-  
-  for (let i = 0; i < text.length; i++) {
-    const charY = scrollOffset + 80 + (i * charSpacing);
-    ctx.fillText(text[i], coupletWidth / 2, charY);
-  }
-  
-  ctx.restore();
-}
 
 // Draw Santa and Reindeer flying
 function drawSantaAndReindeer(ctx, x, y, rotation = 0, scale = 1, alpha = 1) {
@@ -713,16 +647,6 @@ const ThemeCanvas = () => {
             hasSlideIn = true;
           }
         }
-
-        // Draw couplets on both sides
-        const leftCoupletText = "恭賀新禧"; // Chúc mừng năm mới
-        const rightCoupletText = "安康興旺"; // An khang thịnh vượng
-        
-        // Left couplet
-        drawCouplet(ctx, 20, 0, leftCoupletText, coupletScrollOffset);
-        
-        // Right couplet
-        drawCouplet(ctx, width - 100, 0, rightCoupletText, coupletScrollOffset);
 
         // Update and draw flowers
         flowers.forEach((flower) => {
