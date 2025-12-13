@@ -22,6 +22,7 @@ import Comments from "./components/admin/Comments";
 import Media from "./components/admin/Media";
 import Theme from "./components/admin/Theme";
 import RemoveBackground from "./components/visitor/RemoveBackground";
+import PdfToWord from "./components/visitor/PdfToWord";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
@@ -44,6 +45,7 @@ function App() {
           <Route path="/exchange-source-code" element={<ExChangeSource />} />
           
           <Route path="/remove-bg-tool" element={<RemoveBackground />} />
+          <Route path="/pdf-to-word-tool" element={<PdfToWord />} />
           
           
           <Route
