@@ -23,6 +23,7 @@ import Media from "./components/admin/Media";
 import Theme from "./components/admin/Theme";
 import RemoveBackground from "./components/visitor/RemoveBackground";
 import PdfToWord from "./components/visitor/PdfToWord";
+import CodeHighlighter from "./components/visitor/CodeHighlighter";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
@@ -46,6 +47,7 @@ function App() {
           
           <Route path="/remove-bg-tool" element={<RemoveBackground />} />
           <Route path="/pdf-to-word-tool" element={<PdfToWord />} />
+          <Route path="/code-highlighter-tool" element={<CodeHighlighter />} />
           
           
           <Route

@@ -12,6 +12,7 @@ import DetailedCertificate from "./components/partials/DetailedCertificate";
 import { ShowCertificateContext } from "./contexts/ShowCertificateContext";
 import Contact from "./components/visitor/Contact";
 import ToTop from "./components/partials/ToTop";
+import Tools from "./components/visitor/Tools";
 import useToast from "./hooks/toast-hook";
 import { useLoading } from "./lib/loading-context";
 import Toast from "./components/partials/Toast";
@@ -59,6 +60,7 @@ const Home = () => {
       <ShowCase />
       <Projects />
       <Skills />
+      <Tools />
       <Certificates />
       <AnimatePresence>
         {zoomCertificate && certificate !== "" && <DetailedCertificate />}

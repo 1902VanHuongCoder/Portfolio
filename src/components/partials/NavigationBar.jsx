@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { MdMenu } from "react-icons/md";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaTools } from "react-icons/fa";
 import { GrProjects } from "react-icons/gr";
 import { FaBookAtlas } from "react-icons/fa6";
 import { PiHandshakeFill } from "react-icons/pi";
@@ -87,6 +87,13 @@ const NavigationBar = () => {
           >
             <span className="rounded-full bg-[#33A1E0]/10 p-2  flex items-center justify-center"><FaBookAtlas size={20} /></span>
             Skills
+          </a>
+          <a
+            className="font-bold hover:scale-105   transition-all flex items-center gap-x-3 sm:gap-x-2 rounded-xl px-2 py-3 text-lg duration-200"
+            href="#tools"
+          >
+            <span className="rounded-full bg-[#33A1E0]/10 p-2  flex items-center justify-center"><FaTools size={20} /></span>
+            Tools
           </a>
           <a
             className="font-bold hover:scale-105   transition-all flex items-center gap-x-3 sm:gap-x-2 rounded-xl px-2 py-3 text-lg duration-200"

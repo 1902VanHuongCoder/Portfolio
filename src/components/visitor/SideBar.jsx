@@ -1,5 +1,5 @@
 
-import { FaAddressBook, FaArrowCircleLeft, FaHome } from "react-icons/fa";
+import { FaAddressBook, FaArrowCircleLeft, FaHome, FaTools } from "react-icons/fa";
 import { GrProjects } from "react-icons/gr";
 import { FaBookAtlas } from "react-icons/fa6";
 import { PiCertificateFill, PiHandshakeFill } from "react-icons/pi";
@@ -76,6 +76,13 @@ const SideBar = () => {
           >
             <FaBookAtlas />
             Skills
+          </a>
+          <a
+            className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4"
+            href="#tools"
+          >
+            <FaTools />
+            Tools
           </a>
           <a
             className="font-bold text-white hover:scale-110 transition-all flex items-center gap-x-4 sm:gap-x-2"
