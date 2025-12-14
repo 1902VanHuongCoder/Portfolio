@@ -18,6 +18,7 @@ import { MdMenu } from "react-icons/md";
 import { SideBarBlogListContext } from "../../contexts/SideBarBlogListContext";
 import Blog from "../partials/Blog";
 import Loading from "./Loading";
+import { trackPageView } from "../../lib/analytics-apis";
 
 const BlogsList = () => {
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,11 @@ const BlogsList = () => {
   const count = useMotionValue(0);
   const rounded = useTransform(count, Math.round);
   const displayValue = useTransform(rounded, (latest) => latest.toString());
+
+  // Track page view
+  useEffect(() => {
+    trackPageView("Blog List", window.location.pathname);
+  }, []);
 
   const handleCloseSideBarBlogList = () => {
     setShow(true);

@@ -3,7 +3,7 @@ import { FaFileCode, FaUserTie } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { IoMdArrowDropright } from "react-icons/io";
-import { FaListAlt } from "react-icons/fa";
+import { FaListAlt, FaChartLine } from "react-icons/fa";
 import { FcSearch } from "react-icons/fc";
 import { PiCertificateBold } from "react-icons/pi";
 import { RiNewsFill } from "react-icons/ri";
@@ -185,6 +185,18 @@ const AdminLayout = () => {
                 <FaFileCode />
               </span>
               <span>Themes</span>
+            </Link>
+            
+            <Link 
+              to="/admin/analytics"
+              className={`hover:bg-[#33A1E0] rounded px-3 py-2 flex items-center gap-2 ${
+                location.pathname === "/admin/analytics" ? "bg-[#33A1E0]" : ""
+              }`}
+            >
+              <span>
+                <FaChartLine />
+              </span>
+              <span>Analytics</span>
             </Link>
           </nav>
         </div>

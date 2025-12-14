@@ -32,6 +32,7 @@ import useToast from "../../hooks/toast-hook";
 import { TiDocumentText } from "react-icons/ti";
 import { HiCalendarDateRange } from "react-icons/hi2";
 import { Helmet } from "react-helmet-async";
+import { trackPageView, incrementBlogView } from "../../lib/analytics-apis";
 
 const BlogDetail = () => {
   // Toast context
@@ -94,9 +95,18 @@ const BlogDetail = () => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setBlog({ id: docSnap.id, ...docSnap.data() });
+          const blogData = { id: docSnap.id, ...docSnap.data() };
+          setBlog(blogData);
           setContent(docSnap.data().content);
-          console.log("Fetched blog:", { id: docSnap.id, ...docSnap.data() });
+          
+          // Track page view and increment blog view count
+          trackPageView("Blog Detail", window.location.pathname, {
+            blogId: id,
+            blogTitle: blogData.title,
+          });
+          incrementBlogView(id);
+          
+          console.log("Fetched blog:", blogData);
         } else {
           showToast("info", "Không tìm thấy bài viết");
         }

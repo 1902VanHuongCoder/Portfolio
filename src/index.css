@@ -38,25 +38,35 @@
   margin-right: 30px;
 }
 
-/* For Chrome, Edge, and Safari */
-::-webkit-scrollbar {
-  width: 8px;
-  background: #154d71;
-}
-
-::-webkit-scrollbar-thumb {
+/* Custom SimpleBar styles */
+.simplebar-scrollbar::before {
   background: #33a1e0;
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.simplebar-track.simplebar-vertical {
+  background: #154d71;
+  width: 8px;
+  right: 0;
+}
+
+.simplebar-track.simplebar-horizontal {
+  background: #154d71;
+  height: 8px;
+}
+
+.simplebar-scrollbar:hover::before {
   background: #1e6fa7;
 }
 
-/* For Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #33a1e0 #154d71;
+/* SimpleBar wrapper full height */
+.simplebar-wrapper {
+  height: 100%;
+}
+
+.simplebar-content-wrapper {
+  height: 100%;
+  overflow: auto;
 }
 
 .ql-container {
@@ -139,3 +149,4 @@ input[type="date"]::-ms-expand {
 input[type="date"] {
   position: relative;
 }
+

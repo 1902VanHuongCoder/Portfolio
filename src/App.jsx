@@ -24,55 +24,64 @@ import Theme from "./components/admin/Theme";
 import RemoveBackground from "./components/visitor/RemoveBackground";
 import PdfToWord from "./components/visitor/PdfToWord";
 import CodeHighlighter from "./components/visitor/CodeHighlighter";
+import Analytics from "./components/admin/Analytics";
+import SimpleBar from "simplebar-react";
 
 function App() {
   const { isShow } = useContext(SideBarBlogListContext);
   
   return (
-    <div className="w-full h-full">
-      <BrowserRouter future={{ v7_startStransition: true }}>
-        <AnimatePresence>{isShow && <SideBarBlogList />}</AnimatePresence>
-        <Routes>
-          <Route path="/" element={<Home />}></Route>
-          <Route path="/projects" element={<ManipulateOnProjects />}></Route>
-          <Route path="/skills" element={<ManipulateOnSkills />}></Route>
-          <Route
-            path="/certificates"
-            element={<ManipulateOnCertificates />}
-          ></Route>
-          {/* <Route path="/add/blogs" element={<AddBlogPost />}></Route> */}
-          <Route path="/blogs" element={<BlogsList />}></Route>
-          <Route path="/blog/detail/:id" element={<BlogDetail />}></Route>
-          <Route path="/exchange-source-code" element={<ExChangeSource />} />
-          
-          <Route path="/remove-bg-tool" element={<RemoveBackground />} />
-          <Route path="/pdf-to-word-tool" element={<PdfToWord />} />
-          <Route path="/code-highlighter-tool" element={<CodeHighlighter />} />
-          
-          
-          <Route
-            path="/exchange-source-code/:id"
-            element={<ViewSourceDetail />}
-          />
-          <Route path="/admin/*" element={<AdminLayout />}>
-            <Route index element={<ManipulateOnProjects />} />
-            <Route path="skills" element={<ManipulateOnSkills />} />
-            <Route path="certificates" element={<ManipulateOnCertificates />} />
-            <Route path="add/blogs" element={<ManipulateOnBlogs />} />
-            <Route path="source-code" element={<SourceCodeAdmin />} />
-            <Route path="blogs/update/:id" element={<UpdateBlog />} />
-            <Route path="personal-info" element={<PersonalInfo />} />
-            <Route path="comments" element={<Comments />} />
-            <Route path="media" element={<Media />} />
+    <SimpleBar style={{ maxHeight: "100vh" }}>
+      <div className="w-full h-full">
+        <BrowserRouter future={{ v7_startStransition: true }}>
+          <AnimatePresence>{isShow && <SideBarBlogList />}</AnimatePresence>
+          <Routes>
+            <Route path="/" element={<Home />}></Route>
+            <Route path="/projects" element={<ManipulateOnProjects />}></Route>
+            <Route path="/skills" element={<ManipulateOnSkills />}></Route>
             <Route
-              path="edit/source-code/:id"
-              element={<EditSourceCodeAdmin />}
+              path="/certificates"
+              element={<ManipulateOnCertificates />}
+            ></Route>
+            {/* <Route path="/add/blogs" element={<AddBlogPost />}></Route> */}
+            <Route path="/blogs" element={<BlogsList />}></Route>
+            <Route path="/blog/detail/:id" element={<BlogDetail />}></Route>
+            <Route path="/exchange-source-code" element={<ExChangeSource />} />
+
+            <Route path="/remove-bg-tool" element={<RemoveBackground />} />
+            <Route path="/pdf-to-word-tool" element={<PdfToWord />} />
+            <Route
+              path="/code-highlighter-tool"
+              element={<CodeHighlighter />}
             />
-            <Route path="themes" element={<Theme />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+
+            <Route
+              path="/exchange-source-code/:id"
+              element={<ViewSourceDetail />}
+            />
+            <Route path="/admin/*" element={<AdminLayout />}>
+              <Route index element={<ManipulateOnProjects />} />
+              <Route path="skills" element={<ManipulateOnSkills />} />
+              <Route
+                path="certificates"
+                element={<ManipulateOnCertificates />}
+              />
+              <Route path="add/blogs" element={<ManipulateOnBlogs />} />
+              <Route path="source-code" element={<SourceCodeAdmin />} />
+              <Route path="blogs/update/:id" element={<UpdateBlog />} />
+              <Route path="personal-info" element={<PersonalInfo />} />
+              <Route path="comments" element={<Comments />} />
+              <Route path="media" element={<Media />} />
+              <Route
+                path="edit/source-code/:id"
+                element={<EditSourceCodeAdmin />}
+              />
+              <Route path="themes" element={<Theme />} />              <Route path="analytics" element={<Analytics />} />              {/*  */}
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </SimpleBar>
   );
 }
 

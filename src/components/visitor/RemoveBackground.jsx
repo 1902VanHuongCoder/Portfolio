@@ -11,6 +11,7 @@ const RemoveBackground = () => {
   const [originalImage, setOriginalImage] = useState(null);
   const [processedImage, setProcessedImage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -21,15 +22,17 @@ const RemoveBackground = () => {
   const styleBasedOnTheme = () => {
     if (theme?.themeSlug === "christmas") {
       return {
-        primaryColor: "text-white",
-        secondaryColor: "text-white/80",
+        titleColor: "text-white",
+        primaryColor: "text-[#33A1E0]",
+        secondaryColor: "text-[#33A1E0]/80",
         gradientColor: "from-white via-gray-200 to-white",
-        buttonBg: "bg-white/20 hover:bg-white/30 text-white border-white/50",
-        cardBg: "backdrop-blur-xl bg-white/10 border-white/20",
+        buttonBg: "bg-white/20 hover:bg-white/30 text-[#33A1E0] border-white/50",
+        cardBg: "bg-white border-white/20",
         accentColor: "#FFF",
       };
     } else if (theme?.themeSlug === "new-year") {
       return {
+        titleColor: "text-white",
         primaryColor: "text-[#EEBF17]",
         secondaryColor: "text-[#F17B00]",
         gradientColor: "from-yellow-600 via-yellow-400 to-yellow-600",
@@ -40,6 +43,7 @@ const RemoveBackground = () => {
       };
     } else {
       return {
+        titleColor: "text-[#154D71]",
         primaryColor: "text-[#154D71]",
         secondaryColor: "text-[#33A1E0]",
         gradientColor: "from-[#154D71] via-[#33A1E0] to-[#154D71]",
@@ -85,6 +89,7 @@ const RemoveBackground = () => {
     }
 
     setIsProcessing(true);
+    setProgress(0);
     showToast("info", "Processing image with AI... This may take a moment.");
 
     try {
@@ -95,8 +100,9 @@ const RemoveBackground = () => {
       // Use @imgly/background-removal to remove background
       const imageBlob = await removeBackground(blob, {
         progress: (key, current, total) => {
-          // Optional: Show progress
+          // Update progress state
           const percentage = ((current / total) * 100).toFixed(0);
+          setProgress(percentage);
           console.log(`Processing: ${percentage}%`);
         },
       });
@@ -108,11 +114,13 @@ const RemoveBackground = () => {
         setProcessedImage(processedDataUrl);
         setPreviewUrl(processedDataUrl);
         setIsProcessing(false);
+        setProgress(0);
         showToast("success", "Background removed successfully with AI!");
       };
       reader.readAsDataURL(imageBlob);
     } catch (error) {
       setIsProcessing(false);
+      setProgress(0);
       showToast("error", "An error occurred while processing the image.");
       console.error("Background removal error:", error);
     }
@@ -166,7 +174,7 @@ const RemoveBackground = () => {
       </div>
 
       {/* Main Content */}
-      <div className="relative pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
+      <div className="relative pt-[10rem] pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -175,12 +183,12 @@ const RemoveBackground = () => {
           className="text-center mb-12"
         >
           <h1
-            className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 ${styles.primaryColor}`}
+            className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 ${styles.titleColor}`}
           >
             Remove Background Tool
           </h1>
           <p
-            className={`text-lg sm:text-xl ${styles.secondaryColor} max-w-2xl mx-auto`}
+            className={`text-lg sm:text-xl ${styles.titleColor} max-w-2xl mx-auto`}
           >
             Upload your image and remove the background instantly. Simple, fast,
             and free!
@@ -192,7 +200,7 @@ const RemoveBackground = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className={`${styles.cardBg} border-2 rounded-2xl p-8 shadow-xl mb-8`}
+          className={`${styles.cardBg} rounded-2xl p-8 shadow-xl mb-8`}
         >
           <div className="flex flex-col items-center">
             <input
@@ -212,7 +220,7 @@ const RemoveBackground = () => {
                 <div
                   className={`border-4 border-dashed rounded-xl p-12 text-center transition-all duration-300 hover:scale-105 ${
                     theme?.themeSlug === "christmas"
-                      ? "border-white/40 hover:border-white/60 bg-white/5"
+                      ? "border-[#33A1E0]/40"
                       : theme?.themeSlug === "new-year"
                       ? "border-yellow-400/40 hover:border-yellow-400/60 bg-yellow-400/5"
                       : "border-[#33A1E0]/40 hover:border-[#33A1E0]/60 bg-[#33A1E0]/5"
@@ -236,7 +244,7 @@ const RemoveBackground = () => {
               <div className="w-full max-w-4xl">
                 {/* Image Preview */}
                 <div className="relative mb-6">
-                  <div className="relative inline-block">
+                  <div className="relative flex justify-center items-center">
                     <img
                       src={previewUrl}
                       alt="Preview"
@@ -248,9 +256,20 @@ const RemoveBackground = () => {
                     />
                     {isProcessing && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
-                        <div className="text-white text-center">
+                        <div className="text-white text-center px-8">
                           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white mx-auto mb-4"></div>
-                          <p className="text-lg font-semibold">Processing...</p>
+                          <p className="text-lg font-semibold mb-4">Processing...</p>
+                          
+                          {/* Progress Bar */}
+                          <div className="w-full max-w-md mx-auto">
+                            <div className="bg-white/20 rounded-full h-3 overflow-hidden mb-2">
+                              <div 
+                                className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300 ease-out rounded-full"
+                                style={{ width: `${progress}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-sm font-medium">{progress}%</p>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -316,54 +335,48 @@ const RemoveBackground = () => {
         </motion.div>
 
         {/* Features Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           {[
             {
-              icon: <FaUpload size={32} />,
+              icon: <FaUpload size={24} />,
               title: "Easy Upload",
               description: "Simply drag and drop or click to upload your image",
             },
             {
-              icon: <FaImage size={32} />,
+              icon: <FaImage size={24} />,
               title: "Instant Processing",
               description:
                 "Remove background in seconds with our smart algorithm",
             },
             {
-              icon: <FaDownload size={32} />,
+              icon: <FaDownload size={24} />,
               title: "Free Download",
               description:
                 "Download your processed image with transparent background",
             },
           ].map((feature, index) => (
-            <motion.div
+            <div
               key={index}
-              whileHover={{ scale: 1.05 }}
-              className={`${styles.cardBg} border-2 rounded-xl p-6 shadow-lg text-center`}
+              className={`p-5 text-center bg-white rounded-md`}
             >
               <div
-                className={`inline-block p-4 rounded-full mb-4 ${
+                className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-3 ${
                   theme?.themeSlug === "christmas"
-                    ? "bg-white/20"
+                    ? "bg-white/10"
                     : theme?.themeSlug === "new-year"
-                    ? "bg-yellow-400/20"
-                    : "bg-[#33A1E0]/20"
+                    ? "bg-yellow-400/10"
+                    : "bg-[#33A1E0]/10"
                 }`}
               >
                 <div className={styles.secondaryColor}>{feature.icon}</div>
               </div>
-              <h3 className={`text-xl font-bold mb-2 ${styles.primaryColor}`}>
+              <h3 className={`text-lg font-semibold mb-1 ${styles.primaryColor}`}>
                 {feature.title}
               </h3>
-              <p className={styles.secondaryColor}>{feature.description}</p>
-            </motion.div>
+              <p className={`text-sm ${styles.secondaryColor} opacity-75`}>{feature.description}</p>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Note Section */}
         <motion.div
@@ -373,10 +386,7 @@ const RemoveBackground = () => {
           className={`mt-12 ${styles.cardBg} border-2 rounded-xl p-6 shadow-lg`}
         >
           <p className={`text-center ${styles.secondaryColor} text-sm`}>
-            <strong className={styles.primaryColor}>Note:</strong> This tool
-            uses AI-powered background removal from @imgly/background-removal
-            library. The first time you use it, the AI model will be downloaded
-            automatically (may take a moment). Subsequent uses will be faster.
+            <strong className={styles.primaryColor}>Note:</strong> This tool is developed by Paul To and free to use. For best results, use images with clear
           </p>
         </motion.div>
       </div>

@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import "./App.css";
 import NavigationBar from "./components/partials/NavigationBar";
 import SideBar from "./components/visitor/SideBar";
@@ -18,6 +18,8 @@ import { useLoading } from "./lib/loading-context";
 import Toast from "./components/partials/Toast";
 import AdminLoading from "./components/partials/AdminLoading";
 import { ThemeContext } from "./contexts/ThemeContext";
+import { trackPageView } from "./lib/analytics-apis";
+
 const Home = () => {
   const { isSidebar } = useContext(SidebarContext);
   const { zoomCertificate, certificate } = useContext(ShowCertificateContext);
@@ -25,6 +27,11 @@ const Home = () => {
   const { scrollYProgress } = useScroll();
   const { toast } = useToast();
   const { loading } = useLoading();
+
+  // Track page view
+  useEffect(() => {
+    trackPageView("Home", window.location.pathname);
+  }, []);
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
@@ -46,7 +53,7 @@ const Home = () => {
 
       {/* Loading Spinner */}
       {loading.show && <AdminLoading text={loading.text} />}
-      <motion.div
+      {/* <motion.div
         className="fixed h-[12px] w-full top-0 left-0 origin-left z-50 rounded-b-xl shadow-lg"
         style={{
           scaleX,
@@ -54,7 +61,7 @@ const Home = () => {
           boxShadow: "0 2px 16px 0 rgba(51,161,224,0.15)",
           backdropFilter: "blur(2px)",
         }}
-      />
+      /> */}
       <NavigationBar />
       <AnimatePresence>{isSidebar && <SideBar />}</AnimatePresence>
       <ShowCase />

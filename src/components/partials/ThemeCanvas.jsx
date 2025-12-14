@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase_setup/firebase";
 
@@ -561,7 +562,7 @@ function drawSantaAndReindeer(ctx, x, y, rotation = 0, scale = 1, alpha = 1) {
   ctx.restore();
 }
 
-const ThemeCanvas = () => {
+const ThemeCanvas = ({ height }) => {
   const canvasRef = useRef(null);
   const [activeTheme, setActiveTheme] = useState(null);
 
@@ -834,12 +835,16 @@ const ThemeCanvas = () => {
         top: 0,
         left: 0,
         width: "100vw",
-        height: "100vh",
+        height: height || "100vh",
         zIndex: 0,
         pointerEvents: "none",
       }}
     />
   );
+};
+
+ThemeCanvas.propTypes = {
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default ThemeCanvas;

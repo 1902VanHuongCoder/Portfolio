@@ -69,7 +69,7 @@ const NavigationBar = () => {
         <div className="hidden lg:flex gap-x-8 items-center">
           <a
             className="px-5 sm:px-2 py-3 font-bold hover:scale-105 rounded-xl   transition-all flex items-center gap-x-3 sm:gap-x-2 text-lg duration-200"
-            href="#home"
+            href="/"
           >
             <span className="rounded-full bg-[#33A1E0]/10 p-2  flex items-center justify-center"><FaHome size={20} /></span>
             Home
