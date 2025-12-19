@@ -3,7 +3,7 @@ import "./App.css";
 import NavigationBar from "./components/partials/NavigationBar";
 import SideBar from "./components/visitor/SideBar";
 import { SidebarContext } from "./contexts/SidebarContext";
-import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import ShowCase from "./components/visitor/ShowCase";
 import Projects from "./components/visitor/Projects";
 import Skills from "./components/visitor/Skills";
@@ -24,7 +24,6 @@ const Home = () => {
   const { isSidebar } = useContext(SidebarContext);
   const { zoomCertificate, certificate } = useContext(ShowCertificateContext);
   const { theme } = useContext(ThemeContext);
-  const { scrollYProgress } = useScroll();
   const { toast } = useToast();
   const { loading } = useLoading();
 
@@ -32,11 +31,7 @@ const Home = () => {
   useEffect(() => {
     trackPageView("Home", window.location.pathname);
   }, []);
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
+
   const colorBasedOnTheme = {
     "christmas": "bg-[rgba(0,0,0,.9)] text-white",
     "default": "bg-white",

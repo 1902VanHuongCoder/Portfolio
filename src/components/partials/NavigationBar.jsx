@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { MdMenu } from "react-icons/md";
 import { FaHome, FaTools } from "react-icons/fa";
 import { GrProjects } from "react-icons/gr";
@@ -6,7 +6,7 @@ import { FaBookAtlas } from "react-icons/fa6";
 import { PiHandshakeFill } from "react-icons/pi";
 import { PiCertificateFill } from "react-icons/pi";
 import { FaAddressBook } from "react-icons/fa";
-import { AiFillLike } from "react-icons/ai";
+// import { AiFillLike } from "react-icons/ai";
 
 import { SidebarContext } from "../../contexts/SidebarContext";
 import { Link } from "react-router-dom";
@@ -15,7 +15,7 @@ import { db } from "../../firebase_setup/firebase";
 import { ThemeContext } from "../../contexts/ThemeContext";
 const NavigationBar = () => {
   const { isSidebar, func } = useContext(SidebarContext);
-  const [likeCount, setLikeCount] = useState(0);
+  // const [likeCount, setLikeCount] = useState(0);
    const { theme } = useContext(ThemeContext);
   const handleShowSideBar = () => {
     func(!isSidebar);
@@ -27,7 +27,7 @@ const NavigationBar = () => {
       likeRef,
       (docSnapshot) => {
         if (docSnapshot.exists()) {
-          setLikeCount(docSnapshot.data().count || 0);
+          // setLikeCount(docSnapshot.data().count || 0);
         }
       },
       (error) => {
@@ -109,10 +109,10 @@ const NavigationBar = () => {
             <span className="rounded-full bg-[#33A1E0]/10 p-2  flex items-center justify-center"><PiHandshakeFill size={20} /></span>
             Contacts
           </a>
-          <p className="px-4 sm:px-2 py-3 font-bold rounded-xl   transition-all flex items-center gap-x-3 sm:gap-x-2 text-lg duration-200">
+          {/* <p className="px-4 sm:px-2 py-3 font-bold rounded-xl   transition-all flex items-center gap-x-3 sm:gap-x-2 text-lg duration-200">
             <span className="rounded-full bg-[#33A1E0]/10 p-2  flex items-center justify-center"><AiFillLike size={20} /></span>
             <span className="ml-1 font-mono tracking-widest">{likeCount < 10 ? "0" + likeCount : likeCount}</span>
-          </p>
+          </p> */}
           <Link
             className="font-bold hover:scale-105 transition-all flex items-center gap-x-3 sm:gap-x-2 rounded-xl px-2 py-3 text-lg duration-200"
             to="/blogs"
