@@ -13,8 +13,10 @@ const RemoveBackground = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [imageInfo, setImageInfo] = useState(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
+  const maxProgressRef = useRef(0);
 
   const { theme } = useContext(ThemeContext);
   const { showToast } = useContext(ToastContext);
@@ -62,20 +64,48 @@ const RemoveBackground = () => {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        showToast("error", "Please upload a valid image file!");
+        showToast("error", "❌ Vui lòng tải lên file ảnh hợp lệ (PNG, JPG, JPEG)!");
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
         // 10MB limit
-        showToast("error", "Image size should be less than 10MB!");
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        showToast("error", `❌ Ảnh quá lớn (${sizeMB}MB). Vui lòng chọn ảnh nhỏ hơn 10MB!`);
         return;
       }
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        setOriginalImage(event.target.result);
-        setPreviewUrl(event.target.result);
-        setProcessedImage(null);
+        const img = new Image();
+        img.onload = () => {
+          // Lưu thông tin ảnh
+          const info = {
+            width: img.width,
+            height: img.height,
+            size: file.size,
+            sizeText: (file.size / (1024 * 1024)).toFixed(2) + ' MB'
+          };
+          setImageInfo(info);
+          
+          // Cảnh báo nếu ảnh lớn
+          if (file.size > 3 * 1024 * 1024) {
+            showToast("warning", `⚠️ Ảnh lớn (${info.sizeText}) sẽ xử lý chậm hơn. Khuyến nghị dùng ảnh < 3MB!`);
+          } else if (img.width > 2000 || img.height > 2000) {
+            showToast("warning", `⚠️ Ảnh có độ phân giải cao (${img.width}x${img.height}px). Xử lý có thể mất vài phút!`);
+          } else {
+            showToast("success", `✅ Tải ảnh thành công! ${img.width}x${img.height}px - ${info.sizeText}`);
+          }
+          
+          setOriginalImage(event.target.result);
+          setPreviewUrl(event.target.result);
+          setProcessedImage(null);
+          setProgress(0);
+          maxProgressRef.current = 0;
+        };
+        img.src = event.target.result;
+      };
+      reader.onerror = () => {
+        showToast("error", "❌ Không thể đọc file ảnh. Vui lòng thử lại.");
       };
       reader.readAsDataURL(file);
     }
@@ -84,13 +114,14 @@ const RemoveBackground = () => {
   // AI-powered background removal using @imgly/background-removal
   const removeBackgroundAI = async () => {
     if (!originalImage) {
-      showToast("warning", "Please upload an image first!");
+      showToast("warning", "⚠️ Vui lòng tải ảnh lên trước!");
       return;
     }
 
     setIsProcessing(true);
     setProgress(0);
-    showToast("info", "Processing image with AI... This may take a moment.");
+    maxProgressRef.current = 0;
+    showToast("info", "🤖 AI đang xử lý ảnh... Vui lòng đợi trong giây lát.");
 
     try {
       // Convert data URL to blob
@@ -100,10 +131,15 @@ const RemoveBackground = () => {
       // Use @imgly/background-removal to remove background
       const imageBlob = await removeBackground(blob, {
         progress: (key, current, total) => {
-          // Update progress state
-          const percentage = ((current / total) * 100).toFixed(0);
-          setProgress(percentage);
-          console.log(`Processing: ${percentage}%`);
+          // Chỉ cập nhật progress khi giá trị mới lớn hơn giá trị hiện tại
+          // Điều này ngăn thanh tiến trình bị giảm xuống
+          const percentage = Math.round((current / total) * 100);
+          
+          if (percentage > maxProgressRef.current) {
+            maxProgressRef.current = percentage;
+            setProgress(percentage);
+            console.log(`Processing: ${percentage}%`);
+          }
         },
       });
 
@@ -115,13 +151,15 @@ const RemoveBackground = () => {
         setPreviewUrl(processedDataUrl);
         setIsProcessing(false);
         setProgress(0);
-        showToast("success", "Background removed successfully with AI!");
+        maxProgressRef.current = 0;
+        showToast("success", "✅ Xóa phông nền thành công! Ảnh đã sẵn sàng để tải về.");
       };
       reader.readAsDataURL(imageBlob);
     } catch (error) {
       setIsProcessing(false);
       setProgress(0);
-      showToast("error", "An error occurred while processing the image.");
+      maxProgressRef.current = 0;
+      showToast("error", "❌ Đã xảy ra lỗi khi xử lý ảnh. Vui lòng thử lại.");
       console.error("Background removal error:", error);
     }
   };
@@ -129,7 +167,7 @@ const RemoveBackground = () => {
   // Download processed image
   const downloadImage = () => {
     if (!processedImage) {
-      showToast("warning", "No processed image to download!");
+      showToast("warning", "⚠️ Chưa có ảnh đã xử lý để tải về!");
       return;
     }
 
@@ -139,7 +177,7 @@ const RemoveBackground = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast("success", "Image downloaded successfully!");
+    showToast("success", "📥 Tải ảnh thành công! Kiểm tra thư mục Downloads.");
   };
 
   // Reset everything
@@ -147,9 +185,13 @@ const RemoveBackground = () => {
     setOriginalImage(null);
     setProcessedImage(null);
     setPreviewUrl(null);
+    setImageInfo(null);
+    setProgress(0);
+    maxProgressRef.current = 0;
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    showToast("info", "🔄 Đã làm mới. Bạn có thể tải ảnh mới lên.");
   };
 
     const colorBasedOnTheme = {
@@ -274,10 +316,41 @@ const RemoveBackground = () => {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Image Info */}
+                  {imageInfo && (
+                    <div className="mt-4 flex flex-wrap gap-4 justify-center items-center text-sm">
+                      <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${styles.cardBg} border-2 ${
+                        theme?.themeSlug === "christmas" 
+                          ? "border-[#33A1E0]/30" 
+                          : theme?.themeSlug === "new-year" 
+                          ? "border-yellow-400/30" 
+                          : "border-[#33A1E0]/30"
+                      }`}>
+                        <span className={`font-semibold ${styles.primaryColor}`}>📐 Kích thước:</span>
+                        <span className={styles.secondaryColor}>{imageInfo.width} x {imageInfo.height} px</span>
+                      </div>
+                      <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${styles.cardBg} border-2 ${
+                        theme?.themeSlug === "christmas" 
+                          ? "border-[#33A1E0]/30" 
+                          : theme?.themeSlug === "new-year" 
+                          ? "border-yellow-400/30" 
+                          : "border-[#33A1E0]/30"
+                      }`}>
+                        <span className={`font-semibold ${styles.primaryColor}`}>💾 Dung lượng:</span>
+                        <span className={styles.secondaryColor}>{imageInfo.sizeText}</span>
+                      </div>
+                      {(imageInfo.size > 3 * 1024 * 1024 || imageInfo.width > 2000 || imageInfo.height > 2000) && (
+                        <div className="w-full mt-2 px-4 py-2 rounded-lg bg-yellow-50 border-2 border-yellow-300 text-center">
+                          <span className="text-yellow-700 text-xs">⚠️ Ảnh lớn sẽ xử lý chậm hơn. Khuyến nghị resize ảnh nhỏ hơn để tối ưu tốc độ!</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap gap-4 justify-center">
+                <div className="flex flex-wrap gap-4 justify-center mt-6">
                   {!processedImage ? (
                     <>
                       <button
