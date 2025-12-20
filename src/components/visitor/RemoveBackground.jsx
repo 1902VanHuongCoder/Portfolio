@@ -199,8 +199,8 @@ const RemoveBackground = () => {
             Remove Background Free
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Tải lên ảnh của bạn và để AI xử lý xóa phông nền một cách nhanh
-            chóng và dễ dàng!
+            Tốc độ xử lý ảnh tùy vào hiệu năng thiết bị và kích thước ảnh. Ảnh lớn
+            sẽ xử lý chậm hơn. Khuyến nghị resize ảnh nhỏ hơn để tối ưu tốc độ!
           </p>
         </div>
 
