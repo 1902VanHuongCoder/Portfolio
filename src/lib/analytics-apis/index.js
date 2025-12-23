@@ -1,20 +1,95 @@
 import { collection, addDoc, getDocs, query, where, orderBy, limit, Timestamp, updateDoc, doc, increment } from "firebase/firestore";
 import { db } from "../../firebase_setup/firebase";
 
+// Get user IP address with multiple fallback options
+const getUserIP = async () => {
+  console.log('🔍 Starting IP detection...');
+  
+  const ipServices = [
+    { 
+      url: 'https://api.ipify.org?format=json', 
+      parse: (data) => data.ip 
+    },
+    { 
+      url: 'https://api64.ipify.org?format=json', 
+      parse: (data) => data.ip 
+    },
+    { 
+      url: 'https://api.my-ip.io/ip.json', 
+      parse: (data) => data.ip 
+    },
+    { 
+      url: 'https://ipapi.co/json/', 
+      parse: (data) => data.ip 
+    },
+    { 
+      url: 'https://api.seeip.org/jsonip', 
+      parse: (data) => data.ip 
+    }
+  ];
+  
+  for (const service of ipServices) {
+    try {
+      console.log(`⏳ Trying ${service.url}...`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      
+      const response = await fetch(service.url, { 
+        signal: controller.signal,
+        headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        mode: 'cors'
+      });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.warn(`⚠️ ${service.url} returned status ${response.status}`);
+        continue;
+      }
+      
+      const data = await response.json();
+      console.log(`📦 Response from ${service.url}:`, data);
+      
+      const ip = service.parse(data);
+      
+      if (ip && ip !== 'undefined' && ip !== null) {
+        console.log(`✅ IP address obtained: ${ip} from ${service.url}`);
+        return ip;
+      } else {
+        console.warn(`⚠️ IP value invalid:`, ip);
+      }
+    } catch (error) {
+      console.error(`❌ Failed to get IP from ${service.url}:`, error.name, error.message);
+      continue;
+    }
+  }
+  
+  console.error("❌ All IP services failed, returning 'Unknown'");
+  return "Unknown";
+};
+
 // Track page view
 export const trackPageView = async (pageName, pageUrl, additionalData = {}) => {
   try {
+    const ipAddress = await getUserIP();
+    console.log('📊 Tracking page view:', { pageName, pageUrl, ipAddress });
+    
     const analyticsRef = collection(db, "analytics");
-    await addDoc(analyticsRef, {
+    const docRef = await addDoc(analyticsRef, {
       pageName,
       pageUrl,
       timestamp: Timestamp.now(),
       userAgent: navigator.userAgent,
       referrer: document.referrer || "direct",
+      ipAddress,
       ...additionalData,
     });
+    
+    console.log('✅ Page view tracked successfully:', docRef.id);
   } catch (error) {
-    console.error("Error tracking page view:", error);
+    console.error("❌ Error tracking page view:", error);
   }
 };
 

@@ -10,6 +10,7 @@ import {
   FaBlog,
   FaChartLine,
   FaClock,
+  FaGlobe,
 } from "react-icons/fa";
 
 const Analytics = () => {
@@ -32,6 +33,11 @@ const Analytics = () => {
         getAnalyticsSummary(),
         getBlogViewCounts(),
       ]);
+      console.log('📊 Analytics fetched:', summary);
+      console.log('🔍 Recent views with IP:', summary.recentViews.map(v => ({ 
+        page: v.pageName, 
+        ip: v.ipAddress 
+      })));
       setAnalytics(summary);
       setBlogViews(blogs);
     } catch (error) {
@@ -237,6 +243,12 @@ const Analytics = () => {
                   <div>
                     <p className="font-semibold text-[#154D71]">{view.pageName}</p>
                     <p className="text-sm text-gray-500">{view.pageUrl}</p>
+                    <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                      <FaGlobe /> 
+                      <span className="font-mono">
+                        {view.ipAddress || 'IP not available'}
+                      </span>
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
