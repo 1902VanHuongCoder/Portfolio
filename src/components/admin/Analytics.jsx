@@ -11,7 +11,23 @@ import {
   FaChartLine,
   FaClock,
   FaGlobe,
+  FaCalendarAlt,
+  FaDesktop,
 } from "react-icons/fa";
+import {
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
@@ -21,10 +37,14 @@ const Analytics = () => {
     recentViews: [],
   });
   const [blogViews, setBlogViews] = useState([]);
+  const [timeRange, setTimeRange] = useState("7days"); // today, 7days, 30days, all
+  const [chartData, setChartData] = useState([]);
+  const [deviceData, setDeviceData] = useState([]);
+  const [trafficSourceData, setTrafficSourceData] = useState([]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [timeRange]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -38,13 +58,107 @@ const Analytics = () => {
         page: v.pageName, 
         ip: v.ipAddress 
       })));
+      
+      // Filter data based on time range
+      const filteredData = filterDataByTimeRange(summary.recentViews, timeRange);
+      
+      // Process chart data
+      const processedChartData = processViewsByDate(filteredData);
+      const processedDeviceData = processDeviceData(filteredData);
+      const processedTrafficData = processTrafficSourceData(filteredData);
+      
       setAnalytics(summary);
       setBlogViews(blogs);
+      setChartData(processedChartData);
+      setDeviceData(processedDeviceData);
+      setTrafficSourceData(processedTrafficData);
     } catch (error) {
       console.error("Error fetching analytics:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const filterDataByTimeRange = (data, range) => {
+    const now = new Date();
+    const cutoffDate = new Date();
+    
+    switch (range) {
+      case "today":
+        cutoffDate.setHours(0, 0, 0, 0);
+        break;
+      case "7days":
+        cutoffDate.setDate(now.getDate() - 7);
+        break;
+      case "30days":
+        cutoffDate.setDate(now.getDate() - 30);
+        break;
+      case "all":
+        return data;
+      default:
+        cutoffDate.setDate(now.getDate() - 7);
+    }
+    
+    return data.filter(item => {
+      const itemDate = item.timestamp.toDate ? item.timestamp.toDate() : new Date(item.timestamp);
+      return itemDate >= cutoffDate;
+    });
+  };
+
+  const processViewsByDate = (data) => {
+    const viewsByDate = {};
+    
+    data.forEach(item => {
+      const date = item.timestamp.toDate ? item.timestamp.toDate() : new Date(item.timestamp);
+      const dateKey = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      
+      viewsByDate[dateKey] = (viewsByDate[dateKey] || 0) + 1;
+    });
+    
+    return Object.entries(viewsByDate).map(([date, views]) => ({
+      date,
+      views,
+    })).slice(-14); // Show last 14 data points
+  };
+
+  const processDeviceData = (data) => {
+    const deviceCounts = { Mobile: 0, Desktop: 0, Tablet: 0 };
+    
+    data.forEach(item => {
+      const ua = item.userAgent || "";
+      if (/mobile/i.test(ua)) {
+        deviceCounts.Mobile++;
+      } else if (/tablet/i.test(ua)) {
+        deviceCounts.Tablet++;
+      } else {
+        deviceCounts.Desktop++;
+      }
+    });
+    
+    return Object.entries(deviceCounts)
+      .filter(([_, value]) => value > 0)
+      .map(([name, value]) => ({ name, value }));
+  };
+
+  const processTrafficSourceData = (data) => {
+    const sourceCounts = {};
+    
+    data.forEach(item => {
+      const referrer = item.referrer || "direct";
+      let source = "Direct";
+      
+      if (referrer !== "direct") {
+        if (referrer.includes("google")) source = "Google";
+        else if (referrer.includes("facebook")) source = "Facebook";
+        else if (referrer.includes("twitter") || referrer.includes("x.com")) source = "Twitter";
+        else if (referrer.includes("linkedin")) source = "LinkedIn";
+        else source = "Other";
+      }
+      
+      sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+    });
+    
+    return Object.entries(sourceCounts).map(([name, value]) => ({ name, value }));
   };
 
   const getPageIcon = (pageName) => {
@@ -82,7 +196,7 @@ const Analytics = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -96,6 +210,34 @@ const Analytics = () => {
         <p className="text-[#33A1E0]">
           Track and monitor your website traffic and engagement
         </p>
+      </motion.div>
+
+      {/* Time Range Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="mb-6 flex flex-wrap gap-3"
+      >
+        {[
+          { value: "today", label: "Today", icon: FaClock },
+          { value: "7days", label: "Last 7 Days", icon: FaCalendarAlt },
+          { value: "30days", label: "Last 30 Days", icon: FaCalendarAlt },
+          { value: "all", label: "All Time", icon: FaChartLine },
+        ].map((range) => (
+          <button
+            key={range.value}
+            onClick={() => setTimeRange(range.value)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
+              timeRange === range.value
+                ? "bg-gradient-to-r from-[#154D71] to-[#33A1E0] text-white shadow-lg"
+                : "bg-white text-[#154D71] border-2 border-[#33A1E0]/20 hover:border-[#33A1E0]/50"
+            }`}
+          >
+            <range.icon />
+            {range.label}
+          </button>
+        ))}
       </motion.div>
 
       {/* Total Views Card */}
@@ -114,6 +256,121 @@ const Analytics = () => {
             <FaEye size={48} />
           </div>
         </div>
+      </motion.div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Views Over Time Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white rounded-2xl shadow-xl p-6 border-2 border-[#33A1E0]/20"
+        >
+          <h2 className="text-xl font-bold text-[#154D71] mb-4 flex items-center gap-2">
+            <FaChartLine />
+            Views Over Time
+          </h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#33A1E0" opacity={0.2} />
+              <XAxis 
+                dataKey="date" 
+                stroke="#154D71"
+                style={{ fontSize: '12px' }}
+              />
+              <YAxis 
+                stroke="#154D71"
+                style={{ fontSize: '12px' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: '2px solid #33A1E0',
+                  borderRadius: '8px'
+                }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="views" 
+                stroke="#33A1E0" 
+                strokeWidth={3}
+                dot={{ fill: '#154D71', r: 5 }}
+                activeDot={{ r: 7 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+
+        {/* Traffic Sources Pie Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-2xl shadow-xl p-6 border-2 border-[#33A1E0]/20"
+        >
+          <h2 className="text-xl font-bold text-[#154D71] mb-4 flex items-center gap-2">
+            <FaGlobe />
+            Traffic Sources
+          </h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={trafficSourceData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {trafficSourceData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={['#154D71', '#33A1E0', '#5CB8E4', '#85C9EC', '#AED9F4'][index % 5]} 
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </motion.div>
+      </div>
+
+      {/* Device Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="bg-white rounded-2xl shadow-xl p-6 mb-8 border-2 border-[#33A1E0]/20"
+      >
+        <h2 className="text-xl font-bold text-[#154D71] mb-4 flex items-center gap-2">
+          <FaDesktop />
+          Device Analytics
+        </h2>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={deviceData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#33A1E0" opacity={0.2} />
+            <XAxis 
+              dataKey="name" 
+              stroke="#154D71"
+              style={{ fontSize: '14px' }}
+            />
+            <YAxis 
+              stroke="#154D71"
+              style={{ fontSize: '12px' }}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#fff', 
+                border: '2px solid #33A1E0',
+                borderRadius: '8px'
+              }}
+            />
+            <Bar dataKey="value" fill="#33A1E0" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </motion.div>
 
       {/* Page Views Stats */}
